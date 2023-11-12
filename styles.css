@@ -1,0 +1,418 @@
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+html {
+  height: -webkit-fill-available;
+}
+
+main {
+  height: 100vh;
+  height: -webkit-fill-available;
+  max-height: 100vh;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.col-10 {
+  padding-left: 0px;
+}
+
+#viewDiv {
+  position: absolute;
+  top: 56;
+  /* right: 5%; Adjust based on sidebar width */
+  width: 100%; /* Adjust based on remaining screen width */
+  height: 100%;
+}
+
+.navbar .container {
+  display: block;
+  padding-right: 0; /* 'block' will make it a standard block-level element */
+}
+
+.navbar.bg-dark {
+  background-color: rgba(0, 0, 0, 0.5) !important; /* 0.5 is 50% opacity */
+}
+
+.custom-navbar {
+  position: absolute;
+  top: 0;
+  left: 100px;
+  width: 425px;
+  z-index: 1000;
+  padding-left: 25px;
+  border-radius: 3px;
+  overflow-y: visible;
+  /* This ensures the navbar is always on top */
+}
+
+#title {
+  font-size: x-large;
+}
+
+#search-title {
+  right: 0;
+  /* padding-left: 50%; */
+  width: 60%;
+}
+
+ul {
+  height: 80px;
+  background-color: rgba(30, 30, 30, 0.7) !important;
+  border-radius: 2px 2px 2px 2px !important;
+  vertical-align: middle;
+
+  padding-bottom: 0px;
+  margin-bottom: 5px;
+  padding-inline-start: 0px;
+  text-wrap: auto;
+}
+
+#main-img {
+  position: fixed; /* or absolute */
+  top: 10px; /* adjust as necessary */
+  left: 100px; /* adjust as necessary */
+  z-index: 10; /* higher than other elements */
+}
+
+.navbar-brand {
+  padding-top: 0px;
+  padding-bottom: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding-left: 20px;
+  font: 800;
+}
+
+#searchContainer {
+  display: block;
+  z-index: 1001;
+}
+
+.form-inline {
+  padding-bottom: 10px;
+  padding-left: 20px;
+}
+
+#searchInput {
+  width: 150px;
+}
+
+#dropdown {
+  height: 350px;
+  overflow-y: auto;
+}
+
+#featureWid {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.suggestions-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.suggestions-dropdown div {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.suggestions-dropdown div:hover {
+  background-color: #e0e0e0;
+}
+
+.expanded {
+  height: 400px; /* expanded height */
+  z-index: 1000;
+  left: 10%;
+  width: 100%;
+  /* background-color: #eeeeee91; */
+}
+
+.relative-container {
+  position: relative;
+}
+
+.btn-toggle {
+  padding: 0.25rem 0.5rem;
+  font-weight: 600;
+  color: var(--bs-emphasis-color);
+  background-color: transparent;
+}
+.btn-toggle:hover,
+.btn-toggle:focus {
+  color: rgba(var(--bs-emphasis-color-rgb), 0.85);
+  background-color: var(--bs-tertiary-bg);
+}
+
+#bt-Div {
+  position: absolute;
+  right: 0;
+  top: 100px;
+}
+
+#dropdown {
+  display: block;
+  overflow-y: auto;
+}
+
+#buttonGrouping {
+  position: absolute;
+  top: 50px;
+  height: 300px;
+  right: 0px;
+  width: 50px;
+  background-color: black;
+  z-index: 1000;
+  border-radius: 4px;
+  margin-left: 2px;
+  /* adjust this for desired spacing */
+}
+
+#panelToggle {
+  position: absolute;
+  margin-top: 15px;
+  margin-left: 5px;
+  vertical-align: middle;
+  align-items: center;
+}
+
+.sidebar {
+  display: block;
+  border-radius: 10px;
+  position: absolute; /* Change position to 'absolute' */
+  right: 0; /* This ensures it's flush with the right side of the container */
+  height: 100%;
+  width: 250px;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  transition: width 0.5s;
+}
+
+.collapsed {
+  width: 0px;
+}
+
+#small-div {
+  position: absolute;
+  display: flex; /* Make this a flex container */
+  flex-direction: column; /* This will align the items vertically */
+  justify-content: space-between;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  top: 8%;
+  right: 250px; /* the width of #sidebar */
+  height: 290px;
+  width: 55px;
+  background-color: rgba(30, 30, 30, 0.7) !important;
+  transition: right 0.5s;
+  padding: 6px; /* Change this to the color you want */
+}
+
+#left-div {
+  position: absolute;
+  display: flex; /* Make this a flex container */
+  flex-direction: column; /* This will align the items vertically */
+  justify-content: space-between;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  top: 15%;
+  right: 250px; /* the width of #sidebar */
+  height: 80px;
+  width: 40px;
+  background-color: rgba(30, 30, 30, 0.7) !important;
+  transition: right 0.5s;
+  padding-top: 20px;
+  padding: 6px; /* Change this to the color you want */
+}
+
+.centered-btn {
+  position: relative;
+  padding-top: 50%;
+  height: 30px;
+  margin-top: 20px; /* 20px from the top */
+}
+
+.list-group-item {
+  background-color: rgba(30, 30, 30, 0.7) !important;
+  outline-color: white;
+  font-size: 11px;
+  color: white;
+  z-index: 1000;
+  right: 0;
+  text-align: left;
+  /* border-radius: 2px 2px 2px 2px !important; */
+  /* width: 50%; */
+  /* display: flex;
+  flex-direction: flex-end; */
+}
+
+.list-group-item:hover {
+  color: grey;
+  cursor: pointer;
+}
+
+.img-fluid {
+  width: 100px;
+  height: auto;
+}
+
+.image-div {
+  display: flex;
+  padding-top: 10px;
+  /* align-items: center; */
+  /* justify-content: center; */
+  padding-left: 0;
+  /* height: 100px; */
+}
+/* width: 60px;
+  height: 60px;
+} */
+
+#side-Exp {
+  margin-top: 20px; /* Remove any default margin */
+  padding: 0.5rem; /* Adjust as necessary */
+  cursor: pointer; /* Add a hand cursor to indicate it's clickable */
+}
+
+#side-btn {
+  cursor: pointer;
+}
+
+.btn-group-vertical {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 60px;
+  padding-top: 15px;
+}
+
+.bar-Buttons {
+  margin-top: 5px;
+}
+
+#refresh-search {
+  margin-top: 5px;
+  z-index: 1000;
+}
+/* ul {
+  border: #e0e0e0 solid 0.5px;
+} */
+
+li {
+  font-size: 9px;
+  height: auto;
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+  width: auto;
+}
+
+li.list-results {
+  display: flex;
+  flex-direction: flex-end;
+  font-size: 9px;
+  height: auto;
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+  width: auto;
+}
+
+li.list-results:hover {
+  background-color: red;
+  /* background-color: #e0e0e0; */
+  cursor: pointer;
+}
+
+::-ms-clear {
+  display: none;
+}
+
+.form-control-clear {
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+#clear-btn {
+  z-index: 1000;
+  display: block;
+  margin: 0px;
+  padding: 7px 7px 7px 7px;
+  height: 40px;
+}
+
+img {
+  display: flex;
+  text-align: center;
+  padding-bottom: 10px;
+  justify-content: center;
+  height: 70px;
+  padding-left: 3px;
+  /* width: 85px; */
+}
+
+#detailBox #feature-wid {
+  position: absolute;
+  display: block;
+
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: antiquewhite;
+  padding-left: 30px;
+  /* background-color: rgba(0, 0, 0, 0.5); */
+  z-index: 1000;
+}
+
+.details {
+  padding-top: 20px;
+}
+
+#detail-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+}
+
+#detail-content img {
+  width: 240px;
+  height: 190px;
+  padding-left: 10px;
+}
+
+#backButton {
+  border-radius: 6px;
+  font-size: 10px;
+  /* background-color: rgba(0, 0, 0, 0.5); */
+}
+
+#result-btns {
+  padding-top: 20px;
+  padding-left: 30px;
+  padding-bottom: 0px;
+  align-items: center;
+}
+
+#details-btns {
+  padding-top: 20px;
+  padding-left: 30px;
+  padding-bottom: 0px;
+  align-items: center;
+}
+
+/* .list-group {
+  border-radius: 5px;
+} */
