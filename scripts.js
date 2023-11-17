@@ -37,8 +37,6 @@ require([
     },
   });
 
-  // console.log(webmap);
-
   const noCondosLayer = new FeatureLayer({
     url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_NOCONDOS/FeatureServer/1",
     defaultpopupTemplateEnabled: true,
@@ -56,15 +54,7 @@ require([
     url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels_NOCONDOS/FeatureServer/0",
   });
 
-  // var flLayerView;
-  // var fl2LayerView;
-
-  // view.whenLayerView(noCondosLayer).then(function (layerView) {
-  //   // Store the LayerView in a variable
-  //   flLayerView = layerView;
-  // });
-
-  class CondoTableElements {
+  class Parcel {
     constructor(
       objectid,
       location,
@@ -73,7 +63,30 @@ require([
       coOwner,
       owner,
       gisLink,
-      geometry
+      geometry,
+      mailingAddress,
+      mailingAddress2,
+      Mailing_City,
+      Mail_State,
+      Mailing_Zip,
+      Total_Acres,
+      Parcel_Primary_Use,
+      Building_Use_Code,
+      Parcel_Type,
+      Design_Type,
+      Zoning,
+      Neighborhood,
+      Land_Type_Rate,
+      Functional_Obs,
+      External_Obs,
+      Sale_Date,
+      Sale_Price,
+      Vol_Page,
+      Assessed_Total,
+      Appraised_Total,
+      Influence_Factor,
+      Influence_Type,
+      Land_Type
     ) {
       this.objectid = objectid;
       this.location = location;
@@ -83,6 +96,29 @@ require([
       this.owner = owner;
       this.GIS_LINK = gisLink;
       this.geometry = geometry;
+      this.mailingAddress = mailingAddress;
+      this.mailingAddress2 = mailingAddress2;
+      this.Mailing_City = Mailing_City;
+      this.Mail_State = Mail_State;
+      this.Mailing_Zip = Mailing_Zip;
+      this.Total_Acres = Total_Acres;
+      this.Parcel_Primary_Use = Parcel_Primary_Use;
+      this.Building_Use_Code = Building_Use_Code;
+      this.Parcel_Type = Parcel_Type;
+      this.Design_Type = Design_Type;
+      this.Zoning = Zoning;
+      this.Neighborhood = Neighborhood;
+      this.Land_Type_Rate = Land_Type_Rate;
+      this.Functional_Obs = Functional_Obs;
+      this.External_Obs = External_Obs;
+      this.Sale_Date = Sale_Date;
+      this.Sale_Price = Sale_Price;
+      this.Vol_Page = Vol_Page;
+      this.Assessed_Total = Assessed_Total;
+      this.Appraised_Total = Appraised_Total;
+      this.Influence_Factor = Influence_Factor;
+      this.Influence_Type = Influence_Type;
+      this.Land_Type = Land_Type;
     }
   }
 
@@ -101,18 +137,16 @@ require([
 
   let runQuerySearchTerm;
   let clickedToggle;
-  let handle1;
-  let handle2;
   let firstList = [];
   let secondList = [];
 
   // Filtering out items from secondList that exist in firstList
-
   const clearBtn = document.getElementById("clear-btn");
 
   clearBtn.addEventListener("click", function () {
     $("#searchInput ul").remove();
     $("#searchInput").val = "";
+
     // Get a reference to the search input field
     const searchInput = document.getElementById("searchInput");
 
@@ -127,6 +161,13 @@ require([
     $("#details-btns").hide();
     $("#dropdown").toggleClass("expanded");
     $("#dropdown").hide();
+    $("#results-div").css("left", "0px");
+    $("#sidebar2").css("left", "-350px");
+    // $("#right-arrow").show();
+    // $("#left-arrow").hide();
+    $("#right-arrow-2").show();
+    $("#left-arrow-2").hide();
+    // $("#abutters-content").hide();
 
     let suggestionsContainer = document.getElementById("suggestions");
     suggestionsContainer.innerHTML = "";
@@ -139,6 +180,7 @@ require([
   // view.ui.add(clearBtn, "top-left");
   webmap.add(noCondosLayer);
   webmap.add(CondosLayer);
+
   CondosTable.load().then(() => {
     webmap.tables.add(CondosTable);
   });
@@ -154,7 +196,6 @@ require([
 
   function queryRelatedRecords(searchTerm) {
     console.log(searchTerm);
-    // const uniqueID = screenPoint;
 
     let whereClause = `
     Street_Name LIKE '%${searchTerm}%' OR 
@@ -178,17 +219,15 @@ require([
 
     function addPolygons(polygonGeometries, graphicsLayer) {
       const features = polygonGeometries.features;
-      console.log(polygonGeometries);
-      console.log(graphicsLayer);
+      // console.log(polygonGeometries);
+      // console.log(graphicsLayer);
 
-      // Define the symbol for the polygons
       var fillSymbol = {
-        type: "simple-fill", // autocasts as new SimpleFillSymbol()
-        color: [0, 255, 255, 0.25], // Light, semi-transparent blue (cyan)
+        type: "simple-fill",
+        color: [0, 255, 255, 0.25],
         outline: {
-          // autocasts as new SimpleLineSymbol()
-          color: [102, 235, 235, 0.6], // More opaque for the outline
-          width: 2, // You can adjust the width as needed
+          color: [102, 235, 235, 0.6],
+          width: 2,
         },
       };
 
@@ -214,20 +253,11 @@ require([
     }
 
     noCondosLayer.queryFeatures(query).then(function (result) {
-      console.log(result);
-      console.log(result.features);
       if (result.features.length > 0) {
         view.goTo(result.features);
         addPolygons(result, view.graphics);
-        // console.log(` No condos layer is highlighted`);
-        // view.whenLayerView(noCondosLayer).then(function (layerView) {
-        //   handle1 = layerView.highlight(result.features);
-        // });
       } else {
-        // result.features.forEach(function (feature) {
         CondosLayer.queryFeatures(query2).then(function (result) {
-          console.log(result);
-          console.log(result.features);
           if (result.features) {
             view.goTo(result.features);
             addPolygons(result, view.graphics);
@@ -253,9 +283,32 @@ require([
           let locationOwner = feature.attributes["Owner"];
           let locationMBL = feature.attributes["MBL"];
           let locationGeom = feature.geometry;
+          let mailingAddress = feature.attributes["Mailing_Address_1"];
+          let mailingAddress2 = feature.attributes["Mailing_Address_2"];
+          let Mailing_City = feature.attributes["Mailing_City"];
+          let Mail_State = feature.attributes["Mail_State"];
+          let Mailing_Zip = feature.attributes["Mailing_Zip"];
+          let Total_Acres = feature.attributes["Total_Acres"];
+          let Parcel_Primary_Use = feature.attributes["Parcel_Primary_Use"];
+          let Building_Use_Code = feature.attributes["Building_Use_Code"];
+          let Parcel_Type = feature.attributes["Parcel_Type"];
+          let Design_Type = feature.attributes["Design_Type"];
+          let Zoning = feature.attributes["Zoning"];
+          let Neighborhood = feature.attributes["Neighborhood"];
+          let Land_Type_Rate = feature.attributes["Land_Type_Rate"];
+          let Functional_Obs = feature.attributes["Functional_Obs"];
+          let External_Obs = feature.attributes["External_Obs"];
+          let Sale_Date = feature.attributes["Sale_Date"];
+          let Sale_Price = feature.attributes["Sale_Price"];
+          let Vol_Page = feature.attributes["Vol_Page"];
+          let Assessed_Total = feature.attributes["Assessed_Total"];
+          let Appraised_Total = feature.attributes["Appraised_Total"];
+          let Influence_Factor = feature.attributes["Influence_Factor"];
+          let Influence_Type = feature.attributes["Influence_Type"];
+          let Land_Type = feature.attributes["Land_Type"];
 
           firstList.push(
-            new CondoTableElements(
+            new Parcel(
               objectId,
               locationVal,
               locationMBL,
@@ -263,7 +316,30 @@ require([
               locationCoOwner,
               locationOwner,
               locationGISLINK,
-              locationGeom
+              locationGeom,
+              mailingAddress,
+              mailingAddress2,
+              Mailing_City,
+              Mail_State,
+              Mailing_Zip,
+              Total_Acres,
+              Parcel_Primary_Use,
+              Building_Use_Code,
+              Parcel_Type,
+              Design_Type,
+              Zoning,
+              Neighborhood,
+              Land_Type_Rate,
+              Functional_Obs,
+              External_Obs,
+              Sale_Date,
+              Sale_Price,
+              Vol_Page,
+              Assessed_Total,
+              Appraised_Total,
+              Influence_Factor,
+              Influence_Type,
+              Land_Type
             )
           );
         }
@@ -279,9 +355,8 @@ require([
         return false; // Do not include the object in uniqueArray
       });
 
-      // console.log(uniqueArray);
-
       uniqueArray.forEach(function (feature) {
+        let totalResults = uniqueArray.length;
         let locationVal = feature.location;
         let locationUniqueId = feature.uniqueId;
         let locationGISLINK = feature.GIS_LINK;
@@ -304,6 +379,8 @@ require([
         listItem.classList.add("list-group-item", "col-9");
         imageDiv.classList.add("image-div", "col-3");
 
+        $("#total-results").html(totalResults + " results returned");
+
         let listItemHTML;
 
         if (!locationCoOwner) {
@@ -321,12 +398,19 @@ require([
         listGroup.appendChild(imageDiv);
         listGroup.appendChild(listItem);
         featureWidDiv.appendChild(listGroup);
-        $("#featureWid").show();
 
+        $("#featureWid").show();
         $("#result-btns").show();
         $("#details-btns").hide();
+        // $("#abutters-content").hide();
         $("#dropdown").toggleClass("expanded");
         $("#dropdown").show();
+        $("#sidebar2").css("left", "0px");
+        $("#results-div").css("left", "350px");
+        // $("#left-arrow").show();
+        // $("#right-arrow").hide();
+        $("#left-arrow-2").show();
+        $("#right-arrow-2").hide();
       });
 
       $(document).ready(function () {
@@ -336,8 +420,14 @@ require([
           zoomToFeature(itemId);
           $("#featureWid").hide();
           $("#result-btns").hide();
+          $("#total-results").hide();
+          $("#abutters-content").hide();
           $("#details-btns").show();
           $("#detailBox").show();
+          $("#backButton").show();
+          $("#detail-content").empty();
+          $("#backButton-div").css("padding-top", "0px");
+          // $("#dropdown").css("height", "55%");
           populateCondo(e);
         });
       });
@@ -347,9 +437,45 @@ require([
           $("#detailBox").hide();
           $("#featureWid").show();
           $("#result-btns").show();
+          $("#total-results").show();
           $("#details-btns").hide();
           $("#detail-content").empty();
+          $("#backButton").hide();
+          $("#abutters-content").hide();
+          // $("#dropdown").css("height", "85%");
         });
+      });
+
+      $(document).ready(function () {
+        $("#abutters").on("click", function () {
+          $("#detailBox").hide();
+          $("#featureWid").hide();
+          $("#result-btns").hide();
+          $("#total-results").hide();
+          $("#details-btns").hide();
+          $("#abutters-content").show();
+
+          $("#backButton").show();
+          $("#backButton-div").css("padding-top", "78px");
+
+          buildAbuttersPanel();
+          // $("#backButton").css("margin-top", "110px");
+        });
+      });
+
+      let value = document.getElementById("buffer-value");
+
+      $("#increase").on("click", function () {
+        value.value = parseInt(value.value) + 1;
+        console.log(value.innerHTML);
+        // $("#buffer-value").innerHTML = valueElement.textContent;
+      });
+
+      $("#decrease").on("click", function () {
+        value.value = parseInt(value.value) - 1;
+        console.log(value.innerHTML);
+        // valueElement.textContent = parseInt(valueElement.textContent) - 1;
+        // $("#buffer-value").innerHTML = valueElement.textContent;
       });
 
       function populateCondo(e) {
@@ -363,12 +489,108 @@ require([
           return item.uniqueId === itemId || item.GIS_LINK === itemId;
         });
 
-        let locationVal = matchedObject.location;
-        let locationUniqueId = matchedObject.uniqueId;
-        let locationGISLINK = matchedObject.GIS_LINK;
-        let locationCoOwner = matchedObject.Co_Owner;
-        let locationOwner = matchedObject.owner;
-        let locationMBL = matchedObject.MBL;
+        // if (matchedObject.length > 0) {
+        //   return matchedObject[0];
+        // }
+
+        let locationVal =
+          matchedObject.location === undefined ? "" : matchedObject.location;
+
+        let locationUniqueId =
+          matchedObject.uniqueId === undefined ? "" : matchedObject.uniqueId;
+
+        let locationGISLINK =
+          matchedObject.GIS_LINK === undefined ? "" : matchedObject.GIS_LINK;
+        let locationCoOwner =
+          matchedObject.Co_Owner === undefined ? "" : matchedObject.Co_Owner;
+        let locationOwner =
+          matchedObject.owner === undefined ? "" : matchedObject.owner;
+        let locationMBL =
+          matchedObject.MBL === undefined ? "" : matchedObject.MBL;
+        let mailingAddress =
+          matchedObject.mailingAddress === undefined
+            ? ""
+            : matchedObject.mailingAddress;
+        let mailingAddress2 =
+          matchedObject.mailingAddress2 === undefined
+            ? ""
+            : matchedObject.mailingAddress2;
+        let Mailing_City =
+          matchedObject.Mailing_City === undefined
+            ? ""
+            : matchedObject.Mailing_City + ", ";
+        let Mail_State =
+          matchedObject.Mail_State === undefined
+            ? ""
+            : matchedObject.Mail_State;
+        let Mailing_Zip =
+          matchedObject.Mailing_Zip === undefined
+            ? ""
+            : matchedObject.Mailing_Zip;
+        let Total_Acres =
+          matchedObject.Total_Acres === undefined
+            ? ""
+            : matchedObject.Total_Acres;
+        let Parcel_Primary_Use =
+          matchedObject.Parcel_Primary_Use === undefined
+            ? ""
+            : matchedObject.Parcel_Primary_Use;
+        let Building_Use_Code =
+          matchedObject.Building_Use_Code === undefined
+            ? ""
+            : matchedObject.Building_Use_Code;
+        let Parcel_Type =
+          matchedObject.Parcel_Type === undefined
+            ? ""
+            : matchedObject.Parcel_Type;
+        let Design_Type =
+          matchedObject.Design_Type === undefined
+            ? ""
+            : matchedObject.Design_Type;
+        let Zoning =
+          matchedObject.Zoning === undefined ? "" : matchedObject.Zoning;
+        let Neighborhood =
+          matchedObject.Neighborhood === undefined
+            ? ""
+            : matchedObject.Neighborhood;
+        let Land_Type_Rate =
+          matchedObject.Land_Type_Rate === undefined
+            ? ""
+            : matchedObject.Land_Type_Rate;
+        let Functional_Obs =
+          matchedObject.Functional_Obs === undefined
+            ? ""
+            : matchedObject.Functional_Obs;
+        let External_Obs =
+          matchedObject.External_Obs === undefined
+            ? ""
+            : matchedObject.External_Obs;
+        let Sale_Date =
+          matchedObject.Sale_Date === undefined ? "" : matchedObject.Sale_Date;
+        let Sale_Price =
+          matchedObject.Sale_Price === undefined
+            ? ""
+            : matchedObject.Sale_Price;
+        let Vol_Page =
+          matchedObject.Vol_Page === undefined ? "" : matchedObject.Vol_Page;
+        let Assessed_Total =
+          matchedObject.Assessed_Total === undefined
+            ? ""
+            : matchedObject.Assessed_Total;
+        let Appraised_Total =
+          matchedObject.Appraised_Total === undefined
+            ? ""
+            : matchedObject.Appraised_Total;
+        let Influence_Factor =
+          matchedObject.Influence_Factor === undefined
+            ? ""
+            : matchedObject.Influence_Factor;
+        let Influence_Type =
+          matchedObject.Influence_Type === undefined
+            ? ""
+            : matchedObject.Influence_Type;
+        let Land_Type =
+          matchedObject.Land_Type === undefined ? "" : matchedObject.Land_Type;
 
         const imageUrl = `https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/${locationUniqueId}.jpg`;
         console.log(matchedObject);
@@ -376,16 +598,62 @@ require([
         const detailsDiv = document.getElementById("detail-content");
 
         const details = document.createElement("div");
+        details.innerHTML = "";
         details.classList.add("details");
 
-        if (!locationCoOwner) {
-          details.innerHTML = `<img src="${imageUrl}"alt="Image of ${locationUniqueId}"> <br>  ${locationVal} <br>  ${locationUniqueId} <br>  ${locationGISLINK}<br>  No co-owners <br>  ${locationOwner} <br>  ${locationMBL} <br`;
-        } else {
-          details.innerHTML = `<img src="${imageUrl}"alt="Image of ${locationUniqueId}"> <br>  ${locationVal} <br>  ${locationUniqueId} <br>  ${locationGISLINK}<br>  ${locationCoOwner} <br>  ${locationOwner} <br>  ${locationMBL} <br`;
-        }
+        details.innerHTML = `
+          <div>
+              <p>
+                  <span style="font-size:8pt;">Owners:&nbsp;</span><br>
+                  <span style="font-size:8pt;"><strong>${locationVal} ${locationCoOwner}</strong></span><br>
+                  <span style="font-size:8pt;">Unique ID: <strong>${locationUniqueId}</strong></span><br>
+                  <span style="font-size:8pt;">MBL: <strong>${locationMBL}</strong></span><br>
+                  <span style="font-size:8pt;">Mailing Address:&nbsp;</span><br>
+                  <span style="font-size:8pt;"><strong>${mailingAddress}</strong></span><br>
+                  <span style="font-size:8pt;"><strong>${Mailing_City}${Mail_State} ${Mailing_Zip}</strong></span>
+              </p>
+          </div>
+          <div>
+              <img src="${imageUrl}"alt="Image of ${locationUniqueId}">
+          </div>
+          <div>
+              <span style="font-size:8pt;">Total Acres: <strong>${Total_Acres}</strong></span><br>
+              <span style="font-size:8pt;">Primary Use: <strong>${Parcel_Primary_Use}</strong></span><br>
+              <span style="font-size:8pt;">Primary Bldg Use: <strong>${Building_Use_Code}</strong></span><br>
+              <span style="font-size:8pt;">Parcel Type: <strong>${Parcel_Type}</strong></span><br>
+              <span style="font-size:8pt;">Design Type: <strong>${Design_Type}</strong></span><br>
+              <span style="font-size:8pt;">Zone: <strong>${Zoning}</strong></span><br>
+              <span style="font-size:8pt;">Nhbd: <strong>${Neighborhood}</strong></span><br>
+              <span style="font-size:8pt;">Land Rate: <strong>${Land_Type_Rate}</strong></span><br>
+              <span style="font-size:8pt;">Functional Obsolescence: <strong>${Functional_Obs}</strong></span><br>
+              <span style="font-size:8pt;">External Obsolescence: <strong>${External_Obs}</strong></span><br>
+              &nbsp;
+          </div>
+          
+          <div>
+              <span style="font-size:8pt;">Latest Qualified Sale:&nbsp;</span><br>
+              <span style="font-size:8pt;">Sold on: <strong>${Sale_Date}</strong></span><br>
+              <span style="font-size:8pt;">Sale Price: <strong>${Sale_Price}</strong></span><br>
+              <span style="font-size:8pt;">Volume/Page: <strong>${Vol_Page}</strong></span><br>
+              &nbsp;
+          </div>
+        
+          <div>
+              <span style="font-size:8pt;">Valuations:&nbsp;</span><br>
+              <span style="font-size:8pt;">Asssessment: <strong>${Assessed_Total}</strong></span><br>
+              <span style="font-size:8pt;">Appraised: <strong>${Appraised_Total}</strong></span><br>
+              &nbsp;
+          </div>
+         
+        `;
+
+        // <div>
+        //     <span style="font-size:8pt;">Influence Info: Influence Factor / Influence Type / Land Type&nbsp;</span><br>
+        //     <span style="font-size:8pt;"><strong>{expression/expression1}</strong></span><br>
+        //     &nbsp;
+        // </div>
 
         detailsDiv.appendChild(details);
-        // const listGroup = document.createElement("div");
       }
 
       function zoomToFeature(itemId) {
@@ -394,24 +662,14 @@ require([
           (obj) => obj.GIS_LINK == itemId || obj.Uniqueid == itemId
         );
 
-        // maybe pursue the obj.geometry
-
-        // let matchingObject = firstList.filter(
-        //   (obj) => obj.GIS_LINK == itemId || obj.Uniqueid == itemId && obj.geometry
-        // );
         if (matchingObject) {
           matchingObject.forEach(function (feature) {
             console.log(feature);
             let geometry = feature["geometry"];
-            // Use the geometry to zoom to the feature.
             view.goTo(geometry);
 
-            // fl2LayerView.highlight(feature["objectid"]);
-            // flLayerView.highlight(feature["objectid"]);
-
-            // Create a symbol for rendering the graphic
             const fillSymbol = {
-              type: "simple-fill", // autocasts as new SimpleFillSymbol()
+              type: "simple-fill",
               color: [222, 49, 99, 0.7],
               outline: {
                 // autocasts as new SimpleLineSymbol()
@@ -420,13 +678,11 @@ require([
               },
             };
 
-            // Add the geometry and symbol to a new graphic
             const polygonGraphic = new Graphic({
               geometry: geometry,
               symbol: fillSymbol,
             });
 
-            // Add the graphics to the view's graphics layer
             view.graphics.addMany([polygonGraphic]);
 
             console.log(view.graphics);
@@ -435,6 +691,10 @@ require([
       }
     });
   }
+
+  const buildAbuttersPanel = function () {
+    $("#selected-feature").html = "Abutters";
+  };
 
   const runQuery = (e) => {
     let suggestionsContainer = document.getElementById("suggestions");
@@ -465,16 +725,6 @@ require([
               Owner LIKE '%${searchTerm}%' OR
               GIS_LINK LIKE '%${searchTerm}%'
           `;
-
-      // let outFields = [
-      //   "Street_Name",
-      //   "MBL",
-      //   "Location",
-      //   "Co_Owner",
-      //   "Uniqueid",
-      //   "Owner",
-      // "GIS_LINK",
-      // ];
 
       let query = noCondosTable.createQuery();
       query.where = whereClause;
@@ -508,16 +758,65 @@ require([
                 let locationCoOwner = feature.attributes["Co_Owner"];
                 let locationOwner = feature.attributes["Owner"];
                 let locationMBL = feature.attributes["MBL"];
+                let locationGeom = feature.geometry;
+                let mailingAddress = feature.attributes["Mailing_Address_1"];
+                let mailingAddress2 = feature.attributes["Mailing_Address_2"];
+                let Mailing_City = feature.attributes["Mailing_City"];
+                let Mail_State = feature.attributes["Mail_State"];
+                let Mailing_Zip = feature.attributes["Mailing_Zip"];
+                let Total_Acres = feature.attributes["Total_Acres"];
+                let Parcel_Primary_Use =
+                  feature.attributes["Parcel_Primary_Use"];
+                let Building_Use_Code = feature.attributes["Building_Use_Code"];
+                let Parcel_Type = feature.attributes["Parcel_Type"];
+                let Design_Type = feature.attributes["Design_Type"];
+                let Zoning = feature.attributes["Zoning"];
+                let Neighborhood = feature.attributes["Neighborhood"];
+                let Land_Type_Rate = feature.attributes["Land_Type_Rate"];
+                let Functional_Obs = feature.attributes["Functional_Obs"];
+                let External_Obs = feature.attributes["External_Obs"];
+                let Sale_Date = feature.attributes["Sale_Date"];
+                let Sale_Price = feature.attributes["Sale_Price"];
+                let Vol_Page = feature.attributes["Vol_Page"];
+                let Assessed_Total = feature.attributes["Assessed_Total"];
+                let Appraised_Total = feature.attributes["Appraised_Total"];
+                let Influence_Factor = feature.attributes["Influence_Factor"];
+                let Influence_Type = feature.attributes["Influence_Type"];
+                let Land_Type = feature.attributes["Land_Type"];
 
                 firstList.push(
-                  new CondoTableElements(
+                  new Parcel(
                     objectId,
                     locationVal,
                     locationMBL,
                     locationUniqueId,
                     locationCoOwner,
                     locationOwner,
-                    locationGISLINK
+                    locationGISLINK,
+                    locationGeom,
+                    mailingAddress,
+                    mailingAddress2,
+                    Mailing_City,
+                    Mail_State,
+                    Mailing_Zip,
+                    Total_Acres,
+                    Parcel_Primary_Use,
+                    Building_Use_Code,
+                    Parcel_Type,
+                    Design_Type,
+                    Zoning,
+                    Neighborhood,
+                    Land_Type_Rate,
+                    Functional_Obs,
+                    External_Obs,
+                    Sale_Date,
+                    Sale_Price,
+                    Vol_Page,
+                    Assessed_Total,
+                    Appraised_Total,
+                    Influence_Factor,
+                    Influence_Type,
+                    Land_Type
                   )
                 );
               }
@@ -558,6 +857,15 @@ require([
         $("#dropdown").hide();
         $("#result-btns").hide();
         $("#details-btns").hide();
+        $("#results-div").css("left", "0px");
+        $("#sidebar2").css("left", "-350px");
+        // $("#right-arrow").show();
+        // $("#left-arrow").hide();
+        // $("#right-arrow").hide();
+        // $("#left-arrow").show();
+        $("#right-arrow-2").show();
+        $("#left-arrow-2").hide();
+        // $("#abutters-content").hide();
         let suggestionsContainer = document.getElementById("suggestions");
         suggestionsContainer.innerHTML = "";
         $("#featureWid").empty();
@@ -596,12 +904,10 @@ require([
       let uniqueSuggestions = new Set();
 
       noCondosTable.queryFeatures(query).then((response) => {
-        // console.log(response);
         let suggestionsContainer = document.getElementById("suggestions");
         suggestionsContainer.innerHTML = ""; // Clear previous suggestions
 
         response.features.forEach((feature) => {
-          // console.log("Processing feature:", feature);
           [
             "Street_Name",
             "MBL",
@@ -613,16 +919,13 @@ require([
           ].forEach((fieldName) => {
             // console.log("Processing field:", fieldName);
             let value = feature.attributes[fieldName];
-
-            // NEEDS TO RETURN NAME OF FIELDS SEARCHED
-            //SO LIKE 289 TUNNEL Rd, 14 Tunnel Rd etc....
             if (
               value &&
               value.includes(searchTerm) &&
               !uniqueSuggestions.has(value)
             ) {
               let suggestionDiv = document.createElement("div");
-              suggestionDiv.className = "list-group-item"; // Using Bootstrap's class for list items
+              suggestionDiv.className = "list-group-item";
               suggestionDiv.innerText = `${value}`;
 
               suggestionsContainer.appendChild(suggestionDiv);
@@ -642,11 +945,12 @@ require([
       });
     });
 
-  // Prevent form submission (page reload) when the search button is clicked
+  // Attach event listener to the search input
   document
     .querySelector(".form-inline")
     .addEventListener("submit", function (e) {
       e.preventDefault();
+      $("#featureWid").empty();
       // You can handle the search action here, for instance, if you want to fetch more details based on a selected suggestion or search term
     });
 
@@ -655,40 +959,67 @@ require([
     if (e.target.id !== "searchInput") {
       document.getElementById("suggestions").style.display = "none";
     }
+    // $("#featureWid").empty();
   });
 
-  document.getElementById("searchButton").addEventListener("click", runQuery);
+  document
+    .getElementById("searchButton")
+    .addEventListener("click", function () {
+      $("#featureWid").empty();
+      runQuery();
+    });
+
+  // $(document).ready(function () {
+  // $("#dropdownMenuButton").on("click", function () {
+  //   $("#dropdown").toggleClass("expanded");
+  //   if ($("#dropdown").hasClass("expanded")) {
+  //     $("#up-arrow").show();
+  //     $("#down-arrow").hide();
+  //   } else {
+  //     $("#down-arrow").show();
+  //     $("#up-arrow").hide();
+  //   }
+  // });
 
   $(document).ready(function () {
-    $("#dropdownMenuButton").on("click", function () {
-      $("#dropdown").toggleClass("expanded");
-      if ($("#dropdown").hasClass("expanded")) {
-        $("#up-arrow").show();
-        $("#down-arrow").hide(); // Hide left arrow
+    $("#side-Exp").on("click", function () {
+      $("#sidebar").toggleClass("collapsed");
+
+      // Check if the sidebar has the class 'collapsed' and adjust the 'right' property of #small-div accordingly
+      // Toggle the 'right' CSS property for #small-div
+      if ($("#sidebar").hasClass("collapsed")) {
+        $("#small-div").css("right", "0px");
+        $("#right-arrow").hide();
+        $("#left-arrow").show(); // Hide left arrow
         // Show right arrow
       } else {
-        $("#down-arrow").show(); // Show left arrow
-        $("#up-arrow").hide(); // Hide right arrow
+        $("#small-div").css("right", "250px");
+        $("#left-arrow").hide(); // Show left arrow
+        $("#right-arrow").show(); // Hide right arrow
       }
     });
+  });
 
-    $(document).ready(function () {
-      $("#side-Exp").on("click", function () {
-        $("#sidebar").toggleClass("collapsed");
+  $(document).ready(function () {
+    $("#side-Exp2").on("click", function () {
+      $("#sidebar2").toggleClass("collapsed");
 
-        // Check if the sidebar has the class 'collapsed' and adjust the 'right' property of #small-div accordingly
-        // Toggle the 'right' CSS property for #small-div
-        if ($("#sidebar").hasClass("collapsed")) {
-          $("#small-div").css("right", "0px");
-          $("#right-arrow").hide();
-          $("#left-arrow").show(); // Hide left arrow
-          // Show right arrow
-        } else {
-          $("#small-div").css("right", "250px");
-          $("#left-arrow").hide(); // Show left arrow
-          $("#right-arrow").show(); // Hide right arrow
-        }
-      });
+      // Check if the sidebar has the class 'collapsed' and adjust the 'right' property of #small-div accordingly
+      // Toggle the 'right' CSS property for #small-div
+      if ($("#sidebar2").hasClass("collapsed")) {
+        $("#results-div").css("left", "0px");
+        $("#sidebar2").css("left", "-350px");
+        $("#right-arrow-2").show();
+        $("#left-arrow-2").hide(); // Hide left arrow
+        // Show right arrow
+      } else {
+        $("#results-div").css("left", "350px");
+        $("#sidebar2").css("left", "0px");
+        $("#left-arrow-2").show(); // Show left arrow
+        $("#right-arrow-2").hide();
+        // $(".sidebar2").show(); // Hide right arrow
+      }
     });
   });
+  // });
 });

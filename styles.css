@@ -1,3 +1,11 @@
+:root {
+  --info-color: #17a2b8; /* Light Blue = to bootstrap info blue */
+  --secondary-color: #2ecc71; /* Green */
+  --accent-color: #e74c3c; /* Red */
+  --text-color: #333; /* Dark Grey */
+  --background-color: rgba(30, 30, 30, 0.8); /* White */
+}
+
 body {
   min-height: 100vh;
   min-height: -webkit-fill-available;
@@ -32,14 +40,14 @@ main {
 }
 
 .navbar.bg-dark {
-  background-color: rgba(0, 0, 0, 0.5) !important; /* 0.5 is 50% opacity */
+  background-color: var(--background-color) !important; /* 0.5 is 50% opacity */
 }
 
 .custom-navbar {
   position: absolute;
   top: 0;
-  left: 100px;
-  width: 425px;
+  left: 300px;
+  width: 450px;
   z-index: 1000;
   padding-left: 25px;
   border-radius: 3px;
@@ -53,26 +61,32 @@ main {
 
 #search-title {
   right: 0;
-  /* padding-left: 50%; */
-  width: 60%;
+  margin-right: 0px;
+  padding-left: 0;
+  width: 300px;
 }
 
 ul {
   height: 80px;
-  background-color: rgba(30, 30, 30, 0.7) !important;
+  background-color: var(--background-color) !important;
   border-radius: 2px 2px 2px 2px !important;
   vertical-align: middle;
-
-  padding-bottom: 0px;
-  margin-bottom: 5px;
+  /* padding-bottom: 0px; */
+  /* margin-bottom: 5px; */
   padding-inline-start: 0px;
   text-wrap: auto;
 }
+.list-group {
+  display: flex;
+  flex-direction: row; /* Adjust as needed */
+
+  margin-bottom: 5px;
+}
 
 #main-img {
-  position: fixed; /* or absolute */
+  position: relative; /* or absolute */
   top: 10px; /* adjust as necessary */
-  left: 100px; /* adjust as necessary */
+  left: 0px; /* adjust as necessary */
   z-index: 10; /* higher than other elements */
 }
 
@@ -80,7 +94,7 @@ ul {
   padding-top: 0px;
   padding-bottom: 0px;
   margin-top: 0px;
-  margin-bottom: 0px;
+  margin-bottom: 20px;
   padding-left: 20px;
   font: 800;
 }
@@ -99,9 +113,18 @@ ul {
   width: 150px;
 }
 
+#control-panel {
+  display: block;
+  /* position: relative; */
+  /* top: 0; */
+  z-index: 1000;
+  height: 125px;
+}
+
 #dropdown {
-  height: 350px;
   overflow-y: auto;
+  /* padding-top: 100px; */
+  height: 85%;
 }
 
 #featureWid {
@@ -116,10 +139,11 @@ ul {
   top: 100%;
   left: 0;
   width: 100%;
-  height: 300px;
+  height: 100px;
   overflow-y: auto;
   border: 1px solid #ccc;
-  background-color: rgba(0, 0, 0, 0.5);
+  /* different color */
+  background-color: var(--background-color);
   z-index: 1000;
 }
 
@@ -196,8 +220,21 @@ ul {
   height: 100%;
   width: 250px;
   z-index: 1000;
-  background-color: rgba(0, 0, 0, 0.5) !important;
+  background-color: var(--background-color) !important;
   transition: width 0.5s;
+}
+
+#sidebar2 {
+  position: absolute;
+  border-top-right-radius: 5px;
+  left: -350px; /* Start off-screen */
+  top: 15%;
+  height: 83%;
+  width: 350px;
+  z-index: 1000;
+  overflow-y: hidden;
+  background-color: var(--background-color) !important;
+  transition: left 0.5s; /* Animate the 'left' property */
 }
 
 .collapsed {
@@ -215,8 +252,24 @@ ul {
   right: 250px; /* the width of #sidebar */
   height: 290px;
   width: 55px;
-  background-color: rgba(30, 30, 30, 0.7) !important;
+  background-color: var(--background-color) !important;
   transition: right 0.5s;
+  padding: 6px; /* Change this to the color you want */
+}
+
+#results-div {
+  position: absolute;
+  display: flex; /* Make this a flex container */
+  flex-direction: column; /* This will align the items vertically */
+  justify-content: space-between;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  top: 30%;
+  left: 250px; /* the width of #sidebar */
+  height: 150px;
+  width: 55px;
+  background-color: var(--background-color) !important;
+  transition: left 0.5s;
   padding: 6px; /* Change this to the color you want */
 }
 
@@ -227,11 +280,11 @@ ul {
   justify-content: space-between;
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
-  top: 15%;
+  top: 50%;
   right: 250px; /* the width of #sidebar */
   height: 80px;
   width: 40px;
-  background-color: rgba(30, 30, 30, 0.7) !important;
+  background-color: var(--background-color) !important;
   transition: right 0.5s;
   padding-top: 20px;
   padding: 6px; /* Change this to the color you want */
@@ -245,17 +298,20 @@ ul {
 }
 
 .list-group-item {
-  background-color: rgba(30, 30, 30, 0.7) !important;
+  background-color: var(--background-color) !important;
   outline-color: white;
-  font-size: 11px;
+  font-size: 9px;
   color: white;
   z-index: 1000;
   right: 0;
   text-align: left;
+  /* height: 150px; */
+
   /* border-radius: 2px 2px 2px 2px !important; */
   /* width: 50%; */
-  /* display: flex;
-  flex-direction: flex-end; */
+  display: flex;
+  flex-direction: row;
+  vertical-align: middle;
 }
 
 .list-group-item:hover {
@@ -357,8 +413,37 @@ img {
   padding-bottom: 10px;
   justify-content: center;
   height: 70px;
-  padding-left: 3px;
+
+  width: fit-content;
   /* width: 85px; */
+}
+
+#backButton-div {
+  display: block;
+  /* flex-direction: row;
+  justify-content: flex-start; */
+  /* align-items: center; */
+  padding-left: 10px;
+
+  bottom: 0px;
+  /* padding-left: 10px; */
+  /* padding-right: 10px; */
+  /* margin-left: 15px;
+  margin-top: 30px; */
+  /* outline: none; */
+  /* padding-bottom: 10px; */
+  /* background-color: rgba(0, 0, 0, 0.5); */
+}
+
+#backButton {
+  /* position: relative; */
+  border-radius: 6px;
+  font-size: 8px;
+  /* margin-left: 15px;
+  margin-top: 30px; */
+
+  /* padding-bottom: 10px; */
+  /* background-color: rgba(0, 0, 0, 0.5); */
 }
 
 #detailBox #feature-wid {
@@ -376,7 +461,12 @@ img {
 }
 
 .details {
-  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 15px; /* To center-align text */
 }
 
 #detail-content {
@@ -384,35 +474,111 @@ img {
   align-items: center;
   justify-content: center;
   color: white;
+  font-size: 10px;
   text-align: center;
 }
 
 #detail-content img {
-  width: 240px;
-  height: 190px;
+  padding-top: 10px;
+  width: 140px;
+  height: 100px;
   padding-left: 10px;
-}
-
-#backButton {
-  border-radius: 6px;
-  font-size: 10px;
-  /* background-color: rgba(0, 0, 0, 0.5); */
-}
-
-#result-btns {
-  padding-top: 20px;
-  padding-left: 30px;
-  padding-bottom: 0px;
-  align-items: center;
 }
 
 #details-btns {
   padding-top: 20px;
   padding-left: 30px;
+  padding-bottom: 20px;
+  align-items: center;
+}
+
+#abutters-content {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+#abutters-div {
+  display: flex;
+  flex-direction: column;
+  padding-top: 15px;
+  width: 100%;
+  height: 65%;
+  justify-content: space-between; /* or space-around */
+  color: white;
+
+  text-align: center;
+}
+
+/* #abutters-header-div {
+  height: 78px;
+} */
+
+.abutters-title {
+  /* outline-color: tomato; */
+  /* background-color: rgba(8, 171, 180, 0.7); */
+  background-color: var(--info-color);
+  height: 25px;
+  width: 100%;
+}
+
+.custom-height {
+  height: 20px; /* or any other value */
+}
+
+#buffer-input {
+  padding-top: 10px;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
+#buffer-group {
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+  height: 60px;
+}
+
+#buffer-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* padding-top: 30px; */
+  width: 50px;
+  padding-top: 30px;
+  font-size: 15px; /* To center-align text */
+}
+
+#selected-feature {
+  display: block;
+  /* height: 50px; */
+  color: aliceblue;
+  z-index: 1000;
+}
+
+#total-results {
+  display: flex;
+  text-align: center;
+  vertical-align: middle;
+  /* padding-left: 50%; */
+  color: white;
+  position: absolute;
+  top: 78px;
+}
+
+#result-btns {
+  /* padding-top: 20px;
+  padding-left: 30px; */
   padding-bottom: 0px;
   align-items: center;
 }
 
-/* .list-group {
-  border-radius: 5px;
-} */
+.btn-toolbar {
+  display: flex;
+  justify-content: center;
+  padding-top: 30px;
+}
+
+.row {
+  margin-right: 0px;
+  margin-left: 0px;
+}
