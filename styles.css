@@ -314,6 +314,24 @@ ul {
   vertical-align: middle;
 }
 
+.abutters-group-item {
+  background-color: var(--background-color) !important;
+  /* outline-color: white; */
+  font-size: 9px;
+  color: white;
+  /* z-index: 1000; */
+  /* right: 0;
+  align-items: center;
+  vertical-align: middle; */
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* height: 100px; */
+  width: 100%;
+  border: 1px solid white;
+}
+
 .list-group-item:hover {
   color: grey;
   cursor: pointer;
@@ -420,30 +438,22 @@ img {
 
 #backButton-div {
   display: block;
-  /* flex-direction: row;
-  justify-content: flex-start; */
-  /* align-items: center; */
   padding-left: 10px;
-
+  display: inline-block;
   bottom: 0px;
-  /* padding-left: 10px; */
-  /* padding-right: 10px; */
-  /* margin-left: 15px;
-  margin-top: 30px; */
-  /* outline: none; */
-  /* padding-bottom: 10px; */
-  /* background-color: rgba(0, 0, 0, 0.5); */
 }
 
-#backButton {
+#detailsButton-div {
+  display: block;
+  padding-left: 10px;
+  display: inline-block;
+  bottom: 0px;
+}
+
+.backButtons {
   /* position: relative; */
   border-radius: 6px;
   font-size: 8px;
-  /* margin-left: 15px;
-  margin-top: 30px; */
-
-  /* padding-bottom: 10px; */
-  /* background-color: rgba(0, 0, 0, 0.5); */
 }
 
 #detailBox #feature-wid {
@@ -493,9 +503,15 @@ img {
 }
 
 #abutters-content {
-  display: flex;
   width: 100%;
   height: 100%;
+  overflow-y: hidden;
+}
+
+.buffer-group .p-2 {
+  width: 150px;
+  flex-grow: 0;
+  flex-shrink: 0; /* Adjust this width to accommodate the button and any desired padding */
 }
 
 #abutters-div {
@@ -503,16 +519,12 @@ img {
   flex-direction: column;
   padding-top: 15px;
   width: 100%;
-  height: 65%;
-  justify-content: space-between; /* or space-around */
+  height: 85%;
+  /* justify-content: space-between; */
   color: white;
 
   text-align: center;
 }
-
-/* #abutters-header-div {
-  height: 78px;
-} */
 
 .abutters-title {
   /* outline-color: tomato; */
@@ -548,11 +560,40 @@ img {
   font-size: 15px; /* To center-align text */
 }
 
+#feet {
+  width: fit-content;
+}
+
+#meters {
+  width: fit-content;
+}
+
 #selected-feature {
   display: block;
   /* height: 50px; */
   color: aliceblue;
   z-index: 1000;
+}
+
+#units-dropdown {
+  width: 30px;
+  font-weight: 800;
+  font: bolder;
+}
+
+.units {
+  font-size: 11px;
+  width: 30px;
+  z-index: 1001;
+  font: bolder;
+}
+
+#parcel-feature {
+  /* height: 50px; */
+  color: aliceblue;
+  height: 225px;
+  z-index: 1000;
+  overflow-y: auto;
 }
 
 #total-results {

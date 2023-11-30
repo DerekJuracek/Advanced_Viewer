@@ -43,6 +43,7 @@
       integrity="sha384-+sLIOodYLS7CIrQpBjl+C7nPvqq+FbNUBDunl/OZv93DB7Ln/533i8e/mZXLi/P+"
       crossorigin="anonymous"
     ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   </head>
 
   <body>
@@ -101,7 +102,7 @@
             aria-label="Toolbar with button groups"
             style="display: none"
           >
-            <button type="button" class="btn btn-info mr-3 disabled">
+            <button type="button" class="btn btn-info mr-3" disabled>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -115,7 +116,7 @@
                 />
               </svg>
             </button>
-            <button type="button" class="btn btn-info mr-3 disabled">
+            <button type="button" class="btn btn-info mr-3" disabled>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -129,7 +130,7 @@
                 />
               </svg>
             </button>
-            <button type="button" class="btn btn-info mr-3 disabled">
+            <button type="button" class="btn btn-info mr-3" disabled>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -147,7 +148,7 @@
                 />
               </svg>
             </button>
-            <button type="button" class="btn btn-info mr-3 disabled">
+            <button type="button" class="btn btn-info mr-3" disabled>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -191,7 +192,7 @@
                 />
               </svg>
             </button>
-            <button type="button" class="btn btn-info mr-3 disabled">
+            <button type="button" class="btn btn-info mr-3" disabled>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -205,7 +206,7 @@
                 />
               </svg>
             </button>
-            <button type="button" class="btn btn-info mr-3 disabled">
+            <button type="button" class="btn btn-info mr-3" disabled>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -222,7 +223,7 @@
                 />
               </svg>
             </button>
-            <button type="button" class="btn btn-info mr-3 disabled">
+            <button type="button" class="btn btn-info mr-3" disabled>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -243,27 +244,52 @@
 
             <!-- </div> -->
           </div>
-          <div id="backButton-div">
-            <button
-              class="btn btn-outline-light btn-sm"
-              id="backButton"
-              style="display: none"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                class="bi bi-arrow-90deg-left"
-                viewBox="0 0 16 16"
+          <div id="group-backButtons">
+            <div id="backButton-div">
+              <button
+                class="btn btn-outline-light btn-sm backButtons"
+                id="backButton"
+                style="display: none"
               >
-                <path
-                  fill-rule="evenodd"
-                  d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4z"
-                />
-              </svg>
-              Results
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  class="bi bi-arrow-90deg-left"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4z"
+                  />
+                </svg>
+                Results
+              </button>
+            </div>
+
+            <div id="detailsButton-div">
+              <button
+                class="btn btn-outline-light btn-sm backButtons"
+                id="detailsButton"
+                style="display: none"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  class="bi bi-arrow-90deg-left"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4z"
+                  />
+                </svg>
+                Details
+              </button>
+            </div>
           </div>
         </div>
 
@@ -274,12 +300,12 @@
             <div id="detail-content"></div>
           </div>
           <div id="abutters-content" style="display: none">
-            <div id="abutters-div" class="d-flex flex-column">
-              <div id="abutters-header" class="p-2">
+            <div id="abutters-div">
+              <div id="abutters-header" style="height: 200px">
                 <h6 class="abutters-title">Selected Feature</h6>
                 <div id="selected-feature"></div>
               </div>
-              <div id="abutters-buffer" class="p-2 custom-height">
+              <div id="abutters-buffer" style="height: 200px">
                 <h6 class="abutters-title">Buffer</h6>
                 <div id="buffer-feature"></div>
                 <div
@@ -336,20 +362,32 @@
                     </button>
                   </div>
                 </div>
-                <div class="btn-group dropright">
+
+                <div class="btn-group">
                   <button
                     type="button"
                     class="btn btn-sm btn-info dropdown-toggle"
                     data-toggle="dropdown"
                     aria-expanded="false"
+                    id="unitSelector"
                   >
                     feet
                   </button>
-                  <div class="dropdown-menu">
-                    <button class="dropdown-item btn-sm" type="button">
+                  <div class="dropdown-menu" id="units-dropdown">
+                    <button
+                      class="dropdown-item btn-sm units"
+                      type="button"
+                      id="feet"
+                      value="feet"
+                    >
                       feet
                     </button>
-                    <button class="dropdown-item btn-sm" type="button">
+                    <button
+                      class="dropdown-item btn-sm units"
+                      type="button"
+                      id="meters"
+                      value="meters"
+                    >
                       meters
                     </button>
                     <!-- Dropdown menu links -->
@@ -357,7 +395,7 @@
                 </div>
               </div>
 
-              <div id="abutters-results" class="p-2">
+              <div id="abutters-results" style="height: 200px">
                 <h6 class="abutters-title">Abutting Parcels</h6>
                 <div id="parcel-feature"></div>
               </div>
@@ -431,6 +469,30 @@
               />
               <path
                 d="m14.12 6.576 1.715.858c.22.11.22.424 0 .534l-7.568 3.784a.598.598 0 0 1-.534 0L.165 7.968a.299.299 0 0 1 0-.534l1.716-.858 5.317 2.659c.505.252 1.1.252 1.604 0l5.317-2.659z"
+              />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            class="btn bg-light bar-Buttons"
+            style="display: none"
+            id="exportResults"
+            title="Export to Mailing List"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-download"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+              />
+              <path
+                d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"
               />
             </svg>
           </button>
