@@ -224,6 +224,8 @@ require([
   let exportResults;
   let highlightResponse;
 
+  let value = document.getElementById("buffer-value");
+
   // Filtering out items from secondList that exist in firstList
   const clearBtn = document.getElementById("clear-btn");
 
@@ -483,7 +485,7 @@ require([
         listGroup.appendChild(imageDiv);
         listGroup.appendChild(listItem);
         featureWidDiv.appendChild(listGroup);
-
+        $("#detailsButton").hide();
         $("#featureWid").show();
         $("#result-btns").show();
         $("#details-btns").hide();
@@ -555,6 +557,7 @@ require([
 
       $(document).ready(function () {
         $("#abutters").on("click", function (e) {
+          value.value = 100;
           $("#detailBox").hide();
           $("#featureWid").hide();
           $("#result-btns").hide();
@@ -566,6 +569,7 @@ require([
           $("#detailsButton").show();
           $("#backButton-div").css("padding-top", "78px");
           buildAbuttersPanel(e);
+          runBuffer("100");
         });
       });
 
@@ -578,25 +582,32 @@ require([
       });
 
       $(document).ready(function () {
-        let value = document.getElementById("buffer-value");
+        let currentName;
 
         $("#buffer-value").on("change", function (e) {
-          const currentVal = (value.value = parseInt(value.value) + 1);
+          currentVal = value.value = parseInt(value.value) + 1;
           $("#parcel-feature").empty();
-          runBuffer(currentVal);
+          bufferPush();
+          // runBuffer(currentVal);
         });
 
         $("#increase").on("click", function () {
-          const currentVal = (value.value = parseInt(value.value) + 1);
+          currentVal = value.value = parseInt(value.value) + 1;
           $("#parcel-feature").empty();
-          runBuffer(currentVal);
+          bufferPush();
+          // runBuffer(currentVal);
         });
 
         $("#decrease").on("click", function () {
-          const currentVal = (value.value = parseInt(value.value) - 1);
+          currentVal = value.value = parseInt(value.value) - 1;
           $("#parcel-feature").empty();
-          runBuffer(currentVal);
+          bufferPush();
+          // runBuffer(currentVal);
         });
+
+        function bufferPush() {
+          runBuffer(currentVal);
+        }
 
         // $("#unitSelector").on("click", function (e) {
         //   const currentVal = (value.value = parseInt(value.value) - 1);
@@ -615,86 +626,69 @@ require([
         });
       });
 
-      view
-        .when()
-        .then(() => {
-          return noCondosLayer.when();
-        })
-        .then((layer) => {
-          return view.whenLayerView(layer);
-        })
-        .then((layerView) => {
-          // $(document).ready(function () {
-          view.on("pointer-move", function (event) {
-            let query = noCondosLayer.createQuery();
-            query.geometry = view.toMap(event); // the point location of the pointer
-            query.distance = 1;
-            query.units = "feet";
-            query.spatialRelationship = "intersects"; // this is the default
-            query.returnGeometry = true;
-            query.outFields = ["*"];
+      // UNCOMMENT TO HIGHLIGHT PARCELS OR USE LOGIC
+      // TO HIGHLIGHT ON MOUSEOVER
+      // ALSO HIGHLIGHTS DETIAL PANE RESULTS
 
-            layerView.queryFeatures(query).then(function (response) {
-              let responseObj = response.features;
-              let responseVal = responseObj[0].attributes.OBJECTID;
-              highlightResponse = responseVal;
-              // console.log(responseVal);
+      // view
+      //   .when()
+      //   .then(() => {
+      //     return noCondosLayer.when();
+      //   })
+      //   .then((layer) => {
+      //     return view.whenLayerView(layer);
+      //   })
+      //   .then((layerView) => {
+      //     // $(document).ready(function () {
+      //     view.on("pointer-move", function (event) {
+      //       let query = noCondosLayer.createQuery();
+      //       query.geometry = view.toMap(event); // the point location of the pointer
+      //       query.distance = 1;
+      //       query.units = "feet";
+      //       query.spatialRelationship = "intersects"; // this is the default
+      //       query.returnGeometry = true;
+      //       query.outFields = ["*"];
 
-              layerView.highlightOptions = {
-                color: [222, 49, 99],
-                // color: [252, 216, 13], orange
-                haloOpacity: 1,
-                haloSize: 2,
-                fillOpacity: 0,
-              };
+      //       layerView.queryFeatures(query).then(function (response) {
+      //         let responseObj = response.features;
+      //         let responseVal = responseObj[0].attributes.OBJECTID;
+      //         highlightResponse = responseVal;
+      //         // console.log(responseVal);
 
-              if (highlight) {
-                highlight.remove();
-              }
+      //         layerView.highlightOptions = {
+      //           color: [222, 49, 99],
+      //           // color: [252, 216, 13], orange
+      //           haloOpacity: 1,
+      //           haloSize: 2,
+      //           fillOpacity: 0,
+      //         };
 
-              highlight = layerView.highlight(responseVal);
+      //         if (highlight) {
+      //           highlight.remove();
+      //         }
 
-              $("li").css("border-color", "white");
-              if (responseVal) {
-                $("li")
-                  .filter('[object-id="' + responseVal + '"]')
-                  .css("border-color", "red");
-                highlightResponse = false;
-              }
-              // } else {
-              //   $("li")
-              //     .filter('[object-id="' + responseVal + '"]')
-              //     .css("border-color", "white");
-              // }
+      //         highlight = layerView.highlight(responseVal);
 
-              view.on("pointer-leave", function (event) {
-                $("li")
-                  .filter('[object-id="' + responseVal + '"]')
-                  .css("border-color", "white");
-              });
-              // Use the filter function to find the specific <li> element
-              // var selectedLi = $("li").filter(
-              //   '[object-id="' + responseVal + '"]'
-              // );
-              // console.log(selectedLi);
-              // Now, selectedLi is a jQuery object representing the specific <li> element
-              // Retrieve the HTML content of the selected <li> element
-              // var htmlContent = selectedLi.html();
-              // console.log(htmlContent);
-              // htmlContent.css("border-color", "red");
+      //         $("li").css("border-color", "white");
+      //         if (responseVal) {
+      //           $("li")
+      //             .filter('[object-id="' + responseVal + '"]')
+      //             .css("border-color", "red");
+      //           highlightResponse = false;
+      //         }
 
-              // Now, htmlContent contains the HTML of the selected <li> element
-              // console.log(htmlContent);
-              // $(`li[data-id=${responseVal}]`).css("border-color", "red");
-            });
-          });
+      //         view.on("pointer-leave", function (event) {
+      //           $("li")
+      //             .filter('[object-id="' + responseVal + '"]')
+      //             .css("border-color", "white");
+      //         });
+      //       });
+      //     });
 
-          // function removeHighlight(objectID) {
-          if (highlight) {
-            highlight.remove();
-          }
-          // }
-        });
+      //     if (highlight) {
+      //       highlight.remove();
+      //     }
+      //   });
 
       function triggerHighlight(objectID) {
         view
@@ -748,6 +742,14 @@ require([
               let locationGISLINK = feature.attributes["GIS_LINK"];
               let objectID = feature.attributes["OBJECTID"];
 
+              let owner = feature.attributes["Owner"];
+              let coOwner = feature.attributes["Co_Owner"];
+              let mailingAddress = feature.attributes["Mailing_Address_1"];
+              let mailingAddress2 = feature.attributes["Mailing_Address_2"];
+              let Mailing_City = feature.attributes["Mailing_City"];
+              let Mail_State = feature.attributes["Mail_State"];
+              let Mailing_Zip = feature.attributes["Mailing_Zip"];
+
               let geometry = feature.geometry;
 
               const abuttersDiv = document.getElementById("parcel-feature");
@@ -761,7 +763,9 @@ require([
 
               let listItemHTML;
 
-              listItemHTML = ` ${locationVal} <br> ${locationUniqueId} <br> ${locationGISLINK}`;
+              listItemHTML = ` ${owner} ${coOwner} <br> ${mailingAddress} ${mailingAddress2} <br> ${Mailing_City}, ${Mail_State} ${Mailing_Zip}`;
+
+              // listItemHTML = ` ${locationVal} <br> ${locationUniqueId} <br> ${locationGISLINK}`;
 
               // Append the new list item to the list
               listItem.innerHTML += listItemHTML;
@@ -772,23 +776,23 @@ require([
               listGroup.appendChild(listItem);
               abuttersDiv.appendChild(listGroup);
 
-              listItem.addEventListener("mouseover", function (e) {
-                let itemId = e.target.getAttribute("data-id");
-                listItem.style.borderColor = "rgba(222, 49, 99, 0.7)";
+              // UNCOMMENT TO HIGHLIGHT ON MOUSEOVER
+              // & ZOOM TO MAP PARCELS ON HOVER
 
-                view.goTo(geometry);
+              // listItem.addEventListener("mouseover", function (e) {
+              //   let itemId = e.target.getAttribute("data-id");
+              //   listItem.style.borderColor = "rgba(222, 49, 99, 0.7)";
 
-                listItem.style.borderColor = "rgba(222, 49, 99, 0.7)";
-                triggerHighlight(objectID);
+              //   view.goTo(geometry);
 
-                // listItem.addEventListener("mouseout", function (objectID) {
-                //   removeHighlight(objectID);
-                // });
-              });
+              //   listItem.style.borderColor = "rgba(222, 49, 99, 0.7)";
+              //   triggerHighlight(objectID);
 
-              listItem.addEventListener("mouseout", function (e) {
-                listItem.style.borderColor = "rgba(255, 255, 255, 1)";
-              });
+              // });
+
+              // listItem.addEventListener("mouseout", function (e) {
+              //   listItem.style.borderColor = "rgba(255, 255, 255, 1)";
+              // });
             });
             console.log(results);
             console.log("Feature count: " + results.features.length);
@@ -805,13 +809,27 @@ require([
       function ExportDetails() {
         console.log(exportResults);
 
+        var content = document.getElementById("parcel-feature").innerHTML;
+
+        // Transform the content: Merge all <ul> into a single <ul> with multiple <li>
+        var transformedContent = content.replace(
+          /<\/ul><ul class="row list-group">/g,
+          ""
+        );
+
         var style = "<style>";
-        style = style + "h1 {text-align: center; }";
-        style =
-          style + "ul {width: 100%;font: 17px Calibri; list-style-type: none;}";
-        style = style + "li {border: solid 1px #DDD; padding: 5px;}";
-        style = style + "padding: 2px 3px;text-align: center;}";
-        style = style + "</style>";
+        style += "body, ul { margin: 0; padding: 0; }";
+        style += "ul { list-style-type: none; }";
+        style +=
+          "li { display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 2.625in; height: 1in; outline: solid 1px #DDD; padding: 0in; font-size: 12px; }";
+        style += "@media print {";
+        style +=
+          "  body { width: 8.5in; height: 11in; padding-top: 0.5in; padding-left: 0.21975in; padding-right: 0.21975in; box-sizing: border-box; }";
+        style +=
+          "  ul { display: grid; grid-template-columns: repeat(3, 2.625in); gap: 0in 0.14in; grid-auto-rows: 1in;  }";
+        style += "  li { page-break-inside: avoid; }";
+        style += "}";
+        style += "</style>";
 
         var win = window.open("", "", "left=0, top=0, height=1000,width=1000");
 
@@ -820,9 +838,7 @@ require([
         win.document.write(style); // <title> FOR PDF HEADER.
         win.document.write("</head>");
         win.document.write("<body>");
-        win.document.write("<h1>Mailing List</h1>"); // <h1> FOR PDF HEADER
-        win.document.write(document.getElementById("parcel-feature").innerHTML);
-
+        win.document.write(transformedContent);
         win.document.write("</body></html>");
         console.log(document.getElementById("parcel-feature").innerHTML);
         console.log(win.document);
@@ -831,14 +847,7 @@ require([
         win.print(); // PRINT THE CONTENTS.
       }
 
-      // console.logexportResults;
-
       function runBuffer(value) {
-        // const geometryTest = geometryEngine.geodesicBuffer(
-        //   detailsGeometry,
-        //   560,
-        //   "feet"
-        // );
         console.log(detailsGeometry);
         let buffer = value;
         let unit = queryUnits;
@@ -899,6 +908,8 @@ require([
         //   symbol: fillSymbol,
         // });
       }
+
+      // runBuffer("100");
 
       function buildDetailsPanel(e) {
         let itemId = e.target.getAttribute("data-id");
@@ -1446,6 +1457,9 @@ require([
       $("#abutters-content").hide();
       $("#selected-feature").empty();
       $("#parcel-feature").empty();
+      $("#total-results").show();
+      $("#backButton").hide();
+
       runQuery();
     });
 
