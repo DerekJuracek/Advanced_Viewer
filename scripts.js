@@ -622,41 +622,6 @@ require([
 
   clearBtn.addEventListener("click", function () {
     clearContents();
-    // noCondosLayer.visible = false;
-    // CondosLayer.visible = false;
-    // $("#searchInput ul").remove();
-    // $("#searchInput").val = "";
-    // // $("#side-Exp2").addClass("disabled");
-
-    // // Get a reference to the search input field
-    // const searchInput = document.getElementById("searchInput");
-
-    // // To clear the text in the input field, set its value to an empty string
-    // searchInput.value = "";
-    // runQuerySearchTerm = "";
-    // searchTerm = "";
-    // firstList = [];
-    // secondList = [];
-
-    // $("#result-btns").hide();
-    // $("#details-btns").hide();
-    // $("#dropdown").toggleClass("expanded");
-    // $("#dropdown").hide();
-    // $("#results-div").css("left", "0px");
-    // $("#sidebar2").css("left", "-350px");
-    // $("#right-arrow-2").show();
-    // $("#left-arrow-2").hide();
-    // $("#abutters-content").hide();
-    // $("#selected-feature").empty();
-    // $("#parcel-feature").empty();
-    // $("#backButton").hide();
-
-    // let suggestionsContainer = document.getElementById("suggestions");
-    // suggestionsContainer.innerHTML = "";
-    // $("#featureWid").empty();
-
-    // view.graphics.removeAll();
-    // view.goTo(webmap.portalItem.extent);
   });
 
   document
@@ -813,7 +778,6 @@ require([
       currentVal = value.value = parseInt(value.value) + 1;
       $("#parcel-feature").empty();
       bufferPush();
-      // runBuffer(currentVal);
     });
 
     $("#increase").on("click", function (e) {
@@ -931,7 +895,7 @@ require([
     style += "body, ul { margin: 0; padding: 0; }";
     style += "ul { list-style-type: none; }";
     style +=
-      "li { display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 2.625in; height: 1in; padding: 0in; font-size: 12px; outline: 1px solid #000; }";
+      "li { display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 2.625in; height: 1in; padding: 0in; font-size: 12px;  }";
     style += "@media print {";
     style +=
       "  body { width: 8.5in; height: 11in; padding-top: 0.5in; padding-left: 0.21975in; padding-right: 0.21975in; box-sizing: border-box; }";
