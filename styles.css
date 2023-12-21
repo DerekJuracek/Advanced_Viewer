@@ -382,6 +382,16 @@ ul {
   padding-top: 15px;
 }
 
+#submitDiv {
+  padding-left: 10px;
+}
+
+#submit {
+  /* margin-top: 5px; */
+  /* padding-left: 20px; */
+  margin-bottom: 5px;
+}
+
 .bar-Buttons {
   margin-top: 5px;
 }

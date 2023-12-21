@@ -105,6 +105,8 @@ require([
   let highlight;
   let exportResults;
   let highlightResponse;
+  let searchResults;
+  let lasso = false;
 
   let value = document.getElementById("buffer-value");
   const clearBtn = document.getElementById("clear-btn");
@@ -145,7 +147,8 @@ require([
     webmap.tables.add(noCondosTable);
   });
 
-  function clearContents() {
+  function clearContents(e) {
+    // console.log(e.target.value);
     noCondosLayer.visible = false;
     CondosLayer.visible = false;
     $("#searchInput ul").remove();
@@ -174,13 +177,21 @@ require([
     $("#selected-feature").empty();
     $("#parcel-feature").empty();
     $("#backButton").hide();
+    $("#exportResults").hide();
+    // $("#details-conetnt").hide();
 
     let suggestionsContainer = document.getElementById("suggestions");
     suggestionsContainer.innerHTML = "";
     $("#featureWid").empty();
 
     view.graphics.removeAll();
-    view.goTo(webmap.portalItem.extent);
+
+    if (lasso) {
+      return;
+    } else {
+      view.goTo(webmap.portalItem.extent);
+    }
+    lasso = false;
   }
 
   function buildResultsPanel(features) {
@@ -276,7 +287,7 @@ require([
     });
 
     uniqueArray.forEach(function (feature) {
-      let totalResults = uniqueArray.length;
+      searchResults = uniqueArray.length;
       let locationVal = feature.location;
       let locationUniqueId = feature.uniqueId;
       let locationGISLINK = feature.GIS_LINK;
@@ -298,7 +309,8 @@ require([
       imageDiv.classList.add("image-div", "col-3");
 
       $(document).ready(function () {
-        $("#total-results").html(totalResults + " results returned");
+        $("#total-results").show();
+        $("#total-results").html(searchResults + " results returned");
       });
 
       // $("#total-results").html(totalResults + " results returned");
@@ -320,10 +332,13 @@ require([
       listGroup.appendChild(imageDiv);
       listGroup.appendChild(listItem);
       featureWidDiv.appendChild(listGroup);
+
+      // $("#total-results").show();
       $("#detailsButton").hide();
       $("#featureWid").show();
       $("#result-btns").show();
       $("#details-btns").hide();
+      $("#detail-content").empty();
       $("#dropdown").toggleClass("expanded");
       $("#dropdown").show();
       $("#sidebar2").css("left", "0px");
@@ -424,8 +439,10 @@ require([
   }
 
   // const lasso = document.getElementById("sketch");
-  $("#sketch").on("click", function () {
-    clearContents();
+  $("#lasso").on("click", function (e) {
+    lasso = true;
+    // console.log(e.target);
+    clearContents(e);
     sketchGL.removeAll();
     CondosLayer.visible = true;
     noCondosLayer.visible = true;
@@ -813,6 +830,13 @@ require([
       bufferPush();
     });
 
+    $("#submit").on("click", function (e) {
+      e.stopPropagation();
+      // currentVal = value.value = parseInt(value.value) - 1;
+      $("#parcel-feature").empty();
+      bufferPush();
+    });
+
     function bufferPush() {
       runBuffer(currentVal);
     }
@@ -947,10 +971,19 @@ require([
       .queryFeatures(parcelQuery)
       .then((results) => {
         let totalResults = results.features.length;
-        $("#abutters-title").html(`Abutting Parcels (${totalResults})`);
+
+        let noResultDups = results.features;
+
+        // function removeDuplicates) {
+        const finalResults = noResultDups.filter(
+          (item, index) => noResultDups.indexOf(item) === index
+        );
+        console.log(finalResults);
+
+        // noResultDups.filter((obj) => {obj.
         exportResults = results;
         console.log(results);
-        results.features.forEach(function (feature) {
+        noResultDups.forEach(function (feature) {
           let itemId = feature.attributes["GIS_LINK"];
           let locationVal = feature.attributes.Location;
           let locationUniqueId = feature.attributes["Uniqueid"];
@@ -990,6 +1023,8 @@ require([
 
           listGroup.appendChild(listItem);
           abuttersDiv.appendChild(listGroup);
+
+          $("#abutters-title").html(`Abutting Parcels (${totalResults})`);
 
           // UNCOMMENT TO HIGHLIGHT ON MOUSEOVER
           // & ZOOM TO MAP PARCELS ON HOVER
