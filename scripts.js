@@ -404,7 +404,6 @@ require([
   function highlightLasso(lasso) {
     let results = [];
     let features = [];
-
     let totalResults = [];
     let graphicsLayer = view.graphics;
 
@@ -418,8 +417,8 @@ require([
       query2.outFields = ["*"];
 
       CondosLayer.queryFeatures(query2).then(function (response) {
-        runNoCondosQuery();
         results = response.features;
+        runNoCondosQuery();
         // console.log(results2);
       });
     }
@@ -437,13 +436,14 @@ require([
         features = response.features;
 
         totalResults = [...results, ...features];
-        addResultGraphics();
+        const finalResults = [...new Set(totalResults)];
+        addResultGraphics(finalResults);
       });
     }
 
     runCondoQuery();
 
-    function addResultGraphics() {
+    function addResultGraphics(finalResults) {
       // console.log(features);
       var fillSymbol = {
         type: "simple-fill",
@@ -455,7 +455,7 @@ require([
       };
 
       // Map each geometry to a graphic
-      var polygonGraphics = totalResults
+      var polygonGraphics = finalResults
         .map(function (feature) {
           if (!feature.geometry) {
             console.error("Feature does not have geometry:", feature);
@@ -471,7 +471,7 @@ require([
       // Add all polygon graphics to the graphics layer
       graphicsLayer.addMany(polygonGraphics);
       sketchGL.removeAll();
-      buildResultsPanel(totalResults);
+      buildResultsPanel(finalResults);
     }
   }
 
@@ -975,26 +975,22 @@ require([
     noCondosLayer
       .queryFeatures(parcelQuery)
       .then((results) => {
-        let totalResults = results.features.length;
-
+        let totalResults = [];
+        totalResults = results.features.length;
         let noResultDups = results.features;
 
         // function removeDuplicates) {
-        const finalResults = noResultDups.filter(
+        let finalResults = noResultDups.filter(
           (item, index) => noResultDups.indexOf(item) === index
         );
-        console.log(finalResults);
 
-        // noResultDups.filter((obj) => {obj.
-        exportResults = results;
-        console.log(results);
-        noResultDups.forEach(function (feature) {
-          let itemId = feature.attributes["GIS_LINK"];
-          let locationVal = feature.attributes.Location;
-          let locationUniqueId = feature.attributes["Uniqueid"];
+        lastResults = new Set(finalResults);
+
+        exportResults = lastResults;
+
+        lastResults.forEach(function (feature) {
           let locationGISLINK = feature.attributes["GIS_LINK"];
           let objectID = feature.attributes["OBJECTID"];
-
           let owner = feature.attributes["Owner"];
           let coOwner = feature.attributes["Co_Owner"];
           let mailingAddress = feature.attributes["Mailing_Address_1"];
@@ -1002,8 +998,6 @@ require([
           let Mailing_City = feature.attributes["Mailing_City"];
           let Mail_State = feature.attributes["Mail_State"];
           let Mailing_Zip = feature.attributes["Mailing_Zip"];
-
-          let geometry = feature.geometry;
 
           const abuttersDiv = document.getElementById("parcel-feature");
 
@@ -1017,8 +1011,6 @@ require([
           let listItemHTML;
 
           listItemHTML = ` ${owner} ${coOwner} <br> ${mailingAddress} ${mailingAddress2} <br> ${Mailing_City}, ${Mail_State} ${Mailing_Zip}`;
-
-          // listItemHTML = ` ${locationVal} <br> ${locationUniqueId} <br> ${locationGISLINK}`;
 
           // Append the new list item to the list
           listItem.innerHTML += listItemHTML;
