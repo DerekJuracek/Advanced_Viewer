@@ -205,6 +205,7 @@ require([
         // secondList.push(feature.attributes["Uniqueid"]);
         console.log("Detailed feature:", feature.attributes.Location);
         let objectId = feature.attributes["OBJECTID"];
+        console.log(objectId);
         let locationVal = feature.attributes.Location;
         let locationUniqueId = feature.attributes["Uniqueid"];
         let locationGISLINK = feature.attributes["GIS_LINK"];
@@ -275,19 +276,23 @@ require([
         );
       }
     });
-    // console.log(firstList);
+    console.log(firstList);
 
     let seenIds = new Set();
     let uniqueArray = firstList.filter((obj) => {
-      if (!seenIds.has(obj.uniqueId)) {
-        seenIds.add(obj.uniqueId);
+      if (!seenIds.has(obj.objectid)) {
+        seenIds.add(obj.objectid);
         return true; // Include the object in uniqueArray
       }
       return false; // Do not include the object in uniqueArray
     });
-
+    console.log(firstList);
+    console.log(uniqueArray);
     uniqueArray.forEach(function (feature) {
+      console.log(feature);
       searchResults = uniqueArray.length;
+      let objectID = feature.objectid;
+      console.log(objectID);
       let locationVal = feature.location;
       let locationUniqueId = feature.uniqueId;
       let locationGISLINK = feature.GIS_LINK;
@@ -325,9 +330,9 @@ require([
 
       // Append the new list item to the list
       listItem.innerHTML += listItemHTML;
-
+      listItem.setAttribute("object-id", objectID);
       listItem.setAttribute("data-id", locationGISLINK);
-      listItem.setAttribute("location", locationVal);
+      // listItem.setAttribute("location", locationVal);
 
       listGroup.appendChild(imageDiv);
       listGroup.appendChild(listItem);
@@ -350,7 +355,9 @@ require([
         $("li").on("click", function (e) {
           console.log(e);
           let itemId = e.target.getAttribute("data-id");
-          zoomToFeature(itemId);
+          let objectID = e.target.getAttribute("object-id");
+
+          zoomToFeature(objectID);
           $("#featureWid").hide();
           $("#result-btns").hide();
           $("#total-results").hide();
@@ -362,7 +369,7 @@ require([
           $("#detail-content").empty();
           $("#selected-feature").empty();
           $("#backButton-div").css("padding-top", "0px");
-          buildDetailsPanel(e);
+          buildDetailsPanel(objectID, itemId);
         });
       });
     });
@@ -395,19 +402,49 @@ require([
   });
 
   function highlightLasso(lasso) {
-    let query = noCondosLayer.createQuery();
-    query.geometry = lasso; // the point location of the pointer
-    query.distance = 1;
-    query.units = "feet";
-    query.spatialRelationship = "intersects"; // this is the default
-    query.returnGeometry = true;
-    query.outFields = ["*"];
+    let results = [];
+    let features = [];
 
-    noCondosLayer.queryFeatures(query).then(function (response) {
-      let features = response.features;
-      let graphicsLayer = view.graphics;
+    let totalResults = [];
+    let graphicsLayer = view.graphics;
 
-      console.log(features);
+    function runCondoQuery() {
+      let query2 = CondosLayer.createQuery();
+      query2.geometry = lasso; // the point location of the pointer
+      query2.distance = 1;
+      query2.units = "feet";
+      query2.spatialRelationship = "intersects"; // this is the default
+      query2.returnGeometry = true;
+      query2.outFields = ["*"];
+
+      CondosLayer.queryFeatures(query2).then(function (response) {
+        runNoCondosQuery();
+        results = response.features;
+        // console.log(results2);
+      });
+    }
+    // console.log(condoResults);
+    function runNoCondosQuery() {
+      let query = noCondosLayer.createQuery();
+      query.geometry = lasso; // the point location of the pointer
+      query.distance = 1;
+      query.units = "feet";
+      query.spatialRelationship = "intersects"; // this is the default
+      query.returnGeometry = true;
+      query.outFields = ["*"];
+
+      noCondosLayer.queryFeatures(query).then(function (response) {
+        features = response.features;
+
+        totalResults = [...results, ...features];
+        addResultGraphics();
+      });
+    }
+
+    runCondoQuery();
+
+    function addResultGraphics() {
+      // console.log(features);
       var fillSymbol = {
         type: "simple-fill",
         color: [0, 255, 255, 0.25],
@@ -418,7 +455,7 @@ require([
       };
 
       // Map each geometry to a graphic
-      var polygonGraphics = features
+      var polygonGraphics = totalResults
         .map(function (feature) {
           if (!feature.geometry) {
             console.error("Feature does not have geometry:", feature);
@@ -434,8 +471,8 @@ require([
       // Add all polygon graphics to the graphics layer
       graphicsLayer.addMany(polygonGraphics);
       sketchGL.removeAll();
-      buildResultsPanel(features);
-    });
+      buildResultsPanel(totalResults);
+    }
   }
 
   // const lasso = document.getElementById("sketch");
@@ -651,8 +688,10 @@ require([
     query2.returnGeometry = true; // Adjust based on your needs
     query2.outFields = ["*"];
 
+    let features;
+
     function addPolygons(polygonGeometries, graphicsLayer) {
-      const features = polygonGeometries.features;
+      features = polygonGeometries.features;
       console.log(features);
       var fillSymbol = {
         type: "simple-fill",
@@ -689,6 +728,7 @@ require([
       if (result.features.length > 1) {
         view.goTo(result.features);
         addPolygons(result, view.graphics);
+        buildResultsPanel(result.features);
       } else {
         CondosLayer.queryFeatures(query2).then(function (result) {
           if (result.features) {
@@ -696,13 +736,14 @@ require([
             // addCondoPolygons(result);
             view.goTo(result.features);
             addPolygons(result, view.graphics);
+            buildResultsPanel(result.features);
           }
         });
       }
 
-      const features = result.features;
-      buildResultsPanel(features);
-      console.log(features);
+      // const features = result.features;
+      // buildResultsPanel(features);
+      // console.log(features);
     });
   }
 
@@ -1060,26 +1101,68 @@ require([
     queryDetailsBuffer(bufferResults);
   }
 
-  function buildDetailsPanel(e) {
-    let itemId = e.target.getAttribute("data-id");
+  function buildDetailsPanel(objectId, itemId) {
+    // let itemId = e.target.getAttribute("data-id");
+    // let objectId = e.target.getAttribute("object-id");
     detailSelected = itemId;
-    let location = e.target.getAttribute("location");
+    // let location = e.target.getAttribute("location");
 
-    console.log(itemId);
+    // console.log(itemId);
 
     // Find the object in the data array that has this uniqueId
+
+    // var matchedObject = firstList.find(function (item) {
+    //   if (item.objectid === parseInt(objectId)) {
+    //     return;
+    //   }
+    // } else if (item.uniqueId === itemId || item.GIS_LINK === itemId) {
+    //   return;
+    // } else {
+    //   const detailsDiv = document.getElementById("detail-content");
+
+    //   const details = document.createElement("div");
+    //   details.innerHTML = "";
+    //   details.classList.add("details");
+
+    //   details.innerHTML = `
+    //     <div>
+    //        <h1>No DATA</h1>
+    //     </div>`;
+
+    //   detailsDiv.appendChild(details);
+    // }
+    // });
+
+    var matchedObject;
+
+    // firstList.find(function (item) {
+    //   if (item.objectid === parseInt(objectId)) {
+    //     return (matchedObject = item);
+    //   } else if (item.GIS_LINK === itemId || item.uniqueId === itemId) {
+    //     return (matchedObject = item);
+    //   } else {
+    //     return (matchedObject = {});
+    //   }
+    // });
+
     var matchedObject = firstList.find(function (item) {
-      return item.uniqueId === itemId || item.GIS_LINK === itemId;
+      return item.objectid === parseInt(objectId);
     });
 
-    let locationVal =
-      matchedObject.location === undefined ? "" : matchedObject.location;
+    if (!matchedObject) {
+      var matchedObject = firstList.find(function (item) {
+        return item.GIS_LINK === itemId || item.uniqueId === itemId;
+      });
+    }
+
+    // let locationVal =
+    //   matchedObject.location === undefined ? "" : matchedObject.location;
 
     let locationUniqueId =
       matchedObject.uniqueId === undefined ? "" : matchedObject.uniqueId;
 
-    let locationGISLINK =
-      matchedObject.GIS_LINK === undefined ? "" : matchedObject.GIS_LINK;
+    // let locationGISLINK =
+    //   matchedObject.GIS_LINK === undefined ? "" : matchedObject.GIS_LINK;
     let locationCoOwner =
       matchedObject.Co_Owner === undefined ? "" : matchedObject.Co_Owner;
     let locationOwner =
@@ -1146,16 +1229,16 @@ require([
       matchedObject.Appraised_Total === undefined
         ? ""
         : matchedObject.Appraised_Total;
-    let Influence_Factor =
-      matchedObject.Influence_Factor === undefined
-        ? ""
-        : matchedObject.Influence_Factor;
-    let Influence_Type =
-      matchedObject.Influence_Type === undefined
-        ? ""
-        : matchedObject.Influence_Type;
-    let Land_Type =
-      matchedObject.Land_Type === undefined ? "" : matchedObject.Land_Type;
+    // let Influence_Factor =
+    //   matchedObject.Influence_Factor === undefined
+    //     ? ""
+    //     : matchedObject.Influence_Factor;
+    // let Influence_Type =
+    //   matchedObject.Influence_Type === undefined
+    //     ? ""
+    //     : matchedObject.Influence_Type;
+    // let Land_Type =
+    //   matchedObject.Land_Type === undefined ? "" : matchedObject.Land_Type;
 
     const imageUrl = `https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/${locationUniqueId}.jpg`;
     console.log(matchedObject);
@@ -1169,67 +1252,66 @@ require([
     details.innerHTML = `
           <div>
               <p>
-                  <span style="font-size:8pt;">Owners:&nbsp;</span><br>
-                  <span style="font-size:8pt;"><strong>${locationOwner} ${locationCoOwner}</strong></span><br>
-                  <span style="font-size:8pt;">Unique ID: <strong>${locationUniqueId}</strong></span><br>
-                  <span style="font-size:8pt;">MBL: <strong>${locationMBL}</strong></span><br>
-                  <span style="font-size:8pt;">Mailing Address:&nbsp;</span><br>
-                  <span style="font-size:8pt;"><strong>${mailingAddress}</strong></span><br>
-                  <span style="font-size:8pt;"><strong>${Mailing_City}${Mail_State} ${Mailing_Zip}</strong></span>
+                  <span style="font-size:9pt;">Owners:&nbsp;</span><br>
+                  <span style="font-size:9pt;"><strong>${locationOwner} ${locationCoOwner}</strong></span><br>
+                  <span style="font-size:9pt;">Unique ID: <strong>${locationUniqueId}</strong></span><br>
+                  <span style="font-size:9pt;">MBL: <strong>${locationMBL}</strong></span><br>
+                  <span style="font-size:9pt;">Mailing Address:&nbsp;</span><br>
+                  <span style="font-size:9pt;"><strong>${mailingAddress}</strong></span><br>
+                  <span style="font-size:9pt;"><strong>${Mailing_City}${Mail_State} ${Mailing_Zip}</strong></span>
               </p>
           </div>
           <div>
               <img src="${imageUrl}"alt="Image of ${locationUniqueId}">
           </div>
           <div>
-              <span style="font-size:8pt;">Total Acres: <strong>${Total_Acres}</strong></span><br>
-              <span style="font-size:8pt;">Primary Use: <strong>${Parcel_Primary_Use}</strong></span><br>
-              <span style="font-size:8pt;">Primary Bldg Use: <strong>${Building_Use_Code}</strong></span><br>
-              <span style="font-size:8pt;">Parcel Type: <strong>${Parcel_Type}</strong></span><br>
-              <span style="font-size:8pt;">Design Type: <strong>${Design_Type}</strong></span><br>
-              <span style="font-size:8pt;">Zone: <strong>${Zoning}</strong></span><br>
-              <span style="font-size:8pt;">Nhbd: <strong>${Neighborhood}</strong></span><br>
-              <span style="font-size:8pt;">Land Rate: <strong>${Land_Type_Rate}</strong></span><br>
-              <span style="font-size:8pt;">Functional Obsolescence: <strong>${Functional_Obs}</strong></span><br>
-              <span style="font-size:8pt;">External Obsolescence: <strong>${External_Obs}</strong></span><br>
+              <span style="font-size:9pt;">Total Acres: <strong>${Total_Acres}</strong></span><br>
+              <span style="font-size:9pt;">Primary Use: <strong>${Parcel_Primary_Use}</strong></span><br>
+              <span style="font-size:9pt;">Primary Bldg Use: <strong>${Building_Use_Code}</strong></span><br>
+              <span style="font-size:9pt;">Parcel Type: <strong>${Parcel_Type}</strong></span><br>
+              <span style="font-size:9pt;">Design Type: <strong>${Design_Type}</strong></span><br>
+              <span style="font-size:9pt;">Zone: <strong>${Zoning}</strong></span><br>
+              <span style="font-size:9pt;">Nhbd: <strong>${Neighborhood}</strong></span><br>
+              <span style="font-size:9pt;">Land Rate: <strong>${Land_Type_Rate}</strong></span><br>
+              <span style="font-size:9pt;">Functional Obsolescence: <strong>${Functional_Obs}</strong></span><br>
+              <span style="font-size:9pt;">External Obsolescence: <strong>${External_Obs}</strong></span><br>
               &nbsp;
           </div>
           
           <div>
-              <span style="font-size:8pt;">Latest Qualified Sale:&nbsp;</span><br>
-              <span style="font-size:8pt;">Sold on: <strong>${Sale_Date}</strong></span><br>
-              <span style="font-size:8pt;">Sale Price: <strong>${Sale_Price}</strong></span><br>
-              <span style="font-size:8pt;">Volume/Page: <strong>${Vol_Page}</strong></span><br>
+              <span style="font-size:9pt;">Latest Qualified Sale:&nbsp;</span><br>
+              <span style="font-size:9pt;">Sold on: <strong>${Sale_Date}</strong></span><br>
+              <span style="font-size:9pt;">Sale Price: <strong>${Sale_Price}</strong></span><br>
+              <span style="font-size:9pt;">Volume/Page: <strong>${Vol_Page}</strong></span><br>
               &nbsp;
           </div>
         
           <div>
-              <span style="font-size:8pt;">Valuations:&nbsp;</span><br>
-              <span style="font-size:8pt;">Asssessment: <strong>${Assessed_Total}</strong></span><br>
-              <span style="font-size:8pt;">Appraised: <strong>${Appraised_Total}</strong></span><br>
+              <span style="font-size:9pt;">Valuations:&nbsp;</span><br>
+              <span style="font-size:9pt;">Asssessment: <strong>${Assessed_Total}</strong></span><br>
+              <span style="font-size:9pt;">Appraised: <strong>${Appraised_Total}</strong></span><br>
               &nbsp;
           </div>
          
         `;
 
     // <div>
-    //     <span style="font-size:8pt;">Influence Info: Influence Factor / Influence Type / Land Type&nbsp;</span><br>
-    //     <span style="font-size:8pt;"><strong>{expression/expression1}</strong></span><br>
+    //     <span style="font-size:9pt;">Influence Info: Influence Factor / Influence Type / Land Type&nbsp;</span><br>
+    //     <span style="font-size:9pt;"><strong>{expression/expression1}</strong></span><br>
     //     &nbsp;
     // </div>
 
     detailsDiv.appendChild(details);
   }
 
-  function zoomToFeature(itemId) {
-    console.log(itemId);
-    let matchingObject = firstList.filter(
-      (obj) => obj.GIS_LINK == itemId || obj.Uniqueid == itemId
-    );
+  function zoomToFeature(objectid) {
+    // console.log(objectid);
+    let matchingObject = firstList.filter((obj) => obj.objectid == objectid);
+    // console.log(matchingObject);
 
     if (matchingObject) {
       matchingObject.forEach(function (feature) {
-        console.log(feature);
+        // console.log(feature);
         if (feature["geometry"] != null) {
           detailsGeometry = feature["geometry"];
           view.goTo(detailsGeometry);
@@ -1250,8 +1332,7 @@ require([
           });
 
           view.graphics.addMany([polygonGraphic]);
-
-          console.log(view.graphics);
+          // console.log(view.graphics);
         }
       });
     }
