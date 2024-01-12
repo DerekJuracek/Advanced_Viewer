@@ -705,6 +705,7 @@ require([
     });
 
   function queryRelatedRecords(searchTerm) {
+    console.log(firstList);
     let whereClause = `
     Street_Name LIKE '%${searchTerm}%' OR 
     MBL LIKE '%${searchTerm}%' OR 
@@ -762,7 +763,7 @@ require([
     }
 
     noCondosLayer.queryFeatures(query).then(function (result) {
-      if (result.features.length >= 1) {
+      if (result.features.length > 1) {
         console.log(`no condos result: ${result}`);
         view.goTo(result.features);
         addPolygons(result, view.graphics);
@@ -778,10 +779,6 @@ require([
           }
         });
       }
-
-      // const features = result.features;
-      // buildResultsPanel(features);
-      // console.log(features);
     });
   }
 
@@ -1484,7 +1481,7 @@ require([
       noCondosTable
         .queryFeatures(query)
         .then((response) => {
-          // console.log(response);
+          console.log(response);
 
           if (response.features.length > 0) {
             features = response.features;
@@ -1566,15 +1563,15 @@ require([
                 );
               }
             });
+            queryRelatedRecords(runQuerySearchTerm);
           }
         })
         .catch((error) => {
           console.error("Error querying for details:", error);
         });
     }
-    console.log(firstList);
+    // console.log(firstList);
     // Now query the related records based on this objectId
-    queryRelatedRecords(runQuerySearchTerm);
   };
 
   // first function run from user typing in search input field
