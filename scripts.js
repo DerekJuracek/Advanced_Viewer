@@ -984,7 +984,7 @@ require([
       "li { display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 2.625in; height: 1in; padding: 0in; font-size: 12px;  }";
     style += "@media print {";
     style +=
-      "  body { width: 8.5in; height: 11in; padding-top: 0in; padding-left: 0.21975in; padding-right: 0.21975in; box-sizing: border-box; }";
+      "  body { width: 8.5in; height: 11in; padding-top: 0.25in; padding-left: 0.21975in; padding-right: 0.21975in; box-sizing: border-box; }";
     style +=
       "  ul { display: grid; grid-template-columns: repeat(3, 2.625in); gap: 0in 0.14in; grid-auto-rows: 1in;  }";
     style += "  li { page-break-inside: avoid; }";
