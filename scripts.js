@@ -885,7 +885,7 @@ require([
 
     $("#submit").on("click", function (e) {
       e.stopPropagation();
-      // currentVal = value.value = parseInt(value.value) - 1;
+      currentVal = value.value = parseInt(value.value);
       $("#parcel-feature").empty();
       bufferPush();
     });
