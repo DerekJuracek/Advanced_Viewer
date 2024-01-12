@@ -981,7 +981,7 @@ require([
     style += "body, ul { margin: 0; padding: 0;font-size: 8px; }";
     style += "ul { list-style-type: none; }";
     style +=
-      "li { display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 2.625in; height: 1in; padding: 0in; font-size: 12px;  }";
+      "li { display: flex; align-items: center;  text-align: center; justify-content: center; box-sizing: border-box; width: 2.625in; height: 1in; padding: 0in; font-size: 12px;  }";
     style += "@media print {";
     style +=
       "  body { width: 8.5in; height: 11in; padding-top: 0.25in; padding-left: 0.21975in; padding-right: 0.21975in; box-sizing: border-box; }";
