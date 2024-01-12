@@ -797,6 +797,12 @@ require([
       $("#parcel-feature").empty();
       $("#exportResults").hide();
       $("#results-div").css("height", "150px");
+      const existingBufferGraphicIndex = view.graphics.items.findIndex(
+        (g) => g.id === bufferGraphicId
+      );
+      if (existingBufferGraphicIndex > -1) {
+        view.graphics.removeAt(existingBufferGraphicIndex);
+      }
     });
   });
 
@@ -981,7 +987,7 @@ require([
       "li { display: flex; align-items: center;  text-align: center; justify-content: center; box-sizing: border-box; width: 2.625in; height: 1in; padding: 0in; font-size: 12px;  }";
     style += "@media print {";
     style +=
-      "  body { width: 8.5in; height: 11in; padding-top: 0.25in; padding-left: 0.21975in; padding-right: 0.21975in; box-sizing: border-box; }";
+      "  body { width: 8.5in; height: 11in; padding-top: 0.5in; padding-left: 0.21975in; padding-right: 0.21975in; box-sizing: border-box; }";
     style +=
       "  ul { display: grid; grid-template-columns: repeat(3, 2.625in); gap: 0in 0.14in; grid-auto-rows: 1in;  }";
     style += "  li { page-break-inside: avoid; }";
@@ -1017,6 +1023,7 @@ require([
     noCondosLayer
       .queryFeatures(parcelQuery)
       .then((results) => {
+        console.log(results);
         let totalResults = [];
         totalResults = results.features.length;
         let noResultDups = results.features;
@@ -1028,8 +1035,37 @@ require([
         lastResults = new Set(finalResults);
 
         exportResults = lastResults;
+        console.log(lastResults);
 
         lastResults.forEach(function (feature) {
+          // let totalResults = results.features.length;
+          // let seenObjectIds = new Set();
+
+          // let finalResults = results.features.filter((item) => {
+          //   if (!seenObjectIds.has(item.attributes.objectid)) {
+          //     seenObjectIds.add(item.attributes.objectid);
+          //     return true;
+          //   }
+          //   return false;
+          // });
+
+          // Now finalResults contains only items with unique objectid
+          // ... (rest of your code)
+
+          // let totalResults = [];
+          // totalResults = results.features.length;
+          // let noResultDups = results.features;
+
+          // let finalResults = noResultDups.filter(
+          //   (item, index) => noResultDups.indexOf(item) === index
+          // );
+
+          // lastResults = new Set(finalResults);
+          // exportResults = [];
+
+          // exportResults = noResultDups;
+
+          // noResultDups.forEach(function (feature) {
           let locationGISLINK = feature.attributes["GIS_LINK"];
           let objectID = feature.attributes["OBJECTID"];
           let owner = feature.attributes["Owner"];
