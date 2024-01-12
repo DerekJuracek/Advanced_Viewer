@@ -87,54 +87,58 @@ require([
       creationMode: "update",
     });
     // Hide the Sketch widget's default UI
-    sketch.container.style.display = "none";
+    // sketch.container.style.display = "none";
 
-    console.log(sketch.selectionTools);
+    // console.log(sketch.selectionTools);
 
     // view.ui.add(sketch, sketchWidget);
   });
-  // let layerVisible = false;
+
   let runQuerySearchTerm;
   let clickedToggle;
   let detailSelected;
   let firstList = [];
-  let condosLists = [];
-  let secondList = [];
   let detailsGeometry;
   let queryUnits = "feet";
-  let highlight;
   let exportResults;
   let highlightResponse;
   let searchResults;
   let lasso = false;
+  let bufferGraphicId;
 
   let value = document.getElementById("buffer-value");
   const clearBtn = document.getElementById("clear-btn");
 
   let noCondosLayer = new FeatureLayer({
-    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_NOCONDOS/FeatureServer/1",
+    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_NOCONDOS/FeatureServer/0",
     visible: false,
     defaultpopupTemplateEnabled: true,
   });
 
-  // https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/Washington_Just_Condos/FeatureServer/0
+  noCondosLayer.renderer = {
+    type: "simple", // autocasts as new SimpleRenderer()
+    symbol: {
+      type: "simple-fill", // autocasts as new SimpleMarkerSymbol()
+      color: [255, 255, 255, 0],
+      outline: {
+        // autocasts as new SimpleLineSymbol()
+        width: 1,
+        color: [169, 169, 169, 1],
+      },
+    },
+  };
 
   let CondosLayer = new FeatureLayer({
     url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/Washington_Just_Condos/FeatureServer/0",
     visible: false,
   });
 
-  // let CondosLayer = new FeatureLayer({
-  //   url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_CONDOS/FeatureServer/1",
-  //   visible: false,
-  // });
-
   const CondosTable = new FeatureLayer({
-    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels_CONDOS/FeatureServer/0",
+    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_CONDOS/FeatureServer/1",
   });
 
   const noCondosTable = new FeatureLayer({
-    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels_NOCONDOS/FeatureServer/0",
+    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_NOCONDOS/FeatureServer/1",
   });
 
   webmap.add(noCondosLayer);
@@ -196,16 +200,15 @@ require([
 
   function buildResultsPanel(features) {
     features.forEach(function (feature) {
-      console.log(feature);
-
       // PUT BACK TO FILTER OUT EMPTY OWNERS
       if (feature.attributes.Owner === "" || null || undefined) {
         return;
       } else {
         // secondList.push(feature.attributes["Uniqueid"]);
-        console.log("Detailed feature:", feature.attributes.Location);
+        // console.log("Detailed feature:", feature.attributes.Location);
+        // let uid = feature.uid;
         let objectId = feature.attributes["OBJECTID"];
-        console.log(objectId);
+
         let locationVal = feature.attributes.Location;
         let locationUniqueId = feature.attributes["Uniqueid"];
         let locationGISLINK = feature.attributes["GIS_LINK"];
@@ -236,8 +239,7 @@ require([
         let Influence_Factor = feature.attributes["Influence_Factor"];
         let Influence_Type = feature.attributes["Influence_Type"];
         let Land_Type = feature.attributes["Land_Type"];
-
-        // condosLists.push(new Condo(objectId, locationGeom, locationUniqueId));
+        let geometry = feature.attributes["geometry"];
 
         firstList.push(
           new Parcel(
@@ -271,7 +273,8 @@ require([
             Appraised_Total,
             Influence_Factor,
             Influence_Type,
-            Land_Type
+            Land_Type,
+            geometry
           )
         );
       }
@@ -279,13 +282,43 @@ require([
     console.log(firstList);
 
     let seenIds = new Set();
+    let seenUID = new Set();
+
+    // Step 1: Filter for unique objectid with geometry
     let uniqueArray = firstList.filter((obj) => {
-      if (!seenIds.has(obj.objectid)) {
-        seenIds.add(obj.objectid);
-        return true; // Include the object in uniqueArray
+      // const isNewId = !seenIds.has(obj.uniqueId) && obj.geometry;
+      if (obj.geometry) {
+        seenIds.add(obj.uniqueId);
+        return true;
       }
-      return false; // Do not include the object in uniqueArray
+      return false;
     });
+
+    // Step 2: Filter remaining items for unique uniqueId
+    firstList.forEach((obj) => {
+      const isNewuid = !seenIds.has(obj.uniqueId);
+      if (isNewuid) {
+        seenUID.add(obj.uniqueId);
+        uniqueArray.push(obj);
+      }
+    });
+
+    // console.log(seenLocations);
+
+    // let seenIds = new Set();
+    // let uniqueArray = firstList.filter((obj) => {
+    //   if (!seenIds.has(obj.objectid)) {
+    //     seenIds.add(obj.objectid);
+    //     return true; // Include the object in uniqueArray
+    //   }
+    //   return false; // Do not include the object in uniqueArray
+    // });
+
+    // function additionalCondition(obj) {
+    //   return ob
+    //   // Replace this with your condition. For example:
+    //   // return obj.someProperty === 'someValue';
+    // }
     console.log(firstList);
     console.log(uniqueArray);
     uniqueArray.forEach(function (feature) {
@@ -294,12 +327,15 @@ require([
       let objectID = feature.objectid;
       console.log(objectID);
       let locationVal = feature.location;
-      let locationUniqueId = feature.uniqueId;
+      let locationUniqueId =
+        feature.uniqueId === undefined ? feature.GIS_LINK : feature.uniqueId;
+      // let Mail_State =
+      // matchedObject.Mail_State === undefined ? "" : matchedObject.Mail_State;
       let locationGISLINK = feature.GIS_LINK;
       let locationCoOwner = feature.Co_Owner;
       let locationOwner = feature.owner;
       let locationMBL = feature.MBL;
-      // let locationGeom = feature.geometry;
+      let locationGeom = feature.geometry;
 
       const imageUrl = `https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/${locationUniqueId}.jpg`;
       const featureWidDiv = document.getElementById("featureWid");
@@ -318,27 +354,28 @@ require([
         $("#total-results").html(searchResults + " results returned");
       });
 
-      // $("#total-results").html(totalResults + " results returned");
-
       let listItemHTML;
 
-      if (!locationCoOwner) {
+      if (!locationCoOwner && locationGeom) {
         listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner}`;
-      } else {
-        listItemHTML = `${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner} & ${locationCoOwner}`;
+      } else if (!locationCoOwner && !locationGeom) {
+        listItemHTML = `  ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}<div style="color: red";>No Geometry</div>`;
       }
+      // } else if (!locationGeom && !locationCoOwner) {
+      //   listItemHTML = `<div style="color: red";>No Geometry</div> ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}`;
+      // } else {
+      //   listItemHTML = `${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner} & ${locationCoOwner}`;
+      // }
 
       // Append the new list item to the list
       listItem.innerHTML += listItemHTML;
       listItem.setAttribute("object-id", objectID);
       listItem.setAttribute("data-id", locationGISLINK);
-      // listItem.setAttribute("location", locationVal);
 
       listGroup.appendChild(imageDiv);
       listGroup.appendChild(listItem);
       featureWidDiv.appendChild(listGroup);
 
-      // $("#total-results").show();
       $("#detailsButton").hide();
       $("#featureWid").show();
       $("#result-btns").show();
@@ -725,14 +762,15 @@ require([
     }
 
     noCondosLayer.queryFeatures(query).then(function (result) {
-      if (result.features.length > 1) {
+      if (result.features.length >= 1) {
+        console.log(`no condos result: ${result}`);
         view.goTo(result.features);
         addPolygons(result, view.graphics);
         buildResultsPanel(result.features);
       } else {
         CondosLayer.queryFeatures(query2).then(function (result) {
           if (result.features) {
-            console.log(result);
+            console.log(`condos result: ${result}`);
             // addCondoPolygons(result);
             view.goTo(result.features);
             addPolygons(result, view.graphics);
@@ -783,6 +821,13 @@ require([
       $("#abutters-title").html(`Abutting Parcels (0)`);
       $("#backButton-div").css("padding-top", "0px");
       $("#results-div").css("height", "150px");
+      // Find and remove the existing buffer graphic
+      const existingBufferGraphicIndex = view.graphics.items.findIndex(
+        (g) => g.id === bufferGraphicId
+      );
+      if (existingBufferGraphicIndex > -1) {
+        view.graphics.removeAt(existingBufferGraphicIndex);
+      }
     });
   });
 
@@ -933,13 +978,13 @@ require([
     );
 
     var style = "<style>";
-    style += "body, ul { margin: 0; padding: 0; }";
+    style += "body, ul { margin: 0; padding: 0;font-size: 8px; }";
     style += "ul { list-style-type: none; }";
     style +=
       "li { display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 2.625in; height: 1in; padding: 0in; font-size: 12px;  }";
     style += "@media print {";
     style +=
-      "  body { width: 8.5in; height: 11in; padding-top: 0.5in; padding-left: 0.21975in; padding-right: 0.21975in; box-sizing: border-box; }";
+      "  body { width: 8.5in; height: 11in; padding-top: 0in; padding-left: 0.21975in; padding-right: 0.21975in; box-sizing: border-box; }";
     style +=
       "  ul { display: grid; grid-template-columns: repeat(3, 2.625in); gap: 0in 0.14in; grid-auto-rows: 1in;  }";
     style += "  li { page-break-inside: avoid; }";
@@ -979,7 +1024,6 @@ require([
         totalResults = results.features.length;
         let noResultDups = results.features;
 
-        // function removeDuplicates) {
         let finalResults = noResultDups.filter(
           (item, index) => noResultDups.indexOf(item) === index
         );
@@ -1008,7 +1052,7 @@ require([
           const listItem = document.createElement("li");
           listItem.classList.add("abutters-group-item", "col-12");
 
-          let listItemHTML;
+          let listItemHTML = "";
 
           listItemHTML = ` ${owner} ${coOwner} <br> ${mailingAddress} ${mailingAddress2} <br> ${Mailing_City}, ${Mail_State} ${Mailing_Zip}`;
 
@@ -1041,8 +1085,7 @@ require([
           //   listItem.style.borderColor = "rgba(255, 255, 255, 1)";
           // });
         });
-        console.log(results);
-        console.log("Feature count: " + results.features.length);
+
         $("#results-div").css("height", "200px");
         $("#exportResults").show();
 
@@ -1054,7 +1097,7 @@ require([
   }
 
   function addOrUpdateBufferGraphic(bufferResults) {
-    let bufferGraphicId = "uniqueBufferGraphicId";
+    bufferGraphicId = "BufferGraphicId";
 
     const fillSymbol = {
       type: "simple-fill",
@@ -1083,7 +1126,7 @@ require([
   }
 
   function runBuffer(value) {
-    console.log(detailsGeometry);
+    // console.log(detailsGeometry);
     let buffer = value;
     let unit = queryUnits;
 
@@ -1127,22 +1170,12 @@ require([
 
     var matchedObject;
 
-    // firstList.find(function (item) {
-    //   if (item.objectid === parseInt(objectId)) {
-    //     return (matchedObject = item);
-    //   } else if (item.GIS_LINK === itemId || item.uniqueId === itemId) {
-    //     return (matchedObject = item);
-    //   } else {
-    //     return (matchedObject = {});
-    //   }
-    // });
-
-    var matchedObject = firstList.find(function (item) {
+    matchedObject = firstList.find(function (item) {
       return item.objectid === parseInt(objectId);
     });
 
     if (!matchedObject) {
-      var matchedObject = firstList.find(function (item) {
+      matchedObject = firstList.find(function (item) {
         return item.GIS_LINK === itemId || item.uniqueId === itemId;
       });
     }
@@ -1297,34 +1330,47 @@ require([
   }
 
   function zoomToFeature(objectid) {
+    let bufferGraphicId = "uniqueBufferGraphicId";
+    let abuttersID = "BufferGraphicId";
+
+    // Find and remove the existing buffer graphic
+    const existingBufferGraphicIndex = view.graphics.items.findIndex(
+      (g) => g.id === bufferGraphicId
+    );
+
+    if (existingBufferGraphicIndex > -1) {
+      view.graphics.removeAt(existingBufferGraphicIndex);
+    }
     // console.log(objectid);
     let matchingObject = firstList.filter((obj) => obj.objectid == objectid);
     // console.log(matchingObject);
 
-    if (matchingObject) {
+    if (matchingObject != undefined) {
       matchingObject.forEach(function (feature) {
         // console.log(feature);
-        if (feature["geometry"] != null) {
+        if (feature["geometry"] != null && feature["geometry"] != "") {
           detailsGeometry = feature["geometry"];
           view.goTo(detailsGeometry);
 
           const fillSymbol = {
             type: "simple-fill",
-            color: [222, 49, 99, 0.7],
+            color: [0, 0, 0, 0.1],
             outline: {
-              // autocasts as new SimpleLineSymbol()
-              color: [255, 255, 255],
-              width: 2,
+              color: [255, 0, 0, 1],
+              width: 3,
             },
           };
 
           const polygonGraphic = new Graphic({
             geometry: detailsGeometry,
             symbol: fillSymbol,
+            id: bufferGraphicId,
           });
 
           view.graphics.addMany([polygonGraphic]);
           // console.log(view.graphics);
+        } else {
+          console.log(`no geom`);
         }
       });
     }
@@ -1420,16 +1466,19 @@ require([
 
       let query = noCondosTable.createQuery();
       query.where = whereClause;
-      query.returnGeometry = false; // Adjust based on your needs
-      query.outFields = [
-        "Street_Name",
-        "MBL",
-        "Location",
-        "Co_Owner",
-        "Uniqueid",
-        "Owner",
-        "GIS_LINK",
-      ];
+      query.returnGeometry = false;
+      query.returnHiddenFields = true; // Adjust based on your needs
+      query.outFields = ["*"];
+      // query.outFields = [
+      //   "Street_Name",
+      //   "MBL",
+      //   "Location",
+      //   "Co_Owner",
+      //   "Uniqueid",
+      //   "Owner",
+      //   "GIS_LINK",
+      //   "objectid",
+      // ];
       console.log(query);
 
       noCondosTable
@@ -1439,10 +1488,14 @@ require([
 
           if (response.features.length > 0) {
             features = response.features;
+            console.log(features);
             features.forEach(function (feature) {
               if (feature.attributes.Owner === "" || null || undefined) {
                 return;
               } else {
+                // console.log(feature);
+                // console.log(feature.uid);
+                // let uid = feature.uid;
                 let objectId = feature.attributes["OBJECTID"];
                 let locationVal = feature.attributes.Location;
                 let locationUniqueId = feature.attributes["Uniqueid"];
@@ -1519,7 +1572,7 @@ require([
           console.error("Error querying for details:", error);
         });
     }
-
+    console.log(firstList);
     // Now query the related records based on this objectId
     queryRelatedRecords(runQuerySearchTerm);
   };

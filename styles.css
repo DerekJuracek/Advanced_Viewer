@@ -57,13 +57,22 @@ main {
 .custom-navbar {
   position: absolute;
   top: 0;
-  left: 300px;
-  width: 500px;
+  left: 100px;
+  width: 420px;
   z-index: 1000;
-  padding-left: 25px;
-  border-radius: 3px;
+  /* padding-left: 25px; */
+  border-radius: 0px 0px 3px 3px;
   overflow-y: visible;
   /* This ensures the navbar is always on top */
+}
+
+.col-md {
+  padding-left: 0px;
+}
+
+.col-12 {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 #title {
@@ -74,7 +83,7 @@ main {
   right: 0;
   margin-right: 0px;
   padding-left: 0;
-  width: 300px;
+  width: 200px;
 }
 
 ul {
@@ -106,7 +115,7 @@ ul {
   padding-bottom: 0px;
   margin-top: 0px;
   margin-bottom: 20px;
-  padding-left: 20px;
+  /* padding-left: 20px; */
   font: 800;
 }
 
@@ -117,7 +126,7 @@ ul {
 
 .form-inline {
   padding-bottom: 10px;
-  padding-left: 20px;
+  padding-left: 0px;
 }
 
 #searchInput {
@@ -142,6 +151,7 @@ ul {
   display: block;
   height: 100%;
   width: 100%;
+  padding-bottom: 50px;
 }
 
 .suggestions-dropdown {
@@ -631,6 +641,9 @@ img {
   display: flex;
   text-align: center;
   vertical-align: middle;
+  padding: 3px 3px 3px 3px;
+  border: 1px solid white;
+  border-radius: 4px;
   /* padding-left: 50%; */
   color: white;
   position: absolute;
