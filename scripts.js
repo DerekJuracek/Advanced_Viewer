@@ -13,6 +13,7 @@ require([
   "esri/layers/GraphicsLayer",
   "esri/widgets/Sketch",
   "esri/widgets/Sketch/SketchViewModel",
+  "esri/views/View",
 ], function (
   WebMap,
   MapView,
@@ -27,7 +28,8 @@ require([
   geometryEngine,
   GraphicsLayer,
   Sketch,
-  SketchViewModel
+  SketchViewModel,
+  View
 ) {
   const searchGraphicsLayers = new GraphicsLayer();
   const sketchGL = new GraphicsLayer();
@@ -47,6 +49,14 @@ require([
     ui: {
       components: ["attribution"],
     },
+  });
+
+  view.popupEnabled = true;
+  view.on("click", (event) => {
+    view.openPopup({
+      title: "popup",
+      // Set properties for the manually opened popup
+    });
   });
 
   webmap.add(sketchGL);
@@ -105,6 +115,7 @@ require([
   let searchResults;
   let lasso = false;
   let bufferGraphicId;
+  let polygonGraphics;
 
   let value = document.getElementById("buffer-value");
   const clearBtn = document.getElementById("clear-btn");
@@ -112,7 +123,9 @@ require([
   let noCondosLayer = new FeatureLayer({
     url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_NOCONDOS/FeatureServer/0",
     visible: false,
-    defaultpopupTemplateEnabled: true,
+    popupEnabled: true,
+
+    defaultPopupTemplateEnabled: true,
   });
 
   noCondosLayer.renderer = {
@@ -131,6 +144,9 @@ require([
   let CondosLayer = new FeatureLayer({
     url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/Washington_Just_Condos/FeatureServer/0",
     visible: false,
+    popupEnabled: true,
+
+    // defaultPopupTemplateEnabled: true,
   });
 
   const CondosTable = new FeatureLayer({
@@ -198,7 +214,7 @@ require([
     lasso = false;
   }
 
-  function buildResultsPanel(features) {
+  function buildResultsPanel(features, polygonGraphics) {
     features.forEach(function (feature) {
       // PUT BACK TO FILTER OUT EMPTY OWNERS
       if (feature.attributes.Owner === "" || null || undefined) {
@@ -359,7 +375,7 @@ require([
       if (!locationCoOwner && locationGeom) {
         listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner}`;
       } else if (!locationCoOwner && !locationGeom) {
-        listItemHTML = `  ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}<div style="color: red";>No Geometry</div>`;
+        listItemHTML = `  ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}<div style="position: absolute; color: red; right: 0; padding-right: 5px";>No Geometry</div>`;
       }
       // } else if (!locationGeom && !locationCoOwner) {
       //   listItemHTML = `<div style="color: red";>No Geometry</div> ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}`;
@@ -394,7 +410,7 @@ require([
           let itemId = e.target.getAttribute("data-id");
           let objectID = e.target.getAttribute("object-id");
 
-          zoomToFeature(objectID);
+          zoomToFeature(objectID, polygonGraphics);
           $("#featureWid").hide();
           $("#result-btns").hide();
           $("#total-results").hide();
@@ -492,7 +508,7 @@ require([
       };
 
       // Map each geometry to a graphic
-      var polygonGraphics = finalResults
+      polygonGraphics = finalResults
         .map(function (feature) {
           if (!feature.geometry) {
             console.error("Feature does not have geometry:", feature);
@@ -508,7 +524,7 @@ require([
       // Add all polygon graphics to the graphics layer
       graphicsLayer.addMany(polygonGraphics);
       sketchGL.removeAll();
-      buildResultsPanel(finalResults);
+      buildResultsPanel(finalResults, polygonGraphics);
     }
   }
 
@@ -535,6 +551,15 @@ require([
 
       // selectFeatures(event.graphic.geometry);
     }
+  });
+
+  $("#select-button").on("click", function (e) {
+    lasso = false;
+    sketch.cancel();
+  });
+
+  $("#home").on("click", function (e) {
+    view.goTo(webmap.portalItem.extent);
   });
 
   class Parcel {
@@ -729,6 +754,7 @@ require([
     let features;
 
     function addPolygons(polygonGeometries, graphicsLayer) {
+      let bufferGraphicId = "addPolygons";
       features = polygonGeometries.features;
       console.log(features);
       var fillSymbol = {
@@ -741,7 +767,7 @@ require([
       };
 
       // Map each geometry to a graphic
-      var polygonGraphics = features
+      polygonGraphics = features
         .map(function (feature) {
           // if (feature.uniqueId == )
           console.log(feature);
@@ -753,6 +779,7 @@ require([
           return new Graphic({
             geometry: feature.geometry,
             symbol: fillSymbol,
+            id: bufferGraphicId,
           });
         })
         .filter((graphic) => graphic !== null);
@@ -797,12 +824,15 @@ require([
       $("#parcel-feature").empty();
       $("#exportResults").hide();
       $("#results-div").css("height", "150px");
+      view.graphics.removeAll();
       const existingBufferGraphicIndex = view.graphics.items.findIndex(
         (g) => g.id === bufferGraphicId
       );
       if (existingBufferGraphicIndex > -1) {
         view.graphics.removeAt(existingBufferGraphicIndex);
       }
+      view.graphics.addMany(polygonGraphics);
+      // polygonGraphics
     });
   });
 
@@ -1362,7 +1392,9 @@ require([
     detailsDiv.appendChild(details);
   }
 
-  function zoomToFeature(objectid) {
+  function zoomToFeature(objectid, polygonGraphics) {
+    //LOOK for this graphic id and either add transparent fill or save/remove and add again
+    // let bufferGraphicId = "addPolygons";
     let bufferGraphicId = "uniqueBufferGraphicId";
     let abuttersID = "BufferGraphicId";
 
@@ -1371,9 +1403,17 @@ require([
       (g) => g.id === bufferGraphicId
     );
 
+    // OR COULD I JUST removeAt and give the graphic id of 'addPolygons' since they all have it?
+    // then make sure to save the array of graphics in an array in this function
+    // then add them back in the location of code when they go back to results?
+    // might not need to go and find index etc. if above suggestion works
+    //last idea is to removeall graphics and add them back if i save them as an array when a user goes back to results, since
+    // details only shows one graphic selected at a time?
     if (existingBufferGraphicIndex > -1) {
       view.graphics.removeAt(existingBufferGraphicIndex);
     }
+    console.log(view.graphics);
+    view.graphics.removeAll(polygonGraphics);
     // console.log(objectid);
     let matchingObject = firstList.filter((obj) => obj.objectid == objectid);
     // console.log(matchingObject);
@@ -1464,6 +1504,8 @@ require([
   // LOGIC FOR SEARCH OF FEATURE LAYERS AND RELATED RECORDS
 
   const runQuery = (e) => {
+    firstList = [];
+
     noCondosLayer.visible = true;
     CondosLayer.visible = true;
     let suggestionsContainer = document.getElementById("suggestions");
@@ -1615,6 +1657,9 @@ require([
   document
     .getElementById("searchInput")
     .addEventListener("input", function (e) {
+      firstList = [];
+      $("#sidebar2").css("left", "-350px");
+      $("#results-div").css("left", "0px");
       // layerVisible = true;
       $("#dropdown").toggleClass("expanded");
       $("#dropdown").hide();
@@ -1636,8 +1681,8 @@ require([
         $("#dropdown").hide();
         $("#result-btns").hide();
         $("#details-btns").hide();
-        $("#results-div").css("left", "0px");
-        $("#sidebar2").css("left", "-350px");
+
+        // $("#sidebar2").css("left", "-350px");
         $("#right-arrow-2").show();
         $("#left-arrow-2").hide();
         $("#abutters-content").hide();
@@ -1732,6 +1777,8 @@ require([
     .addEventListener("submit", function (e) {
       noCondosLayer.visible = true;
       CondosLayer.visible = true;
+      firstList = [];
+      view.graphics.removeAll();
 
       e.preventDefault();
       $("#featureWid").empty();
@@ -1748,8 +1795,11 @@ require([
   document
     .getElementById("searchButton")
     .addEventListener("click", function () {
+      $("#sidebar2").css("left", "-350px");
+      view.graphics.removeAll();
       noCondosLayer.visible = true;
       CondosLayer.visible = true;
+      $("dropdown").empty();
       $("#featureWid").empty();
       $("#abutters-content").hide();
       $("#selected-feature").empty();
