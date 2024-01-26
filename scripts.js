@@ -106,7 +106,7 @@ require([
 
   let runQuerySearchTerm;
   let clickedToggle;
-  let detailSelected;
+  let detailSelected = [];
   let firstList = [];
   let detailsGeometry;
   let queryUnits = "feet";
@@ -875,6 +875,7 @@ require([
       $("#selected-feature").empty();
       $("#backButton").show();
       $("#detailsButton").show();
+      $("#parcel-feature").empty();
       $("#backButton-div").css("padding-top", "78px");
       $("#abutters-title").html(`Abutting Parcels (0)`);
       buildAbuttersPanel(e);
@@ -920,8 +921,13 @@ require([
       bufferPush();
     });
 
+    let debounceTimer;
     function bufferPush() {
-      runBuffer(currentVal);
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        runBuffer(currentVal);
+      }, 300);
+      // runBuffer(currentVal);
     }
 
     $(".units").on("click", function (e) {
@@ -1042,8 +1048,21 @@ require([
 
   // THIS IS WHERE YOU WOULD MAKE UNITS A VARIABLE FOR USER SELECTION
   function queryDetailsBuffer(geometry) {
+    // Loader.open();
+    let bothResults = [];
+
+    const abuttersDiv = document.getElementById("parcel-feature");
+    abuttersDiv.innerHTML = "";
+
     // const abuttersDiv = document.getElementById("parcel-feature");
-    $("#parcel-feature").empty();
+    // $("#parcel-feature").empty();
+    // $(".abutters-list").empty();
+
+    // const abuttersDiv = document.getElementById("parcel-feature");
+
+    // if (abuttersDiv.children.length > 0) {
+    //   abuttersDiv.innerHTML = "";
+    // }
 
     const parcelQuery = {
       spatialRelationship: "intersects", // Relationship operation to apply
@@ -1059,13 +1078,30 @@ require([
       .queryFeatures(parcelQuery)
       .then((results) => {
         CondosLayer.queryFeatures(parcelQuery).then((results2) => {
-          // console.log(results2);
-          // console.log(results);
-          let bothResults = [...results.features, ...results2.features];
-          console.log(bothResults);
+          bothResults = [...results.features, ...results2.features];
+          const seenLocations = new Set();
+
+          let noDupBothResults = bothResults.filter((item) => {
+            if (seenLocations.has(item.attributes.OBJECTID)) {
+              return false;
+            }
+            seenLocations.add(item.attributes.OBJECTID);
+            return true;
+          });
+
+          // console.log(noDupBothResults);
+          // console.log(seenLocations);
+
+          let foundLocs = bothResults.filter((element) =>
+            seenLocations.has(element.attributes.OBJECTID)
+          );
+
+          // console.log(foundLocs);
+
+          // console.log(bothResults);
           totalResults = bothResults.length;
           let noResultDups = bothResults;
-          console.log(noResultDups);
+          // console.log(noResultDups);
           // let bothResults = [...noResultDups, totalResults];
           // console.log(bothResults);
 
@@ -1080,37 +1116,10 @@ require([
 
           exportResults = bothResults;
           console.log(exportResults);
+
+          let listItemHTML = "";
           // console.log(lastResults);
-
-          lastResults.forEach(function (feature) {
-            // let totalResults = results.features.length;
-            // let seenObjectIds = new Set();
-
-            // let finalResults = results.features.filter((item) => {
-            //   if (!seenObjectIds.has(item.attributes.objectid)) {
-            //     seenObjectIds.add(item.attributes.objectid);
-            //     return true;
-            //   }
-            //   return false;
-            // });
-
-            // Now finalResults contains only items with unique objectid
-            // ... (rest of your code)
-
-            // let totalResults = [];
-            // totalResults = results.features.length;
-            // let noResultDups = results.features;
-
-            // let finalResults = noResultDups.filter(
-            //   (item, index) => noResultDups.indexOf(item) === index
-            // );
-
-            // lastResults = new Set(finalResults);
-            // exportResults = [];
-
-            // exportResults = noResultDups;
-
-            // noResultDups.forEach(function (feature) {
+          foundLocs.forEach(function (feature) {
             let locationGISLINK = feature.attributes["GIS_LINK"];
             let objectID = feature.attributes["OBJECTID"];
             let owner = feature.attributes["Owner"];
@@ -1121,11 +1130,10 @@ require([
             let Mail_State = feature.attributes["Mail_State"];
             let Mailing_Zip = feature.attributes["Mailing_Zip"];
 
-            const abuttersDiv = document.getElementById("parcel-feature");
-
             const listGroup = document.createElement("ul");
             listGroup.classList.add("row");
             listGroup.classList.add("list-group");
+            listGroup.classList.add("abutters-list");
 
             const listItem = document.createElement("li");
             listItem.classList.add("abutters-group-item", "col-12");
@@ -1177,14 +1185,25 @@ require([
   function addOrUpdateBufferGraphic(bufferResults) {
     bufferGraphicId = "BufferGraphicId";
 
-    const fillSymbol = {
-      type: "simple-fill",
-      color: [55, 150, 240, 0],
+    let fillSymbol = {
+      type: "simple-fill", // autocasts as new SimpleFillSymbol()
+      color: [51, 51, 204, 0.1],
+      style: "forward-diagonal",
       outline: {
-        color: [144, 110, 230],
-        width: 2,
+        // autocasts as new SimpleLineSymbol()
+        color: "#FF7900",
+        width: 4,
       },
     };
+
+    // const fillSymbol = {
+    //   type: "simple-fill",
+    //   color: [55, 150, 240, 0],
+    //   outline: {
+    //     color: [144, 110, 230],
+    //     width: 4,
+    //   },
+    // };
 
     // Find and remove the existing buffer graphic
     const existingBufferGraphicIndex = view.graphics.items.findIndex(
@@ -1217,7 +1236,7 @@ require([
   function buildDetailsPanel(objectId, itemId) {
     // let itemId = e.target.getAttribute("data-id");
     // let objectId = e.target.getAttribute("object-id");
-    detailSelected = itemId;
+    detailSelected = [objectId, itemId];
     // let location = e.target.getAttribute("location");
 
     // console.log(itemId);
@@ -1408,8 +1427,6 @@ require([
   }
 
   function zoomToFeature(objectid, polygonGraphics) {
-    //LOOK for this graphic id and either add transparent fill or save/remove and add again
-    // let bufferGraphicId = "addPolygons";
     let bufferGraphicId = "uniqueBufferGraphicId";
     let abuttersID = "BufferGraphicId";
 
@@ -1418,12 +1435,6 @@ require([
       (g) => g.id === bufferGraphicId
     );
 
-    // OR COULD I JUST removeAt and give the graphic id of 'addPolygons' since they all have it?
-    // then make sure to save the array of graphics in an array in this function
-    // then add them back in the location of code when they go back to results?
-    // might not need to go and find index etc. if above suggestion works
-    //last idea is to removeall graphics and add them back if i save them as an array when a user goes back to results, since
-    // details only shows one graphic selected at a time?
     if (existingBufferGraphicIndex > -1) {
       view.graphics.removeAt(existingBufferGraphicIndex);
     }
@@ -1470,8 +1481,10 @@ require([
 
     var matchedObject = firstList.find(function (item) {
       return (
-        detailSelected.uniqueId === itemSelected ||
-        item.GIS_LINK === itemSelected
+        (item.uniqueId === itemSelected[1] &&
+          item.objectid === Number(itemSelected[0])) ||
+        (item.GIS_LINK === itemSelected[1] &&
+          item.objectid === Number(itemSelected[0]))
       );
     });
 
@@ -1559,17 +1572,6 @@ require([
       query.returnGeometry = false;
       query.returnHiddenFields = true; // Adjust based on your needs
       query.outFields = ["*"];
-      // query.outFields = [
-      //   "Street_Name",
-      //   "MBL",
-      //   "Location",
-      //   "Co_Owner",
-      //   "Uniqueid",
-      //   "Owner",
-      //   "GIS_LINK",
-      //   "objectid",
-      // ];
-      console.log(query);
 
       noCondosTable
         .queryFeatures(query)
@@ -1578,14 +1580,10 @@ require([
 
           if (response.features.length > 0) {
             features = response.features;
-            console.log(features);
             features.forEach(function (feature) {
               if (feature.attributes.Owner === "" || null || undefined) {
                 return;
               } else {
-                // console.log(feature);
-                // console.log(feature.uid);
-                // let uid = feature.uid;
                 let objectId = feature.attributes["OBJECTID"];
                 let locationVal = feature.attributes.Location;
                 let locationUniqueId = feature.attributes["Uniqueid"];
@@ -1663,19 +1661,14 @@ require([
           console.error("Error querying for details:", error);
         });
     }
-    // console.log(firstList);
-    // Now query the related records based on this objectId
   };
 
-  // first function run from user typing in search input field
-  // Attach event listener to the search input
   document
     .getElementById("searchInput")
     .addEventListener("input", function (e) {
       firstList = [];
       $("#sidebar2").css("left", "-350px");
       $("#results-div").css("left", "0px");
-      // layerVisible = true;
       $("#dropdown").toggleClass("expanded");
       $("#dropdown").hide();
       $("#result-btns").hide();
@@ -1696,8 +1689,6 @@ require([
         $("#dropdown").hide();
         $("#result-btns").hide();
         $("#details-btns").hide();
-
-        // $("#sidebar2").css("left", "-350px");
         $("#right-arrow-2").show();
         $("#left-arrow-2").hide();
         $("#abutters-content").hide();
