@@ -337,6 +337,11 @@ require([
     // }
     console.log(firstList);
     console.log(uniqueArray);
+
+    uniqueArray.sort((a, b) =>
+      a.owner.toLowerCase().localeCompare(b.owner.toLowerCase())
+    );
+
     uniqueArray.forEach(function (feature) {
       console.log(feature);
       searchResults = uniqueArray.length;
@@ -348,7 +353,7 @@ require([
       // let Mail_State =
       // matchedObject.Mail_State === undefined ? "" : matchedObject.Mail_State;
       let locationGISLINK = feature.GIS_LINK;
-      let locationCoOwner = feature.Co_Owner;
+      let locationCoOwner = feature.coOwner;
       let locationOwner = feature.owner;
       let locationMBL = feature.MBL;
       let locationGeom = feature.geometry;
@@ -376,6 +381,8 @@ require([
         listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner}`;
       } else if (!locationCoOwner && !locationGeom) {
         listItemHTML = `  ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}<div style="position: absolute; color: red; right: 0; padding-right: 5px";>No Geometry</div>`;
+      } else {
+        listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner} ${locationCoOwner}`;
       }
       // } else if (!locationGeom && !locationCoOwner) {
       //   listItemHTML = `<div style="color: red";>No Geometry</div> ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}`;
@@ -926,7 +933,7 @@ require([
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         runBuffer(currentVal);
-      }, 300);
+      }, 200);
       // runBuffer(currentVal);
     }
 
@@ -1020,7 +1027,7 @@ require([
     style += "body, ul { margin: 0; padding: 0;font-size: 8px; }";
     style += "ul { list-style-type: none; }";
     style +=
-      "li { display: flex; align-items: center;  text-align: center; justify-content: center; box-sizing: border-box; width: 2.625in; height: 1in; padding: 0in; font-size: 10px;  }";
+      "li { display: flex; align-items: center;  text-align: center; justify-content: center; box-sizing: border-box; width: 2.625in; height: 1in; padding: 0.5in; font-size: 8px;  }";
     style += "@media print {";
     style +=
       "  body { width: 8.5in; height: 11in; padding-top: 0.5in; padding-left: 0.21975in; padding-right: 0.21975in; box-sizing: border-box; }";
@@ -1286,7 +1293,7 @@ require([
     // let locationGISLINK =
     //   matchedObject.GIS_LINK === undefined ? "" : matchedObject.GIS_LINK;
     let locationCoOwner =
-      matchedObject.Co_Owner === undefined ? "" : matchedObject.Co_Owner;
+      matchedObject.coOwner === undefined ? "" : matchedObject.coOwner;
     let locationOwner =
       matchedObject.owner === undefined ? "" : matchedObject.owner;
     let locationMBL = matchedObject.MBL === undefined ? "" : matchedObject.MBL;
@@ -1375,7 +1382,7 @@ require([
           <div>
               <p>
                   <span style="font-size:9pt;">Owners:&nbsp;</span><br>
-                  <span style="font-size:9pt;"><strong>${locationOwner} ${locationCoOwner}</strong></span><br>
+                  <span style="font-size:9pt;"><strong>${locationOwner} & ${locationCoOwner}</strong></span><br>
                   <span style="font-size:9pt;">Unique ID: <strong>${locationUniqueId}</strong></span><br>
                   <span style="font-size:9pt;">MBL: <strong>${locationMBL}</strong></span><br>
                   <span style="font-size:9pt;">Mailing Address:&nbsp;</span><br>
