@@ -31,6 +31,16 @@ require([
   SketchViewModel,
   View
 ) {
+  // Key to check in sessionStorage
+  const key = "condos"; // no condos default
+
+  // Check if the key exists in sessionStorage
+  if (sessionStorage.getItem(key) === null) {
+    // If the key doesn't exist, set it to "none"
+    sessionStorage.setItem(key, "no");
+  } else {
+  }
+
   const searchGraphicsLayers = new GraphicsLayer();
   const sketchGL = new GraphicsLayer();
 
@@ -141,13 +151,30 @@ require([
     },
   };
 
+  // let CondosLayer = new FeatureLayer({
+  //   url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/Washington_Just_Condos/FeatureServer/0",
+  //   visible: false,
+  //   popupEnabled: true,
+  // });
+
   let CondosLayer = new FeatureLayer({
-    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/Washington_Just_Condos/FeatureServer/0",
+    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels_CONDOS/FeatureServer/0",
     visible: false,
     popupEnabled: true,
-
-    // defaultPopupTemplateEnabled: true,
   });
+
+  CondosLayer.renderer = {
+    type: "simple", // autocasts as new SimpleRenderer()
+    symbol: {
+      type: "simple-fill", // autocasts as new SimpleMarkerSymbol()
+      color: [255, 255, 255, 0],
+      outline: {
+        // autocasts as new SimpleLineSymbol()
+        width: 1,
+        color: [169, 169, 169, 1],
+      },
+    },
+  };
 
   const CondosTable = new FeatureLayer({
     url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_CONDOS/FeatureServer/1",
@@ -466,6 +493,9 @@ require([
     let features = [];
     let totalResults = [];
     let graphicsLayer = view.graphics;
+
+    // if (sessionStorage.getItem(key) === "no") {
+    // }
 
     function runCondoQuery() {
       let query2 = CondosLayer.createQuery();
@@ -796,24 +826,47 @@ require([
       // console.log(polygonGraphics);
     }
 
-    noCondosLayer.queryFeatures(query).then(function (result) {
-      if (result.features.length > 1) {
+    // add logic for nocondos or just condos here
+
+    // if (sessionStorage.getItem(key) === "no") {
+    //   noCondosLayer.queryFeatures(query).then(function (result) {
+    //     if (result.features.length > 1) {
+    //       console.log(`no condos result: ${result}`);
+    //       view.goTo(result.features);
+    //       addPolygons(result, view.graphics);
+    //       buildResultsPanel(result.features);
+    //     } else {
+    //       CondosLayer.queryFeatures(query2).then(function (result) {
+    //         if (result.features) {
+    //           console.log(`condos result: ${result}`);
+    //           // addCondoPolygons(result);
+    //           view.goTo(result.features);
+    //           addPolygons(result, view.graphics);
+    //           buildResultsPanel(result.features);
+    //         }
+    //       });
+    //     }
+    //   });
+    // } else {}
+
+    if (sessionStorage.getItem(key) === "no") {
+      noCondosLayer.queryFeatures(query).then(function (result) {
         console.log(`no condos result: ${result}`);
         view.goTo(result.features);
         addPolygons(result, view.graphics);
         buildResultsPanel(result.features);
-      } else {
-        CondosLayer.queryFeatures(query2).then(function (result) {
-          if (result.features) {
-            console.log(`condos result: ${result}`);
-            // addCondoPolygons(result);
-            view.goTo(result.features);
-            addPolygons(result, view.graphics);
-            buildResultsPanel(result.features);
-          }
-        });
-      }
-    });
+      });
+    } else {
+      CondosLayer.queryFeatures(query2).then(function (result) {
+        if (result.features) {
+          console.log(`condos result: ${result}`);
+          // addCondoPolygons(result);
+          view.goTo(result.features);
+          addPolygons(result, view.graphics);
+          buildResultsPanel(result.features);
+        }
+      });
+    }
   }
 
   $(document).ready(function () {
