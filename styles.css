@@ -285,9 +285,10 @@ ul {
   justify-content: space-between;
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
+  margin-top: 10px;
   top: 30%;
   left: 250px; /* the width of #sidebar */
-  height: 150px;
+  height: 200px;
   width: 55px;
   background-color: var(--background-color) !important;
   transition: left 0.5s;
