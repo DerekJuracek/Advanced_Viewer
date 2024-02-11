@@ -88,7 +88,7 @@ main {
 
 ul {
   height: 80px;
-  background-color: var(--background-color) !important;
+  /* background-color: var(--background-color) !important; */
   border-radius: 2px 2px 2px 2px !important;
   vertical-align: middle;
   /* padding-bottom: 0px; */
@@ -367,6 +367,7 @@ ul {
 .image-div {
   display: flex;
   padding-top: 10px;
+  background-color: var(--background-color) !important;
   /* align-items: center; */
   /* justify-content: center; */
   padding-left: 0;
