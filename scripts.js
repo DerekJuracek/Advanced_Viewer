@@ -119,6 +119,7 @@ require([
   let detailSelected = [];
   let firstList = [];
   let detailsGeometry;
+  let CondoBuffer = false;
   let targetExtent;
   let queryUnits = "feet";
   let exportResults;
@@ -1474,7 +1475,11 @@ require([
     let unit = queryUnits;
     let bufferResults;
 
-    if (sessionStorage.getItem(key) == "no" && isGisLink.length > 2) {
+    if (
+      sessionStorage.getItem(key) == "no" &&
+      isGisLink.length >= 1 &&
+      CondoBuffer == false
+    ) {
       bufferResults = geometryEngine.buffer(targetExtent, buffer, unit);
       console.log(`no condos buffer run`);
     } else {
@@ -1676,6 +1681,7 @@ require([
       isGisLink.length > 1
     ) {
       if (noCondosParcelGeom[0].geometry) {
+        CondoBuffer = false;
         targetExtent = noCondosParcelGeom[0].geometry;
         const fillSymbol = {
           type: "simple-fill",
@@ -1696,16 +1702,8 @@ require([
       } else {
         console.log(`issue getting targetExtent geometry`);
       }
-    }
-    // else if (Parcel_Type = "Condominium"
-    //   ) {
-
-    // }
-    // still can have no condos searched here and drawn graphics
-    // if not searched on by GIS_LINK
-    // or if searching "john", this will return many condos still
-    // graphics drawn here and correct geometry as its same logic
-    else {
+    } else {
+      CondoBuffer = true;
       let matchingObject = firstList.filter((obj) => obj.objectid == objectid);
 
       if (matchingObject) {
@@ -1735,6 +1733,7 @@ require([
           });
           view.graphics.addMany([polygonGraphic]);
         } else {
+          CondoBuffer = false;
           let whereClause = `GIS_LINK = '${matchingObject[0].GIS_LINK}'`;
           let query = noCondosLayer.createQuery();
           query.where = whereClause;
@@ -1762,7 +1761,7 @@ require([
             };
 
             const polygonGraphic = new Graphic({
-              geometry: geometry,
+              geometry: targetExtent,
               symbol: fillSymbol,
               id: bufferGraphicId,
             });
