@@ -1697,6 +1697,10 @@ require([
         console.log(`issue getting targetExtent geometry`);
       }
     }
+    // else if (Parcel_Type = "Condominium"
+    //   ) {
+
+    // }
     // still can have no condos searched here and drawn graphics
     // if not searched on by GIS_LINK
     // or if searching "john", this will return many condos still
@@ -1704,13 +1708,49 @@ require([
     else {
       let matchingObject = firstList.filter((obj) => obj.objectid == objectid);
 
-      if (matchingObject != undefined) {
-        matchingObject.forEach(function (feature) {
-          // console.log(feature);
-          if (feature["geometry"] != null && feature["geometry"] != "") {
-            detailsGeometry = feature["geometry"];
-            // condoGeo = detailsGeometry;
-            view.goTo(detailsGeometry);
+      if (matchingObject) {
+        // matchingObject.forEach(function (feature) {
+        // console.log(feature);
+        if (
+          matchingObject[0].geometry != null &&
+          matchingObject[0].geometry != ""
+        ) {
+          detailsGeometry = matchingObject[0].geometry;
+          // condoGeo = detailsGeometry;
+          view.goTo(detailsGeometry);
+
+          const fillSymbol = {
+            type: "simple-fill",
+            color: [0, 0, 0, 0.1],
+            outline: {
+              color: [255, 0, 0, 1],
+              width: 3,
+            },
+          };
+
+          const polygonGraphic = new Graphic({
+            geometry: detailsGeometry,
+            symbol: fillSymbol,
+            id: bufferGraphicId,
+          });
+          view.graphics.addMany([polygonGraphic]);
+        } else {
+          let whereClause = `GIS_LINK = '${matchingObject[0].GIS_LINK}'`;
+          let query = noCondosLayer.createQuery();
+          query.where = whereClause;
+          query.returnGeometry = true;
+          query.returnHiddenFields = true; // Adjust based on your needs
+          query.outFields = ["*"];
+
+          noCondosLayer.queryFeatures(query).then((response) => {
+            let feature = response;
+            let geometry = feature.features[0].geometry;
+            console.log(response);
+            console.log(geometry);
+
+            targetExtent = geometry;
+
+            view.goTo(geometry);
 
             const fillSymbol = {
               type: "simple-fill",
@@ -1722,13 +1762,14 @@ require([
             };
 
             const polygonGraphic = new Graphic({
-              geometry: detailsGeometry,
+              geometry: geometry,
               symbol: fillSymbol,
               id: bufferGraphicId,
             });
             view.graphics.addMany([polygonGraphic]);
-          }
-        });
+          });
+        }
+        // });
       }
     }
   }
