@@ -1130,7 +1130,8 @@ require([
     style += "  body { margin: 0.0in 0.1875in; }"; // Adjusted body margin for print
     style += "  .label-list { padding: 0; }";
     style += "  .label-list li { margin-right: 0in; margin-bottom: 0; }"; // Remove right margin on labels
-    style += "  @page { margin: 0.5in; }"; // Adjust as needed for your printer
+    style +=
+      "  @page { margin-top: 0.5in; margin-bottom: 0.5in; margin-left: 0.25in; margin-right: 0.25in }"; // Adjust as needed for your printer
     style += "}";
     style += "</style>";
 
