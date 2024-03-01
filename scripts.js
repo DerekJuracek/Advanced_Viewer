@@ -68,14 +68,6 @@ require([
     },
   });
 
-  view.popupEnabled = true;
-  view.on("click", (event) => {
-    view.openPopup({
-      title: "popup",
-      // Set properties for the manually opened popup
-    });
-  });
-
   webmap.add(sketchGL);
   const sketchWidget = document.getElementById("sketch-widget");
 
@@ -94,7 +86,6 @@ require([
           select: false,
         },
         creationMode: "single",
-
         selectionTools: {
           "lasso-selection": true,
           "rectangle-selection": false,
@@ -109,16 +100,8 @@ require([
         undoRedoMenu: false,
         sketchPanel: false,
       },
-      // Default Value:["point", "polyline", "polygon", "rectangle", "circle"]
-      // graphic will be selected as soon as it is created
       creationMode: "update",
     });
-    // Hide the Sketch widget's default UI
-    // sketch.container.style.display = "none";
-
-    // console.log(sketch.selectionTools);
-
-    // view.ui.add(sketch, sketchWidget);
   });
 
   let runQuerySearchTerm;
@@ -137,6 +120,7 @@ require([
   let polygonGraphics;
   let noCondosParcelGeom;
   let isGisLink;
+  let isClickEvent = false;
 
   let value = document.getElementById("buffer-value");
   const clearBtn = document.getElementById("clear-btn");
@@ -150,23 +134,16 @@ require([
   });
 
   noCondosLayer.renderer = {
-    type: "simple", // autocasts as new SimpleRenderer()
+    type: "simple",
     symbol: {
-      type: "simple-fill", // autocasts as new SimpleMarkerSymbol()
+      type: "simple-fill",
       color: [255, 255, 255, 0],
       outline: {
-        // autocasts as new SimpleLineSymbol()
         width: 1,
         color: [169, 169, 169, 1],
       },
     },
   };
-
-  // let CondosLayer = new FeatureLayer({
-  //   url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/Washington_Just_Condos/FeatureServer/0",
-  //   visible: false,
-  //   popupEnabled: true,
-  // });
 
   let CondosLayer = new FeatureLayer({
     url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels_CONDOS/FeatureServer/0",
@@ -251,90 +228,17 @@ require([
       view.goTo(webmap.portalItem.extent);
     }
     lasso = false;
+
+    view.graphics.removeAll();
+    polygonGraphics = [];
   }
 
-  function buildResultsPanel(features, polygonGraphics) {
-    $("status-loader").show();
-    features.forEach(function (feature) {
-      // PUT BACK TO FILTER OUT EMPTY OWNERS
-      if (feature.attributes.Owner === "" || null || undefined) {
-        return;
-      } else {
-        // secondList.push(feature.attributes["Uniqueid"]);
-        // console.log("Detailed feature:", feature.attributes.Location);
-        // let uid = feature.uid;
-        let objectId = feature.attributes["OBJECTID"];
-        let locationVal = feature.attributes.Location;
-        let locationUniqueId = feature.attributes["Uniqueid"];
-        let locationGISLINK = feature.attributes["GIS_LINK"];
-        let locationCoOwner = feature.attributes["Co_Owner"];
-        let locationOwner = feature.attributes["Owner"];
-        let locationMBL = feature.attributes["MBL"];
-        let locationGeom = feature.geometry;
-        let mailingAddress = feature.attributes["Mailing_Address_1"];
-        let mailingAddress2 = feature.attributes["Mailing_Address_2"];
-        let Mailing_City = feature.attributes["Mailing_City"];
-        let Mail_State = feature.attributes["Mail_State"];
-        let Mailing_Zip = feature.attributes["Mailing_Zip"];
-        let Total_Acres = feature.attributes["Total_Acres"];
-        let Parcel_Primary_Use = feature.attributes["Parcel_Primary_Use"];
-        let Building_Use_Code = feature.attributes["Building_Use_Code"];
-        let Parcel_Type = feature.attributes["Parcel_Type"];
-        let Design_Type = feature.attributes["Design_Type"];
-        let Zoning = feature.attributes["Zoning"];
-        let Neighborhood = feature.attributes["Neighborhood"];
-        let Land_Type_Rate = feature.attributes["Land_Type_Rate"];
-        let Functional_Obs = feature.attributes["Functional_Obs"];
-        let External_Obs = feature.attributes["External_Obs"];
-        let Sale_Date = feature.attributes["Sale_Date"];
-        let Sale_Price = feature.attributes["Sale_Price"];
-        let Vol_Page = feature.attributes["Vol_Page"];
-        let Assessed_Total = feature.attributes["Assessed_Total"];
-        let Appraised_Total = feature.attributes["Appraised_Total"];
-        let Influence_Factor = feature.attributes["Influence_Factor"];
-        let Influence_Type = feature.attributes["Influence_Type"];
-        let Land_Type = feature.attributes["Land_Type"];
-        let geometry = feature.attributes["geometry"];
+  function buildResultsPanel(features, polygonGraphics, e) {
+    console.log(features);
+    console.log(view.graphics);
 
-        firstList.push(
-          new Parcel(
-            objectId,
-            locationVal,
-            locationMBL,
-            locationUniqueId,
-            locationCoOwner,
-            locationOwner,
-            locationGISLINK,
-            locationGeom,
-            mailingAddress,
-            mailingAddress2,
-            Mailing_City,
-            Mail_State,
-            Mailing_Zip,
-            Total_Acres,
-            Parcel_Primary_Use,
-            Building_Use_Code,
-            Parcel_Type,
-            Design_Type,
-            Zoning,
-            Neighborhood,
-            Land_Type_Rate,
-            Functional_Obs,
-            External_Obs,
-            Sale_Date,
-            Sale_Price,
-            Vol_Page,
-            Assessed_Total,
-            Appraised_Total,
-            Influence_Factor,
-            Influence_Type,
-            Land_Type,
-            geometry
-          )
-        );
-      }
-    });
-    // console.log(firstList);
+    $("status-loader").show();
+    $("#featureWid").empty();
 
     let seenIds = new Set();
     let seenUID = new Set();
@@ -357,9 +261,6 @@ require([
         uniqueArray.push(obj);
       }
     });
-
-    // console.log(firstList);
-    // console.log(uniqueArray);
 
     uniqueArray.sort((a, b) =>
       a.owner.toLowerCase().localeCompare(b.owner.toLowerCase())
@@ -461,6 +362,7 @@ require([
       let objectID = targetElement.getAttribute("object-id");
 
       zoomToFeature(objectID, polygonGraphics, itemId);
+      clickHandle.remove();
       $("#featureWid").hide();
       $("#result-btns").hide();
       $("#total-results").hide();
@@ -479,12 +381,155 @@ require([
     featureWidDiv.appendChild(listGroup);
   }
 
+  function processFeatures(features, polygonGraphics, e) {
+    console.log(firstList);
+    function createList(features) {
+      features.forEach(function (feature) {
+        // PUT BACK TO FILTER OUT EMPTY OWNERS
+        if (feature.attributes.Owner === "" || null || undefined) {
+          return;
+        } else {
+          // secondList.push(feature.attributes["Uniqueid"]);
+          // console.log("Detailed feature:", feature.attributes.Location);
+          // let uid = feature.uid;
+          let objectId = feature.attributes["OBJECTID"];
+          let locationVal = feature.attributes.Location;
+          let locationUniqueId = feature.attributes["Uniqueid"];
+          let locationGISLINK = feature.attributes["GIS_LINK"];
+          let locationCoOwner = feature.attributes["Co_Owner"];
+          let locationOwner = feature.attributes["Owner"];
+          let locationMBL = feature.attributes["MBL"];
+          let locationGeom = feature.geometry;
+          let mailingAddress = feature.attributes["Mailing_Address_1"];
+          let mailingAddress2 = feature.attributes["Mailing_Address_2"];
+          let Mailing_City = feature.attributes["Mailing_City"];
+          let Mail_State = feature.attributes["Mail_State"];
+          let Mailing_Zip = feature.attributes["Mailing_Zip"];
+          let Total_Acres = feature.attributes["Total_Acres"];
+          let Parcel_Primary_Use = feature.attributes["Parcel_Primary_Use"];
+          let Building_Use_Code = feature.attributes["Building_Use_Code"];
+          let Parcel_Type = feature.attributes["Parcel_Type"];
+          let Design_Type = feature.attributes["Design_Type"];
+          let Zoning = feature.attributes["Zoning"];
+          let Neighborhood = feature.attributes["Neighborhood"];
+          let Land_Type_Rate = feature.attributes["Land_Type_Rate"];
+          let Functional_Obs = feature.attributes["Functional_Obs"];
+          let External_Obs = feature.attributes["External_Obs"];
+          let Sale_Date = feature.attributes["Sale_Date"];
+          let Sale_Price = feature.attributes["Sale_Price"];
+          let Vol_Page = feature.attributes["Vol_Page"];
+          let Assessed_Total = feature.attributes["Assessed_Total"];
+          let Appraised_Total = feature.attributes["Appraised_Total"];
+          let Influence_Factor = feature.attributes["Influence_Factor"];
+          let Influence_Type = feature.attributes["Influence_Type"];
+          let Land_Type = feature.attributes["Land_Type"];
+          let geometry = feature.attributes["geometry"];
+
+          firstList.push(
+            new Parcel(
+              objectId,
+              locationVal,
+              locationMBL,
+              locationUniqueId,
+              locationCoOwner,
+              locationOwner,
+              locationGISLINK,
+              locationGeom,
+              mailingAddress,
+              mailingAddress2,
+              Mailing_City,
+              Mail_State,
+              Mailing_Zip,
+              Total_Acres,
+              Parcel_Primary_Use,
+              Building_Use_Code,
+              Parcel_Type,
+              Design_Type,
+              Zoning,
+              Neighborhood,
+              Land_Type_Rate,
+              Functional_Obs,
+              External_Obs,
+              Sale_Date,
+              Sale_Price,
+              Vol_Page,
+              Assessed_Total,
+              Appraised_Total,
+              Influence_Factor,
+              Influence_Type,
+              Land_Type,
+              geometry
+            )
+          );
+        }
+      });
+    }
+
+    if (e) {
+      if (features.length <= 1) {
+        const pointGraphic = features[0].attributes.OBJECTID;
+
+        const count = firstList.filter(
+          (g) => g.objectid === pointGraphic
+        ).length;
+
+        if (count >= 1) {
+          // Find the index of the first occurrence
+          const firstIndex = firstList.findIndex(
+            (g) => g.objectid === pointGraphic
+          );
+
+          firstList.splice(firstIndex, 1);
+          console.log(firstList);
+        }
+        createList(features);
+      } else {
+        features.forEach(function (item, index) {
+          let pointGraphic = features[index].attributes.OBJECTID;
+
+          const count = firstList.filter(
+            (g) => g.objectid === pointGraphic
+          ).length;
+
+          if (count >= 1) {
+            // Find the index of the first occurrence
+            const firstIndex = firstList.findIndex(
+              (g) => g.objectid === pointGraphic
+            );
+
+            firstList.splice(firstIndex, 1);
+          }
+        });
+        createList(features);
+      }
+    } else {
+      if (!features) {
+        buildResultsPanel("", polygonGraphics, e);
+      } else {
+        createList(features);
+      }
+    }
+    buildResultsPanel(features, polygonGraphics, e);
+  }
+
   let features;
 
-  function addPolygons(polygonGeometries, graphicsLayer) {
-    let bufferGraphicId = "addPolygons";
-    features = polygonGeometries.features;
-    console.log(features);
+  function addPolygons(
+    polygonGeometries,
+    graphicsLayer,
+    ClickEvent,
+    tableSearch
+  ) {
+    // console.log(graphicsLayer.items);
+    if (tableSearch) {
+      features = polygonGeometries;
+    } else {
+      features = polygonGeometries.features;
+    }
+
+    let polygonGraphics2 = [];
+    let bufferGraphicId;
+
     var fillSymbol = {
       type: "simple-fill",
       color: [0, 255, 255, 0.25],
@@ -493,25 +538,107 @@ require([
         width: 2,
       },
     };
+    // means its been a click event
+    if (ClickEvent) {
+      if (polygonGeometries.features.length <= 1) {
+        let array = [];
+        console.log(polygonGeometries.features[0].attributes.OBJECTID);
+        bufferGraphicId = polygonGeometries.features[0].attributes.OBJECTID;
 
-    // Map each geometry to a graphic
-    polygonGraphics = features
-      .map(function (feature) {
-        // console.log(feature);
-        // console.log(feature.geometry);
-        if (!feature.geometry) {
-          console.error("Feature does not have geometry:", feature);
-          return null; // Skip this feature as it has no geometry
-        }
-        return new Graphic({
-          geometry: feature.geometry,
+        const graphic = new Graphic({
+          geometry: features[0].geometry,
           symbol: fillSymbol,
           id: bufferGraphicId,
         });
-      })
-      .filter((graphic) => graphic !== null);
 
-    graphicsLayer.addMany(polygonGraphics);
+        polygonGraphics2.push(graphic);
+
+        const count = firstList.filter(
+          (g) => g.objectid === bufferGraphicId
+        ).length;
+
+        if (count >= 1) {
+          const firstIndex = view.graphics.findIndex(
+            (g) => g.id === bufferGraphicId
+          );
+
+          view.graphics.removeAt(firstIndex);
+        }
+      } else {
+        let array = [];
+        polygonGeometries.features.forEach(function (item) {
+          array.push(item.attributes.OBJECTID);
+          bufferGraphicId = item.attributes.OBJECTID;
+
+          const graphic = new Graphic({
+            geometry: item.geometry,
+            symbol: fillSymbol,
+            id: bufferGraphicId,
+          });
+          polygonGraphics2.push(graphic);
+        });
+
+        let indexesToRemove = [];
+        view.graphics.items.forEach((g, index) => {
+          if (array.includes(g.id)) {
+            indexesToRemove.push(index);
+          }
+        });
+
+        indexesToRemove.reverse().forEach((index) => {
+          view.graphics.removeAt(index);
+        });
+      }
+    } else {
+      bufferGraphicId = "addPolygons";
+
+      if (tableSearch) {
+        // First, filter out features without geometry
+        const featuresWithGeometry = features.filter(
+          (feature) => feature.geometry
+        );
+
+        // Now, map each feature with geometry to a new graphic and add it to the polygonGraphics2 array
+        featuresWithGeometry.forEach((feature) => {
+          const bufferGraphicId = feature.attributes.OBJECTID;
+
+          const graphic = new Graphic({
+            geometry: feature.geometry,
+            symbol: fillSymbol,
+            id: bufferGraphicId,
+          });
+
+          polygonGraphics2.push(graphic);
+        });
+      } else {
+        features
+          .map(function (feature) {
+            bufferGraphicId = feature.attributes.OBJECTID;
+            if (!feature.geometry || tableSearch) {
+              console.error("Feature does not have geometry:", feature);
+              return null; // Skip this feature as it has no geometry
+            }
+            const graphic = new Graphic({
+              geometry: feature.geometry,
+              symbol: fillSymbol,
+              id: bufferGraphicId,
+            });
+            polygonGraphics2.push(graphic);
+          })
+          .filter((graphic) => graphic !== null);
+      }
+    }
+    if (polygonGraphics2.length >= 1) {
+      graphicsLayer.addMany(polygonGraphics2);
+    }
+
+    if (!polygonGraphics) {
+      polygonGraphics = polygonGraphics2;
+    } else if (ClickEvent) {
+      polygonGraphics = [...polygonGraphics, polygonGraphics2[0]];
+    } else {
+      polygonGraphics = polygonGraphics2;
+    }
   }
 
   let sketch = new SketchViewModel({
@@ -536,6 +663,7 @@ require([
   });
 
   function highlightLasso(lasso) {
+    clickHandle = view.on("click", handleClick);
     let results = [];
     let features = [];
     let totalResults = [];
@@ -597,6 +725,7 @@ require([
           return new Graphic({
             geometry: feature.geometry,
             symbol: fillSymbol,
+            id: feature.attributes.OBJECTID,
           });
         })
         .filter((graphic) => graphic !== null);
@@ -604,13 +733,12 @@ require([
       // Add all polygon graphics to the graphics layer
       graphicsLayer.addMany(polygonGraphics);
       sketchGL.removeAll();
-      buildResultsPanel(finalResults, polygonGraphics);
+      processFeatures(finalResults, polygonGraphics);
     }
   }
 
   $("#lasso").on("click", function (e) {
     lasso = true;
-    // console.log(e.target);
     clearContents(e);
     sketchGL.removeAll();
 
@@ -620,9 +748,6 @@ require([
     } else {
       CondosLayer.visible = true;
     }
-
-    // CondosLayer.visible = true;
-    // noCondosLayer.visible = true;
     sketch.create("polygon");
   });
 
@@ -645,6 +770,7 @@ require([
 
     lasso = false;
     sketch.cancel();
+    polygonGraphics = [];
   });
 
   $("#home").on("click", function (e) {
@@ -721,92 +847,15 @@ require([
 
   // Wait until the view is loaded
   view.when(function () {
-    // Set up the event listener for the zoom in button
     document.getElementById("zoom-in").onclick = function () {
-      view.zoom += 1; // Increase the zoom level by 1
+      view.zoom += 1;
     };
 
     // Set up the event listener for the zoom out button
     document.getElementById("zoom-out").onclick = function () {
-      view.zoom -= 1; // Decrease the zoom level by 1
+      view.zoom -= 1;
     };
   });
-
-  // view
-  //   .when()
-  //   .then(() => {
-  //     return noCondosLayer.when();
-  //   })
-  //   .then((layer) => {
-  //     // const renderer = layer.renderer.clone();
-  //     // renderer.symbol.width = 1;
-  //     // renderer.symbol.color = [128, 128, 128, 1];
-  //     // renderer.symbol.outline = { color: [0, 0, 0, 0.5], width: 0.5 };
-  //     // layer.renderer = renderer;
-
-  //     // Set up an event handler for pointer-down (mobile)
-  //     // and pointer-move events (mouse)
-  //     // and retrieve the screen x, y coordinates
-
-  //     return view.whenLayerView(layer);
-  //   })
-  //   .then((layerView) => {
-  //     view.on("pointer-move", eventHandler);
-  //     view.on("pointer-down", eventHandler);
-  //     // view.on("pointer-down", eventHandler);
-
-  //     function eventHandler(event) {
-  //       // only include graphics from hurricanesLayer in the hitTest
-  //       const opts = {
-  //         include: noCondosLayer,
-  //       };
-  //       // the hitTest() checks to see if any graphics from the hurricanesLayer
-  //       // intersect the x, y coordinates of the pointer
-  //       view.hitTest(event, opts).then(getGraphics);
-  //     }
-
-  //     let highlight;
-
-  //     function getGraphics(response) {
-  //       // the topmost graphic from the hurricanesLayer
-  //       // and display select attribute values from the
-  //       // graphic to the user
-  //       if (response.results.length) {
-  //         const graphic = response.results[0].graphic;
-  //         console.log(graphic.attributes);
-
-  //         const uniqueid = graphic.attributes.uniqueId;
-  //         const GIS_LINK = graphic.attributes.GIS_LINK;
-
-  //         const id = graphic.attributes.OBJECTID;
-
-  //         if (
-  //           highlight
-  //           // (currentName !== name || currentYear !== year)
-  //         ) {
-  //           highlight.remove();
-  //           highlight = null;
-  //           return;
-  //         }
-
-  //         const query = layerView.createQuery();
-  //         query.where = "OBJECTID = " + id + "";
-  //         layerView.queryObjectIds(query).then((ids) => {
-  //           if (highlight) {
-  //             highlight.remove();
-  //           }
-  //           highlight = layerView.highlight(ids);
-  //         });
-  //       } else {
-  //         // remove the highlight if no features are
-  //         // returned from the hitTest
-  //         if (highlight) {
-  //           highlight.remove();
-  //           highlight = null;
-  //         }
-  //       }
-  //     }
-  //   });
 
   clearBtn.addEventListener("click", function () {
     clearContents();
@@ -819,6 +868,7 @@ require([
     });
 
   function queryRelatedRecords(searchTerm) {
+    const tableSearch = true;
     // console.log(firstList);
     let whereClause = `
     Street_Name LIKE '%${searchTerm}%' OR 
@@ -829,6 +879,8 @@ require([
     Owner LIKE '%${searchTerm}%' OR 
     GIS_LINK LIKE '%${searchTerm}%'
 `;
+
+    let GISLINK;
 
     let query = noCondosLayer.createQuery();
     query.where = whereClause;
@@ -842,29 +894,76 @@ require([
 
     if (sessionStorage.getItem(key) === "no") {
       noCondosLayer.queryFeatures(query).then(function (result) {
-        console.log(`no condos result: ${result}`);
+        console.log(`no condos result: ${result.features}`);
         // view.goTo(result.features);
-        if (result.features.length > 2) {
-          view.goTo(result.features);
-          console.log(result.features);
-        } else {
-          console.log(result);
-          console.log(result.features);
-          view.goTo({
-            target: result.features,
-            zoom: 16,
-          });
-        }
+        if (result.features.length >= 1) {
+          noCondosParcelGeom = result.features;
+          addPolygons(result, view.graphics);
+          processFeatures(result.features);
 
-        noCondosParcelGeom = result.features;
-        addPolygons(result, view.graphics);
-        buildResultsPanel(result.features);
+          if (result.features.length == 1) {
+            view.goTo({
+              target: result.features,
+              zoom: 16,
+            });
+          } else {
+            view.goTo({
+              target: result.features,
+            });
+          }
+        } else if (result.features.length === 1 && firstList.length > 2) {
+          // console.log(result.features[0].attributes);
+
+          const firstQuery = noCondosTable.createQuery();
+          firstQuery.where = whereClause;
+          firstQuery.returnGeometry = false;
+          firstQuery.outFields = ["*"];
+
+          noCondosTable.queryFeatures(firstQuery).then(function (result) {
+            addPolygons(result.features, "", "", tableSearch);
+            processFeatures();
+          });
+
+          // addPolygons(firstList, view.graphics);
+          // processFeatures(firstList);
+        } else {
+          const firstQuery = noCondosTable.createQuery();
+          firstQuery.where = whereClause;
+          firstQuery.returnGeometry = false;
+          firstQuery.outFields = ["*"];
+
+          if (result.features.length == 0) {
+            noCondosTable
+              .queryFeatures(firstQuery)
+              .then(function (result) {
+                GISLINK = result.features[0].attributes.GIS_LINK;
+              })
+              .then(function (result) {
+                const newQuery = noCondosLayer.createQuery();
+                newQuery.where = `GIS_LINK = '${GISLINK}'`;
+                newQuery.returnGeometry = true;
+                newQuery.outFields = ["*"];
+
+                noCondosLayer.queryFeatures(newQuery).then(function (result) {
+                  console.log(result);
+
+                  view.goTo({
+                    target: result.features,
+                    zoom: 16,
+                  });
+
+                  noCondosParcelGeom = result.features;
+                  addPolygons(result, view.graphics);
+                  processFeatures(result.features);
+                });
+              });
+          }
+        }
       });
     } else {
       CondosLayer.queryFeatures(query2).then(function (result) {
         if (result.features) {
-          console.log(`condos result: ${result}`);
-          // addCondoPolygons(result);
+          // console.log(`condos result: ${result}`);
           if (result.features.length > 2) {
             view.goTo(result.features);
           } else {
@@ -874,35 +973,54 @@ require([
             });
           }
           addPolygons(result, view.graphics);
-          buildResultsPanel(result.features);
+          processFeatures(result.features);
         }
       });
     }
   }
 
-  view.on("click", function (event) {
-    // event is the event handle returned after the event fires.
-    console.log(event);
+  var clickHandle = view.on("click", handleClick);
 
-    let query2 = CondosLayer.createQuery();
-    query2.geometry = event.mapPoint;
-    query2.distance = 1;
-    query2.units = "feet";
-    query2.spatialRelationship = "within";
-    query2.returnGeometry = true;
-    query2.outFields = ["*"];
+  function handleClick(event) {
+    // console.log(event);
+    isClickEvent = true;
 
-    CondosLayer.queryFeatures(query2).then(function (response) {
-      totalResults = response.features;
-      console.log(totalResults);
-      addPolygons(response, view.graphics);
-      buildResultsPanel(totalResults);
-      // addResultGraphics(totalResults);
-    });
-  });
+    if (sessionStorage.getItem(key) === "no") {
+      let query = CondosLayer.createQuery();
+      query.geometry = event.mapPoint;
+      query.distance = 1;
+      query.units = "feet";
+      query.spatialRelationship = "within";
+      query.returnGeometry = true;
+      query.outFields = ["*"];
+
+      noCondosLayer.queryFeatures(query).then(function (response) {
+        totalResults = response.features;
+        console.log(totalResults);
+        addPolygons(response, view.graphics, isClickEvent);
+        processFeatures(totalResults, "", event);
+      });
+    } else {
+      let query2 = CondosLayer.createQuery();
+      query2.geometry = event.mapPoint;
+      query2.distance = 1;
+      query2.units = "feet";
+      query2.spatialRelationship = "within";
+      query2.returnGeometry = true;
+      query2.outFields = ["*"];
+
+      CondosLayer.queryFeatures(query2).then(function (response) {
+        totalResults = response.features;
+        console.log(totalResults);
+        addPolygons(response, view.graphics, isClickEvent);
+        processFeatures(totalResults, "", event);
+      });
+    }
+  }
 
   $(document).ready(function () {
     $("#backButton").on("click", function () {
+      clickHandle = view.on("click", handleClick);
       $("#detailBox").hide();
       $("#featureWid").show();
       $("#result-btns").show();
@@ -925,8 +1043,14 @@ require([
         view.graphics.removeAt(existingBufferGraphicIndex);
       }
       view.graphics.addMany(polygonGraphics);
-      view.goTo(polygonGraphics);
-      // polygonGraphics
+      if (polygonGraphics.length > 1) {
+        view.goTo(polygonGraphics);
+      } else {
+        view.goTo({
+          target: polygonGraphics,
+          zoom: 16,
+        });
+      }
     });
   });
 
@@ -961,6 +1085,7 @@ require([
 
   $(document).ready(function () {
     $("#abutters").on("click", function (e) {
+      clickHandle.remove();
       $("#detailBox").hide();
       $("#featureWid").hide();
       $("#result-btns").hide();
@@ -1147,13 +1272,13 @@ require([
     win.document.write("</head><body>");
     win.document.write(transformedContent);
     win.document.write("</body></html>");
-    win.document.close(); // Close the document
+    win.document.close();
     console.log(win.document);
 
     setTimeout(() => {
-      win.print(); // Print the document
-      win.close(); // Close the window after printing
-    }, 250); // Delay to ensure rendering is complete
+      win.print();
+      win.close();
+    }, 250);
   }
 
   // THIS IS WHERE YOU WOULD MAKE UNITS A VARIABLE FOR USER SELECTION
@@ -1187,9 +1312,6 @@ require([
           seenLocations.add(item.attributes.OBJECTID);
           return true;
         });
-
-        // console.log(noDupBothResults);
-        // console.log(seenLocations);
 
         let foundLocs = bothResults.filter((element) =>
           seenLocations.has(element.attributes.OBJECTID)
@@ -1346,7 +1468,10 @@ require([
       id: bufferGraphicId, // Assigning the unique ID
     });
     view.graphics.add(newBufferGraphic);
-    view.goTo(newBufferGraphic);
+    view.goTo({
+      target: newBufferGraphic,
+      zoom: 16,
+    });
   }
 
   function runBuffer(value) {
@@ -1361,10 +1486,10 @@ require([
       CondoBuffer == false
     ) {
       bufferResults = geometryEngine.buffer(targetExtent, buffer, unit);
-      console.log(`no condos buffer run`);
+      // console.log(`no condos buffer run`);
     } else {
       bufferResults = geometryEngine.buffer(detailsGeometry, buffer, unit);
-      console.log(`condos buffer run`);
+      // console.log(`condos buffer run`);
     }
 
     addOrUpdateBufferGraphic(bufferResults);
@@ -1538,7 +1663,6 @@ require([
   function zoomToFeature(objectid, polygonGraphics, gisLink) {
     isGisLink = [];
     let bufferGraphicId = "uniqueBufferGraphicId";
-
     view.graphics.removeAll(polygonGraphics);
 
     const existingBufferGraphicIndex = view.graphics.items.findIndex(
@@ -1558,7 +1682,7 @@ require([
       isGisLink.length == firstList.length &&
       isGisLink.length > 1
     ) {
-      if (noCondosParcelGeom[0].geometry) {
+      if (noCondosParcelGeom) {
         CondoBuffer = false;
         targetExtent = noCondosParcelGeom[0].geometry;
         const fillSymbol = {
@@ -1579,10 +1703,47 @@ require([
         view.graphics.addMany([polygonGraphic]);
         view.goTo({
           target: polygonGraphic,
-          zoom: 15,
+          zoom: 16,
         });
       } else {
-        console.log(`issue getting targetExtent geometry`);
+        let whereClause = `GIS_LINK = '${gisLink}'`;
+        let query = noCondosLayer.createQuery();
+        query.where = whereClause;
+        query.returnGeometry = true;
+        query.returnHiddenFields = true; // Adjust based on your needs
+        query.outFields = ["*"];
+
+        noCondosLayer.queryFeatures(query).then((response) => {
+          let feature = response;
+          let geometry = feature.features[0].geometry;
+          console.log(response);
+          console.log(geometry);
+
+          targetExtent = geometry;
+
+          view.goTo({
+            target: geometry,
+            zoom: 16,
+          });
+
+          // view.goTo(geometry);
+          console.log(geometry);
+          const fillSymbol = {
+            type: "simple-fill",
+            color: [0, 0, 0, 0.1],
+            outline: {
+              color: [255, 0, 0, 1],
+              width: 3,
+            },
+          };
+
+          const polygonGraphic = new Graphic({
+            geometry: targetExtent,
+            symbol: fillSymbol,
+            id: bufferGraphicId,
+          });
+          view.graphics.addMany([polygonGraphic]);
+        });
       }
     } else {
       CondoBuffer = true;
@@ -1596,12 +1757,10 @@ require([
           matchingObject[0].geometry != ""
         ) {
           detailsGeometry = matchingObject[0].geometry;
-          // condoGeo = detailsGeometry;
-          // view.goTo(detailsGeometry, );
 
           view.goTo({
             target: detailsGeometry,
-            zoom: 15,
+            zoom: 16,
           });
           console.log(detailsGeometry);
 
@@ -1639,7 +1798,7 @@ require([
 
             view.goTo({
               target: geometry,
-              zoom: 15,
+              zoom: 16,
             });
 
             // view.goTo(geometry);
@@ -1882,6 +2041,7 @@ require([
 
         firstList = [];
         secondList = [];
+        polygonGraphics = [];
         $("#searchInput ul").remove();
         $("#suggestions").hide();
         $("#featureWid").empty();
@@ -1990,6 +2150,7 @@ require([
       }
       firstList = [];
       view.graphics.removeAll();
+      polygonGraphics = [];
 
       e.preventDefault();
       $("#featureWid").empty();
@@ -2008,7 +2169,7 @@ require([
     .addEventListener("click", function () {
       $("#sidebar2").css("left", "-350px");
       $("#results-div").css("left", "0px");
-      view.graphics.removeAll();
+      // view.graphics.removeAll();
       // Check if the key exists in sessionStorage
       if (sessionStorage.getItem(key) === "no") {
         noCondosLayer.visible = true;
@@ -2029,6 +2190,8 @@ require([
       $("#exportResults").hide();
       $("#exportSearch").show();
       $("#abutters-title").html(`Abutting Parcels (0)`);
+      polygonGraphics = [];
+      view.graphics.removeAll();
 
       runQuery();
     });
