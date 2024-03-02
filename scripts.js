@@ -121,6 +121,13 @@ require([
   let noCondosParcelGeom;
   let isGisLink;
   let isClickEvent = false;
+  let detailsChanged = {
+    isChanged: false,
+    item: "",
+  };
+  let DetailsHandle;
+  let clickHandle;
+  let mapHandle;
 
   let value = document.getElementById("buffer-value");
   const clearBtn = document.getElementById("clear-btn");
@@ -269,10 +276,10 @@ require([
     const listGroup = document.createElement("ul");
 
     uniqueArray.forEach(function (feature) {
-      console.log(feature);
+      // console.log(feature);
       searchResults = uniqueArray.length;
       let objectID = feature.objectid;
-      console.log(objectID);
+      // console.log(objectID);
       let locationVal = feature.location;
       let locationUniqueId =
         feature.uniqueId === undefined ? feature.GIS_LINK : feature.uniqueId;
@@ -351,6 +358,9 @@ require([
     });
 
     listGroup.addEventListener("click", function (event) {
+      if (clickHandle) {
+        clickHandle.remove();
+      }
       // Check if the clicked element is an li or a descendant of an li
       let targetElement = event.target.closest("li");
 
@@ -362,7 +372,8 @@ require([
       let objectID = targetElement.getAttribute("object-id");
 
       zoomToFeature(objectID, polygonGraphics, itemId);
-      clickHandle.remove();
+      // DetailsHandle = view.on("click", handleDetailsClick);
+      // clickHandle.remove();
       $("#featureWid").hide();
       $("#result-btns").hide();
       $("#total-results").hide();
@@ -664,6 +675,9 @@ require([
 
   function highlightLasso(lasso) {
     clickHandle = view.on("click", handleClick);
+    if (DetailsHandle) {
+      DetailsHandle.remove();
+    }
     let results = [];
     let features = [];
     let totalResults = [];
@@ -761,6 +775,7 @@ require([
   });
 
   $("#select-button").on("click", function (e) {
+    clickHandle = view.on("click", handleClick);
     clearContents("select");
     if (sessionStorage.getItem(key) === "no") {
       noCondosLayer.visible = true;
@@ -977,9 +992,67 @@ require([
         }
       });
     }
+    mapHandle = view.on("click", mapDetailsClick);
   }
 
-  var clickHandle = view.on("click", handleClick);
+  // var clickHandle = view.on("click", handleClick);
+  // var DetailsHandle = view.on("click", handleDetailsClick);
+  // mapHandle = view.on("click", mapDetailsClick);
+
+  // function that will by pass search and polygongraphics
+  // might need to add polygongraphics from here
+
+  function mapDetailsClick(event) {
+    console.log("map Details getting clicked");
+  }
+  function handleDetailsClick(event) {
+    if (clickHandle) {
+      clickHandle.remove();
+    }
+    //
+    console.log(`clicking on details pane`);
+
+    isClickEvent = true;
+
+    if (sessionStorage.getItem(key) === "no") {
+      let query = CondosLayer.createQuery();
+      query.geometry = event.mapPoint;
+      query.distance = 1;
+      query.units = "feet";
+      query.spatialRelationship = "within";
+      query.returnGeometry = true;
+      query.outFields = ["*"];
+
+      noCondosLayer.queryFeatures(query).then(function (response) {
+        totalResults = response.features;
+        let objID = response.features[0].attributes.OBJECTID;
+        let geom = response.features[0].geometry;
+        let item = response.features[0];
+        console.log(totalResults);
+
+        zoomToDetail(objID, geom, item);
+        clickDetailsPanel(totalResults);
+      });
+    } else {
+      let query2 = CondosLayer.createQuery();
+      query2.geometry = event.mapPoint;
+      query2.distance = 1;
+      query2.units = "feet";
+      query2.spatialRelationship = "within";
+      query2.returnGeometry = true;
+      query2.outFields = ["*"];
+
+      CondosLayer.queryFeatures(query2).then(function (response) {
+        totalResults = response.features;
+        let objID = response.features[0].attributes.OBJECTID;
+        let geom = response.features[0].geometry;
+        let item = response.features[0];
+
+        zoomToDetail(objID, geom, item);
+        clickDetailsPanel(totalResults);
+      });
+    }
+  }
 
   function handleClick(event) {
     // console.log(event);
@@ -1021,6 +1094,13 @@ require([
   $(document).ready(function () {
     $("#backButton").on("click", function () {
       clickHandle = view.on("click", handleClick);
+      if (DetailsHandle) {
+        DetailsHandle.remove();
+      }
+      if (clickHandle && lasso == false) {
+        clickHandle.remove();
+      }
+
       $("#detailBox").hide();
       $("#featureWid").show();
       $("#result-btns").show();
@@ -1073,6 +1153,7 @@ require([
       $("#abutters-title").html(`Abutting Parcels (0)`);
       $("#backButton-div").css("padding-top", "0px");
       $("#results-div").css("height", "150px");
+      DetailsHandle = view.on("click", handleDetailsClick);
       // Find and remove the existing buffer graphic
       const existingBufferGraphicIndex = view.graphics.items.findIndex(
         (g) => g.id === bufferGraphicId
@@ -1085,7 +1166,8 @@ require([
 
   $(document).ready(function () {
     $("#abutters").on("click", function (e) {
-      clickHandle.remove();
+      // clickHandle.remove();
+      DetailsHandle.remove();
       $("#detailBox").hide();
       $("#featureWid").hide();
       $("#result-btns").hide();
@@ -1143,9 +1225,20 @@ require([
 
     $("#submit").on("click", function (e) {
       e.stopPropagation();
+      e.preventDefault();
       currentVal = value.value = parseInt(value.value);
       $("#parcel-feature").empty();
       bufferPush();
+    });
+
+    // Handler for keypress event on the input field
+    $("#buffer-value").on("keypress", function (e) {
+      // Replace 'yourInputFieldId' with the actual ID of your input field
+      if (e.which == 13) {
+        currentVal = value.value = parseInt(value.value); // 13 is the Enter key
+        e.preventDefault(); // Prevent the default form submission
+        bufferPush();
+      }
     });
 
     let debounceTimer;
@@ -1496,6 +1589,118 @@ require([
     queryDetailsBuffer(bufferResults);
   }
 
+  function clickDetailsPanel(item) {
+    $("#detail-content").empty();
+    $("#selected-feature").empty();
+    let features = item[0].attributes;
+    console.log(features);
+
+    let locationUniqueId =
+      features.Uniqueid === undefined ? "" : features.Uniqueid;
+    let locationCoOwner =
+      features.Co_Owner === undefined ? "" : features.Co_Owner;
+    let locationOwner = features.Owner === undefined ? "" : features.Owner;
+    let locationMBL = features.MBL === undefined ? "" : features.MBL;
+    let mailingAddress =
+      features.Mailing_Address_1 === undefined
+        ? ""
+        : features.Mailing_Address_1;
+    let Mailing_City =
+      features.Mailing_City === undefined ? "" : features.Mailing_City + ", ";
+    let Mail_State =
+      features.Mail_State === undefined ? "" : features.Mail_State;
+    let Mailing_Zip =
+      features.Mailing_Zip === undefined ? "" : features.Mailing_Zip;
+    let Total_Acres =
+      features.Total_Acres === undefined ? "" : features.Total_Acres;
+    let Parcel_Primary_Use =
+      features.Parcel_Primary_Use === undefined
+        ? ""
+        : features.Parcel_Primary_Use;
+    let Building_Use_Code =
+      features.Building_Use_Code === undefined
+        ? ""
+        : features.Building_Use_Code;
+    let Parcel_Type =
+      features.Parcel_Type === undefined ? "" : features.Parcel_Type;
+    let Design_Type =
+      features.Design_Type === undefined ? "" : features.Design_Type;
+    let Zoning = features.Zoning === undefined ? "" : features.Zoning;
+    let Neighborhood =
+      features.Neighborhood === undefined ? "" : features.Neighborhood;
+    let Land_Type_Rate =
+      features.Land_Type_Rate === undefined ? "" : features.Land_Type_Rate;
+    let Functional_Obs =
+      features.Functional_Obs === undefined ? "" : features.Functional_Obs;
+    let External_Obs =
+      features.External_Obs === undefined ? "" : features.External_Obs;
+    let Sale_Date = features.Sale_Date === undefined ? "" : features.Sale_Date;
+    let Sale_Price =
+      features.Sale_Price === undefined ? "" : features.Sale_Price;
+    let Vol_Page = features.Vol_Page === undefined ? "" : features.Vol_Page;
+    let Assessed_Total =
+      features.Assessed_Total === undefined ? "" : features.Assessed_Total;
+    let Appraised_Total =
+      features.Appraised_Total === undefined ? "" : features.Appraised_Total;
+
+    const imageUrl = `https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/${locationUniqueId}.jpg`;
+    // console.log(matchedObject);
+
+    const detailsDiv = document.getElementById("detail-content");
+
+    const details = document.createElement("div");
+    details.innerHTML = "";
+    details.classList.add("details");
+
+    details.innerHTML = `
+        <div>
+            <p>
+                <span style="font-size:9pt;">Owners:&nbsp;</span><br>
+                <span style="font-size:9pt;"><strong>${locationOwner} & ${locationCoOwner}</strong></span><br>
+                <span style="font-size:9pt;">Unique ID: <strong>${locationUniqueId}</strong></span><br>
+                <span style="font-size:9pt;">MBL: <strong>${locationMBL}</strong></span><br>
+                <span style="font-size:9pt;">Mailing Address:&nbsp;</span><br>
+                <span style="font-size:9pt;"><strong>${mailingAddress}</strong></span><br>
+                <span style="font-size:9pt;"><strong>${Mailing_City}${Mail_State} ${Mailing_Zip}</strong></span>
+            </p>
+        </div>
+        <div>
+            <img src="${imageUrl}"alt="Image of ${locationUniqueId}">
+        </div>
+        <div>
+            <span style="font-size:9pt;">Total Acres: <strong>${Total_Acres}</strong></span><br>
+            <span style="font-size:9pt;">Primary Use: <strong>${Parcel_Primary_Use}</strong></span><br>
+            <span style="font-size:9pt;">Primary Bldg Use: <strong>${Building_Use_Code}</strong></span><br>
+            <span style="font-size:9pt;">Parcel Type: <strong>${Parcel_Type}</strong></span><br>
+            <span style="font-size:9pt;">Design Type: <strong>${Design_Type}</strong></span><br>
+            <span style="font-size:9pt;">Zone: <strong>${Zoning}</strong></span><br>
+            <span style="font-size:9pt;">Nhbd: <strong>${Neighborhood}</strong></span><br>
+            <span style="font-size:9pt;">Land Rate: <strong>${Land_Type_Rate}</strong></span><br>
+            <span style="font-size:9pt;">Functional Obsolescence: <strong>${Functional_Obs}</strong></span><br>
+            <span style="font-size:9pt;">External Obsolescence: <strong>${External_Obs}</strong></span><br>
+            &nbsp;
+        </div>
+        
+        <div>
+            <span style="font-size:9pt;">Latest Qualified Sale:&nbsp;</span><br>
+            <span style="font-size:9pt;">Sold on: <strong>${Sale_Date}</strong></span><br>
+            <span style="font-size:9pt;">Sale Price: <strong>${Sale_Price}</strong></span><br>
+            <span style="font-size:9pt;">Volume/Page: <strong>${Vol_Page}</strong></span><br>
+            &nbsp;
+        </div>
+      
+        <div>
+            <span style="font-size:9pt;">Valuations:&nbsp;</span><br>
+            <span style="font-size:9pt;">Asssessment: <strong>${Assessed_Total}</strong></span><br>
+            <span style="font-size:9pt;">Appraised: <strong>${Appraised_Total}</strong></span><br>
+            &nbsp;
+        </div>
+       
+      `;
+
+    detailsDiv.appendChild(details);
+  }
+
   function buildDetailsPanel(objectId, itemId) {
     detailSelected = [objectId, itemId];
 
@@ -1511,14 +1716,8 @@ require([
       });
     }
 
-    // let locationVal =
-    //   matchedObject.location === undefined ? "" : matchedObject.location;
-
     let locationUniqueId =
       matchedObject.uniqueId === undefined ? "" : matchedObject.uniqueId;
-
-    // let locationGISLINK =
-    //   matchedObject.GIS_LINK === undefined ? "" : matchedObject.GIS_LINK;
     let locationCoOwner =
       matchedObject.coOwner === undefined ? "" : matchedObject.coOwner;
     let locationOwner =
@@ -1528,10 +1727,6 @@ require([
       matchedObject.mailingAddress === undefined
         ? ""
         : matchedObject.mailingAddress;
-    let mailingAddress2 =
-      matchedObject.mailingAddress2 === undefined
-        ? ""
-        : matchedObject.mailingAddress2;
     let Mailing_City =
       matchedObject.Mailing_City === undefined
         ? ""
@@ -1585,23 +1780,11 @@ require([
       matchedObject.Appraised_Total === undefined
         ? ""
         : matchedObject.Appraised_Total;
-    // let Influence_Factor =
-    //   matchedObject.Influence_Factor === undefined
-    //     ? ""
-    //     : matchedObject.Influence_Factor;
-    // let Influence_Type =
-    //   matchedObject.Influence_Type === undefined
-    //     ? ""
-    //     : matchedObject.Influence_Type;
-    // let Land_Type =
-    //   matchedObject.Land_Type === undefined ? "" : matchedObject.Land_Type;
 
     const imageUrl = `https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/${locationUniqueId}.jpg`;
-    // console.log(matchedObject);
-
     const detailsDiv = document.getElementById("detail-content");
-
     const details = document.createElement("div");
+
     details.innerHTML = "";
     details.classList.add("details");
 
@@ -1651,16 +1834,54 @@ require([
          
         `;
 
-    // <div>
-    //     <span style="font-size:9pt;">Influence Info: Influence Factor / Influence Type / Land Type&nbsp;</span><br>
-    //     <span style="font-size:9pt;"><strong>{expression/expression1}</strong></span><br>
-    //     &nbsp;
-    // </div>
-
     detailsDiv.appendChild(details);
   }
 
+  function zoomToDetail(objectid, geom, item) {
+    detailsChanged = {
+      isChanged: true,
+      item: item,
+    };
+    let bufferGraphicId = "uniqueBufferGraphicId";
+
+    view.graphics.removeAll(polygonGraphics);
+
+    const fillSymbol = {
+      type: "simple-fill",
+      color: [0, 0, 0, 0.1],
+      outline: {
+        color: [255, 0, 0, 1],
+        width: 3,
+      },
+    };
+
+    // if (sessionStorage.getItem(key) == "no") {
+    // if (noCondosParcelGeom) {
+    // CondoBuffer = false;
+    targetExtent = geom;
+    detailsGeometry = geom;
+
+    const polygonGraphic = new Graphic({
+      geometry: targetExtent,
+      symbol: fillSymbol,
+      id: bufferGraphicId,
+    });
+
+    view.graphics.addMany([polygonGraphic]);
+    view.goTo({
+      target: polygonGraphic,
+      zoom: 16,
+    });
+    // }
+    // } else {
+    // }
+  }
+
   function zoomToFeature(objectid, polygonGraphics, gisLink) {
+    detailsChanged = {
+      isChanged: false,
+      item: "",
+    };
     isGisLink = [];
     let bufferGraphicId = "uniqueBufferGraphicId";
     view.graphics.removeAll(polygonGraphics);
@@ -1823,36 +2044,53 @@ require([
         // });
       }
     }
+    DetailsHandle = view.on("click", handleDetailsClick);
   }
 
-  const buildAbuttersPanel = function (e) {
+  const buildAbuttersPanel = function (e, b) {
     $("#abutters-title").html("Abutters");
     let itemSelected = detailSelected;
 
-    var matchedObject = firstList.find(function (item) {
-      return (
-        (item.uniqueId === itemSelected[1] &&
-          item.objectid === Number(itemSelected[0])) ||
-        (item.GIS_LINK === itemSelected[1] &&
-          item.objectid === Number(itemSelected[0]))
-      );
-    });
+    let locationMaillingAddress;
+    let locationUniqueId;
+    let locationGISLINK;
+    let locationOwner;
+    let locationMBL;
 
-    let locationMaillingAddress =
-      matchedObject.mailingAddress === undefined
-        ? ""
-        : matchedObject.mailingAddress;
+    if (detailsChanged.isChanged) {
+      console.log(e);
+      locationMaillingAddress =
+        detailsChanged.item.attributes.Mailing_Address_1;
+      locationUniqueId = detailsChanged.item.attributes.Uniqueid;
+      locationGISLINK = detailsChanged.item.attributes.GIS_LINK;
+      locationOwner = detailsChanged.item.attributes.Owner;
+      locationMBL = detailsChanged.item.attributes.MBL;
+    } else {
+      var matchedObject = firstList.find(function (item) {
+        return (
+          (item.uniqueId === itemSelected[1] &&
+            item.objectid === Number(itemSelected[0])) ||
+          (item.GIS_LINK === itemSelected[1] &&
+            item.objectid === Number(itemSelected[0]))
+        );
+      });
 
-    let locationUniqueId =
-      matchedObject.uniqueId === undefined ? "" : matchedObject.uniqueId;
+      locationMaillingAddress =
+        matchedObject.mailingAddress === undefined
+          ? ""
+          : matchedObject.mailingAddress;
 
-    let locationGISLINK =
-      matchedObject.GIS_LINK === undefined ? "" : matchedObject.GIS_LINK;
+      locationUniqueId =
+        matchedObject.uniqueId === undefined ? "" : matchedObject.uniqueId;
 
-    let locationOwner =
-      matchedObject.owner === undefined ? "" : matchedObject.owner;
+      locationGISLINK =
+        matchedObject.GIS_LINK === undefined ? "" : matchedObject.GIS_LINK;
 
-    let locationMBL = matchedObject.MBL === undefined ? "" : matchedObject.MBL;
+      locationOwner =
+        matchedObject.owner === undefined ? "" : matchedObject.owner;
+
+      locationMBL = matchedObject.MBL === undefined ? "" : matchedObject.MBL;
+    }
 
     const abuttersDiv = document.getElementById("selected-feature");
     // console.log("After selecting: ", featureWidDiv);
@@ -2155,6 +2393,13 @@ require([
       e.preventDefault();
       $("#featureWid").empty();
       $("#selected-feature").empty();
+      $("#exportSearch").show();
+      if (DetailsHandle) {
+        DetailsHandle.remove();
+      }
+      if (clickHandle) {
+        clickHandle.remove();
+      }
     });
 
   // Hide suggestions when clicking outside
@@ -2192,6 +2437,12 @@ require([
       $("#abutters-title").html(`Abutting Parcels (0)`);
       polygonGraphics = [];
       view.graphics.removeAll();
+      if (DetailsHandle) {
+        DetailsHandle.remove();
+      }
+      if (clickHandle) {
+        clickHandle.remove();
+      }
 
       runQuery();
     });
