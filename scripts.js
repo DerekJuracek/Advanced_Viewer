@@ -372,9 +372,6 @@ require([
       $("#select-button").prop("disabled", true);
     }
 
-    // if (!lasso) {
-    //   $("#lasso").prop("disabled", false);
-    // }
     $("#lasso").prop("disabled", false);
 
     listGroup.addEventListener("click", function (event) {
@@ -2584,7 +2581,7 @@ require([
       e.preventDefault();
       $("#featureWid").empty();
       $("#selected-feature").empty();
-      $("#exportSearch").show();
+      // $("#exportSearch").show();
       if (DetailsHandle) {
         DetailsHandle.remove();
       }
@@ -2623,7 +2620,7 @@ require([
     $("#result-btns").hide();
     $("#details-btns").hide();
     // $("#exportResults").hide();
-    $("#exportSearch").show();
+    // $("#exportSearch").show();
     $("#abutters-title").html(`Abutting Parcels (0)`);
     polygonGraphics = [];
     view.graphics.removeAll();
