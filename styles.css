@@ -58,9 +58,9 @@ main {
   position: absolute;
   top: 0;
   left: 100px;
-  width: 420px;
+  width: 450px;
   z-index: 1000;
-  min-width: 420px;
+  min-width: 450px;
   /* padding-left: 25px; */
   border-radius: 0px 0px 3px 3px;
   overflow-y: visible;
@@ -388,6 +388,17 @@ ul {
   cursor: pointer;
 }
 
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.spinner-border {
+  width: 4rem;
+  height: 4rem;
+}
 .btn-group-vertical {
   display: flex;
   flex-direction: column;
@@ -405,9 +416,9 @@ ul {
   margin-bottom: 5px;
 }
 
-.bar-Buttons {
+/* .bar-Buttons {
   margin-top: 5px;
-}
+} */
 
 #refresh-search {
   margin-top: 5px;
@@ -502,6 +513,10 @@ img {
   padding-left: 30px;
   /* background-color: rgba(0, 0, 0, 0.5); */
   z-index: 1000;
+}
+
+#detailBox {
+  height: 100%;
 }
 
 .details {

@@ -61,7 +61,7 @@ require([
   var view = new MapView({
     container: "viewDiv",
     map: webmap,
-    zoom: 12,
+    zoom: 12.5,
     popupEnabled: false,
     ui: {
       components: ["attribution"],
@@ -113,9 +113,11 @@ require([
   let targetExtent;
   let queryUnits = "feet";
   let exportResults;
+  let uniqueArray;
   let highlightResponse;
   let searchResults;
   let lasso = false;
+  let select = false;
   let bufferGraphicId;
   let polygonGraphics;
   let noCondosParcelGeom;
@@ -221,6 +223,13 @@ require([
     $("#backButton").hide();
     $("#exportResults").hide();
     $("#exportSearch").hide();
+    // $("#select-button").prop("disabled", false);
+
+    // To disable
+    $("#select-button").prop("disabled", false);
+    // $("#select-button").removeClass("disabled");
+    $("#select-button").attr("title", "Add to Selection Enabled");
+
     // $("#details-conetnt").hide();
 
     let suggestionsContainer = document.getElementById("suggestions");
@@ -235,15 +244,13 @@ require([
       view.goTo(webmap.portalItem.extent);
     }
     lasso = false;
+    select = false;
 
     view.graphics.removeAll();
     polygonGraphics = [];
   }
 
   function buildResultsPanel(features, polygonGraphics, e) {
-    console.log(features);
-    console.log(view.graphics);
-
     $("status-loader").show();
     $("#featureWid").empty();
 
@@ -251,7 +258,7 @@ require([
     let seenUID = new Set();
 
     // Step 1: Filter for unique objectid with geometry
-    let uniqueArray = firstList.filter((obj) => {
+    uniqueArray = firstList.filter((obj) => {
       // const isNewId = !seenIds.has(obj.uniqueId) && obj.geometry;
       if (obj.geometry) {
         seenIds.add(obj.uniqueId);
@@ -355,12 +362,27 @@ require([
       $("#right-arrow-2").hide();
       $("#results-div").css("height", "200px");
       $("#exportSearch").show();
+      $("#exportResults").hide();
+
+      $(".spinner-container").hide();
+      // $("#select-button").addClass("disabled");
+      $("#select-button").prop("disabled", true);
+      // $(".spinner-border").css("height", "0px");
     });
 
     listGroup.addEventListener("click", function (event) {
+      console.log(`list group clicked`);
       if (clickHandle) {
         clickHandle.remove();
+        console.log(clickHandle);
+        console.log(DetailsHandle);
       }
+
+      if (DetailsHandle) {
+        DetailsHandle.remove();
+      }
+      $("#select-button").attr("title", "Select Enabled");
+      // clickHandle.remove();
       // Check if the clicked element is an li or a descendant of an li
       let targetElement = event.target.closest("li");
 
@@ -374,6 +396,7 @@ require([
       zoomToFeature(objectID, polygonGraphics, itemId);
       // DetailsHandle = view.on("click", handleDetailsClick);
       // clickHandle.remove();
+      $("#details-spinner").show();
       $("#featureWid").hide();
       $("#result-btns").hide();
       $("#total-results").hide();
@@ -385,6 +408,7 @@ require([
       $("#detail-content").empty();
       $("#selected-feature").empty();
       $("#exportSearch").hide();
+      $("#exportResults").hide();
       $("#results-div").css("height", "150px");
       $("#backButton-div").css("padding-top", "0px");
       buildDetailsPanel(objectID, itemId);
@@ -393,7 +417,7 @@ require([
   }
 
   function processFeatures(features, polygonGraphics, e) {
-    console.log(firstList);
+    // console.log(firstList);
     function createList(features) {
       features.forEach(function (feature) {
         // PUT BACK TO FILTER OUT EMPTY OWNERS
@@ -674,10 +698,13 @@ require([
   });
 
   function highlightLasso(lasso) {
-    clickHandle = view.on("click", handleClick);
-    if (DetailsHandle) {
-      DetailsHandle.remove();
-    }
+    // clickHandle = view.on("click", handleClick);
+    $("#select-button").prop("disabled", false);
+    // $("#select-button").addClass("disabled");
+
+    // if (DetailsHandle) {
+    //   DetailsHandle.remove();
+    // }
     let results = [];
     let features = [];
     let totalResults = [];
@@ -748,13 +775,18 @@ require([
       graphicsLayer.addMany(polygonGraphics);
       sketchGL.removeAll();
       processFeatures(finalResults, polygonGraphics);
+      lasso = false;
     }
   }
 
   $("#lasso").on("click", function (e) {
-    lasso = true;
+    lasso = !lasso;
     clearContents(e);
     sketchGL.removeAll();
+
+    // if (DetailsHandle) {
+    //   DetailsHandle.remove();
+    // }
 
     // Check if the key exists in sessionStorage
     if (sessionStorage.getItem(key) === "no") {
@@ -762,7 +794,11 @@ require([
     } else {
       CondosLayer.visible = true;
     }
-    sketch.create("polygon");
+    if (lasso) {
+      sketch.create("polygon");
+    } else {
+      sketch.cancel();
+    }
   });
 
   // listen to create event, only respond when event's state changes to complete
@@ -771,21 +807,53 @@ require([
       sketchGL.remove(event.graphic);
       sketchGL.add(event.graphic);
       highlightLasso(event.graphic.geometry);
+      lasso = true;
+      if (DetailsHandle) {
+        DetailsHandle.remove();
+      }
+      if (clickHandle) {
+        clickHandle.remove();
+      }
+      clickHandle = view.on("click", handleClick);
     }
   });
 
   $("#select-button").on("click", function (e) {
-    clickHandle = view.on("click", handleClick);
-    clearContents("select");
+    select = !select;
+    // clickHandle = view.on("click", handleClick);
+    // clearContents("select");
     if (sessionStorage.getItem(key) === "no") {
       noCondosLayer.visible = true;
     } else {
       CondosLayer.visible = true;
     }
 
-    lasso = false;
-    sketch.cancel();
-    polygonGraphics = [];
+    // works for search and in details page
+    if (select && !lasso) {
+      if (clickHandle) {
+        clickHandle.remove();
+      }
+      if (DetailsHandle) {
+        DetailsHandle.remove();
+      }
+      // DetailsHandle = view.on("click", handleDetailsClick);
+      clickHandle = view.on("click", handleClick);
+    } else if (select && lasso) {
+      if (DetailsHandle) {
+        DetailsHandle.remove();
+      }
+      if (clickHandle) {
+        clickHandle.remove();
+      }
+      clickHandle = view.on("click", handleClick);
+    } else {
+      if (clickHandle) {
+        clickHandle.remove();
+      }
+      if (DetailsHandle) {
+        DetailsHandle.remove();
+      }
+    }
   });
 
   $("#home").on("click", function (e) {
@@ -883,6 +951,7 @@ require([
     });
 
   function queryRelatedRecords(searchTerm) {
+    $(".spinner-container").show();
     const tableSearch = true;
     // console.log(firstList);
     let whereClause = `
@@ -909,7 +978,7 @@ require([
 
     if (sessionStorage.getItem(key) === "no") {
       noCondosLayer.queryFeatures(query).then(function (result) {
-        console.log(`no condos result: ${result.features}`);
+        // console.log(`no condos result: ${result.features}`);
         // view.goTo(result.features);
         if (result.features.length >= 1) {
           noCondosParcelGeom = result.features;
@@ -919,7 +988,7 @@ require([
           if (result.features.length == 1) {
             view.goTo({
               target: result.features,
-              zoom: 16,
+              zoom: 15,
             });
           } else {
             view.goTo({
@@ -964,7 +1033,7 @@ require([
 
                   view.goTo({
                     target: result.features,
-                    zoom: 16,
+                    zoom: 15,
                   });
 
                   noCondosParcelGeom = result.features;
@@ -992,7 +1061,15 @@ require([
         }
       });
     }
-    mapHandle = view.on("click", mapDetailsClick);
+    // mapHandle = view.on("click", mapDetailsClick);
+    if (clickHandle) {
+      clickHandle.remove();
+    }
+    if (DetailsHandle) {
+      DetailsHandle.remove();
+    }
+    DetailsHandle = view.on("click", handleDetailsClick);
+    lasso = false;
   }
 
   // var clickHandle = view.on("click", handleClick);
@@ -1002,15 +1079,31 @@ require([
   // function that will by pass search and polygongraphics
   // might need to add polygongraphics from here
 
-  function mapDetailsClick(event) {
-    console.log("map Details getting clicked");
-  }
+  // function mapDetailsClick(event) {
+  //   console.log("map Details getting clicked");
+
+  //   zoomToFeature(objectID, polygonGraphics, itemId);
+  //   buildDetailsPanel(objectID, itemId);
+
+  // }
   function handleDetailsClick(event) {
     if (clickHandle) {
       clickHandle.remove();
     }
-    //
-    console.log(`clicking on details pane`);
+    $("#details-spinner").show();
+    $("#featureWid").hide();
+    $("#result-btns").hide();
+    $("#total-results").hide();
+    $("#abutters-content").hide();
+    $("#details-btns").show();
+    $("#detailBox").show();
+    $("#backButton").show();
+    $("#detailsButton").hide();
+    $("#detail-content").empty();
+    $("#selected-feature").empty();
+    $("#exportSearch").hide();
+    $("#results-div").css("height", "150px");
+    $("#backButton-div").css("padding-top", "0px");
 
     isClickEvent = true;
 
@@ -1028,7 +1121,7 @@ require([
         let objID = response.features[0].attributes.OBJECTID;
         let geom = response.features[0].geometry;
         let item = response.features[0];
-        console.log(totalResults);
+        // console.log(totalResults);
 
         zoomToDetail(objID, geom, item);
         clickDetailsPanel(totalResults);
@@ -1057,6 +1150,9 @@ require([
   function handleClick(event) {
     // console.log(event);
     isClickEvent = true;
+    if (DetailsHandle) {
+      DetailsHandle.remove();
+    }
 
     if (sessionStorage.getItem(key) === "no") {
       let query = CondosLayer.createQuery();
@@ -1093,12 +1189,46 @@ require([
 
   $(document).ready(function () {
     $("#backButton").on("click", function () {
-      clickHandle = view.on("click", handleClick);
-      if (DetailsHandle) {
-        DetailsHandle.remove();
-      }
-      if (clickHandle && lasso == false) {
-        clickHandle.remove();
+      // clickHandle = view.on("click", handleClick);
+      if (!lasso && !select) {
+        // add details and remove when search and no lasso
+        if (DetailsHandle) {
+          DetailsHandle.remove();
+        }
+
+        if (clickHandle || select) {
+          clickHandle.remove();
+        }
+
+        DetailsHandle = view.on("click", handleDetailsClick);
+      } else if (!lasso && select) {
+        if (clickHandle) {
+          clickHandle.remove();
+        }
+        if (DetailsHandle) {
+          DetailsHandle.remove();
+        }
+
+        clickHandle = view.on("click", handleClick);
+      } else if (lasso && !select) {
+        if (clickHandle) {
+          clickHandle.remove();
+        }
+        if (DetailsHandle) {
+          DetailsHandle.remove();
+        }
+        clickHandle = view.on("click", handleClick);
+      } else {
+        // else add the select click, not the details
+        // DetailsHandle = view.on("click", handleDetailsClick);
+        if (clickHandle) {
+          clickHandle.remove();
+        }
+        if (DetailsHandle) {
+          DetailsHandle.remove();
+        }
+
+        clickHandle = view.on("click", handleClick);
       }
 
       $("#detailBox").hide();
@@ -1115,6 +1245,7 @@ require([
       $("#exportResults").hide();
       $("#exportSearch").show();
       $("#results-div").css("height", "200px");
+
       view.graphics.removeAll();
       const existingBufferGraphicIndex = view.graphics.items.findIndex(
         (g) => g.id === bufferGraphicId
@@ -1128,7 +1259,7 @@ require([
       } else {
         view.goTo({
           target: polygonGraphics,
-          zoom: 16,
+          zoom: 15,
         });
       }
     });
@@ -1153,6 +1284,9 @@ require([
       $("#abutters-title").html(`Abutting Parcels (0)`);
       $("#backButton-div").css("padding-top", "0px");
       $("#results-div").css("height", "150px");
+      if (DetailsHandle) {
+        DetailsHandle.remove();
+      }
       DetailsHandle = view.on("click", handleDetailsClick);
       // Find and remove the existing buffer graphic
       const existingBufferGraphicIndex = view.graphics.items.findIndex(
@@ -1167,7 +1301,13 @@ require([
   $(document).ready(function () {
     $("#abutters").on("click", function (e) {
       // clickHandle.remove();
-      DetailsHandle.remove();
+      if (DetailsHandle) {
+        DetailsHandle.remove();
+      }
+      if (clickHandle) {
+        clickHandle.remove();
+      }
+      $("#exportResults").hide();
       $("#detailBox").hide();
       $("#featureWid").hide();
       $("#result-btns").hide();
@@ -1181,6 +1321,7 @@ require([
       $("#parcel-feature").empty();
       $("#backButton-div").css("padding-top", "78px");
       $("#abutters-title").html(`Abutting Parcels (0)`);
+
       buildAbuttersPanel(e);
       value.value = 100;
       runBuffer("100");
@@ -1189,7 +1330,7 @@ require([
 
   $(document).ready(function () {
     $("#exportSearch").on("click", function () {
-      ExportDetails("search");
+      exportSearch("search");
     });
   });
 
@@ -1323,13 +1464,96 @@ require([
   //       highlight.remove();
   //     }
   //   });
+
+  function exportSearch() {
+    const listGroup = document.createElement("ul");
+
+    uniqueArray.forEach(function (feature) {
+      searchResults = uniqueArray.length;
+      let objectID = feature.objectid;
+      let locationVal = feature.location;
+      let locationUniqueId =
+        feature.uniqueId === undefined ? feature.GIS_LINK : feature.uniqueId;
+      let locationGISLINK = feature.GIS_LINK;
+      let locationCoOwner = feature.coOwner;
+      let locationOwner = feature.owner;
+      let locationMBL = feature.MBL;
+      let locationGeom = feature.geometry;
+
+      listGroup.classList.add("row");
+      listGroup.classList.add("list-group");
+
+      const listItem = document.createElement("li");
+
+      listItem.classList.add("search-list");
+
+      let listItemHTML;
+
+      if (!locationCoOwner && locationGeom) {
+        listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner}`;
+      } else if (!locationGeom) {
+        listItemHTML = `  ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}`;
+      } else {
+        listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner} & ${locationCoOwner}`;
+      }
+
+      listItem.innerHTML += listItemHTML;
+
+      listGroup.appendChild(listItem);
+    });
+
+    listItems = document.querySelectorAll(".search-list");
+
+    var transformedContent = "<ul class='label-list'>";
+
+    listItems.forEach(function (item) {
+      transformedContent += "<li>" + item.innerHTML.trim() + "</li>"; // Trim to remove any extra whitespace
+    });
+    transformedContent += "</ul>";
+
+    var style = "<style>";
+    style += "body { margin: 0; padding: 0; font-size: 10pt; }";
+    style +=
+      ".label-list { list-style-type: none; margin: 0; padding: 0; display: flex; align-items: center; text-align: center; flex-wrap: wrap; justify-content: space-between; }";
+    style +=
+      ".label-list li { box-sizing: border-box; width: 2.225in; height: 1in; margin-bottom: 0.0in; padding: 0.1in; display: flex; align-items: center; justify-content: center; font-size: 8pt; }"; // Updated for centering text
+    style += "@media print {";
+    style += "  body { margin: 0.0in 0.1875in; }"; // Adjusted body margin for print
+    style += "  .label-list { padding: 0; }";
+    style += "  .label-list li { margin-right: 0in; margin-bottom: 0; }"; // Remove right margin on labels
+    style +=
+      "  @page { margin-top: 0.5in; margin-bottom: 0.5in; margin-left: 0.25in; margin-right: 0.25in }"; // Adjust as needed for your printer
+    style += "}";
+    style += "</style>";
+
+    var win = window.open(
+      "",
+      "print",
+      "left=0,top=0,width=800,height=600,toolbar=0,status=0"
+    );
+
+    win.document.write("<!DOCTYPE html><html><head>");
+    win.document.write("<title>Print Labels</title>");
+    win.document.write(style);
+    win.document.write("</head><body>");
+    win.document.write(transformedContent);
+    win.document.write("</body></html>");
+    win.document.close();
+    console.log(win.document);
+
+    setTimeout(() => {
+      win.print();
+      win.close();
+    }, 250);
+  }
+
   function ExportDetails(type) {
     var listItems;
-    if (type === "search") {
-      listItems = document.querySelectorAll(".search-list");
-    } else {
-      listItems = document.querySelectorAll(".abutters-group-item");
-    }
+    // if (type === "search") {
+    //   listItems = document.querySelectorAll(".search-list");
+    // } else {
+    listItems = document.querySelectorAll(".abutters-group-item");
+    // }
     // Extract all list items from the provided HTML structure.
 
     var transformedContent = "<ul class='label-list'>";
@@ -1456,7 +1680,7 @@ require([
 
           listGroup.appendChild(listItem);
           abuttersDiv.appendChild(listGroup);
-
+          $("#abutters-spinner").hide();
           $("#abutters-title").html(`Abutting Parcels (${totalResults})`);
         });
       });
@@ -1524,7 +1748,7 @@ require([
 
           listGroup.appendChild(listItem);
           abuttersDiv.appendChild(listGroup);
-
+          qu;
           $("#abutters-title").html(`Abutting Parcels (${totalResults})`);
         });
       });
@@ -1563,21 +1787,18 @@ require([
     view.graphics.add(newBufferGraphic);
     view.goTo({
       target: newBufferGraphic,
-      zoom: 16,
+      zoom: 15,
     });
   }
 
   function runBuffer(value) {
+    $("#abutters-spinner").show();
     // console.log(detailsGeometry);
     let buffer = value;
     let unit = queryUnits;
     let bufferResults;
 
-    if (
-      sessionStorage.getItem(key) == "no" &&
-      isGisLink.length >= 1 &&
-      CondoBuffer == false
-    ) {
+    if (sessionStorage.getItem(key) == "no" && CondoBuffer == false) {
       bufferResults = geometryEngine.buffer(targetExtent, buffer, unit);
       // console.log(`no condos buffer run`);
     } else {
@@ -1593,7 +1814,7 @@ require([
     $("#detail-content").empty();
     $("#selected-feature").empty();
     let features = item[0].attributes;
-    console.log(features);
+    // console.log(features);
 
     let locationUniqueId =
       features.Uniqueid === undefined ? "" : features.Uniqueid;
@@ -1697,11 +1918,12 @@ require([
         </div>
        
       `;
-
+    $("#details-spinner").hide();
     detailsDiv.appendChild(details);
   }
 
   function buildDetailsPanel(objectId, itemId) {
+    $("#exportResults").hide();
     detailSelected = [objectId, itemId];
 
     var matchedObject;
@@ -1833,7 +2055,7 @@ require([
           </div>
          
         `;
-
+    $("#details-spinner").hide();
     detailsDiv.appendChild(details);
   }
 
@@ -1870,7 +2092,7 @@ require([
     view.graphics.addMany([polygonGraphic]);
     view.goTo({
       target: polygonGraphic,
-      zoom: 16,
+      zoom: 15,
     });
     // }
     // } else {
@@ -1924,7 +2146,7 @@ require([
         view.graphics.addMany([polygonGraphic]);
         view.goTo({
           target: polygonGraphic,
-          zoom: 16,
+          zoom: 15,
         });
       } else {
         let whereClause = `GIS_LINK = '${gisLink}'`;
@@ -1944,7 +2166,7 @@ require([
 
           view.goTo({
             target: geometry,
-            zoom: 16,
+            zoom: 15,
           });
 
           // view.goTo(geometry);
@@ -1981,7 +2203,7 @@ require([
 
           view.goTo({
             target: detailsGeometry,
-            zoom: 16,
+            zoom: 15,
           });
           console.log(detailsGeometry);
 
@@ -2019,7 +2241,7 @@ require([
 
             view.goTo({
               target: geometry,
-              zoom: 16,
+              zoom: 15,
             });
 
             // view.goTo(geometry);
@@ -2044,11 +2266,18 @@ require([
         // });
       }
     }
+    if (clickHandle) {
+      clickHandle.remove();
+    }
+    if (DetailsHandle) {
+      DetailsHandle.remove();
+    }
     DetailsHandle = view.on("click", handleDetailsClick);
   }
 
   const buildAbuttersPanel = function (e, b) {
     $("#abutters-title").html("Abutters");
+
     let itemSelected = detailSelected;
 
     let locationMaillingAddress;
@@ -2110,7 +2339,7 @@ require([
     listItem.innerHTML += listItemHTML;
 
     listItem.setAttribute("data-id", locationGISLINK);
-
+    $("#abutters-spinner").hide();
     listGroup.appendChild(listItem);
     abuttersDiv.appendChild(listGroup);
 
@@ -2172,7 +2401,7 @@ require([
       noCondosTable
         .queryFeatures(query)
         .then((response) => {
-          console.log(response);
+          // console.log(response);
 
           if (response.features.length > 0) {
             features = response.features;
@@ -2280,6 +2509,8 @@ require([
         firstList = [];
         secondList = [];
         polygonGraphics = [];
+        $("#select-button").prop("disabled", false);
+        // select = true;
         $("#searchInput ul").remove();
         $("#suggestions").hide();
         $("#featureWid").empty();
@@ -2414,8 +2645,6 @@ require([
     .addEventListener("click", function () {
       $("#sidebar2").css("left", "-350px");
       $("#results-div").css("left", "0px");
-      // view.graphics.removeAll();
-      // Check if the key exists in sessionStorage
       if (sessionStorage.getItem(key) === "no") {
         noCondosLayer.visible = true;
       } else {
