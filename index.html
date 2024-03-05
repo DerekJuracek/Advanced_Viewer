@@ -50,7 +50,6 @@
     <nav
       class="navbar navbar-dark bg-dark justify-content-between custom-navbar"
     >
-      <!-- Column for title and search bar -->
       <span id="main-img">
         <img
           src="https://publicweb-gis.s3.amazonaws.com/Images/MunicipalSeals/Washington_CT.png"
@@ -141,7 +140,7 @@
             <div
               id="suggestions"
               class="list-group mt-2 suggestions-dropdown"
-              style="position: absolute; z-index: 1"
+              style="position: absolute; z-index: 1001"
             ></div>
           </form>
         </div>
@@ -250,7 +249,12 @@
                 />
               </svg>
             </button>
-            <button type="button" class="btn btn-info mr-3" disabled>
+            <button
+              type="button"
+              class="btn btn-info mr-3"
+              disabled
+              style="display: none"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -755,41 +759,10 @@
               />
             </svg>
           </button>
-
-          <!-- <button
-            type="button"
-            class="btn bg-light bar-Buttons"
-            id="select-button"
-            title="Selection Tool"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-cursor"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .556.103zM2.25 8.184l3.897 1.67a.5.5 0 0 1 .262.263l1.67 3.897L12.743 3.52z"
-              />
-            </svg>
-          </button> -->
         </div>
       </div>
-      <!-- New div outside of sidebar -->
     </div>
-
-    <!-- jQuery CDN -->
-    <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
-
-    <!-- Bootstrap JS CDN -->
-    <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
-
-    <!-- ArcGIS JavaScript SDK CDN -->
     <script src="https://js.arcgis.com/4.27/"></script>
-    <script type="text/javascript" src="loading-spinner.js"></script>
-    <!-- Your Custom JavaScript -->
     <script src="scripts.js"></script>
   </body>
 </html>

@@ -129,7 +129,6 @@ require([
   };
   let DetailsHandle;
   let clickHandle;
-  let mapHandle;
 
   let value = document.getElementById("buffer-value");
   const clearBtn = document.getElementById("clear-btn");
@@ -191,7 +190,7 @@ require([
     webmap.tables.add(noCondosTable);
   });
 
-  function clearContents(e) {
+  function clearContents(e, string) {
     // console.log(e.target.value);
     noCondosLayer.visible = false;
     CondosLayer.visible = false;
@@ -227,6 +226,7 @@ require([
 
     // To disable
     $("#select-button").prop("disabled", false);
+    $("#lasso").prop("disabled", false);
     // $("#select-button").removeClass("disabled");
     $("#select-button").attr("title", "Add to Selection Enabled");
 
@@ -238,7 +238,7 @@ require([
 
     view.graphics.removeAll();
 
-    if (lasso || e === "select") {
+    if (lasso || e === "select" || string === "no") {
       return;
     } else {
       view.goTo(webmap.portalItem.extent);
@@ -286,12 +286,9 @@ require([
       // console.log(feature);
       searchResults = uniqueArray.length;
       let objectID = feature.objectid;
-      // console.log(objectID);
       let locationVal = feature.location;
       let locationUniqueId =
         feature.uniqueId === undefined ? feature.GIS_LINK : feature.uniqueId;
-      // let Mail_State =
-      // matchedObject.Mail_State === undefined ? "" : matchedObject.Mail_State;
       let locationGISLINK = feature.GIS_LINK;
       let locationCoOwner = feature.coOwner;
       let locationOwner = feature.owner;
@@ -299,8 +296,7 @@ require([
       let locationGeom = feature.geometry;
 
       const imageUrl = `https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/${locationUniqueId}.jpg`;
-      // const featureWidDiv = document.getElementById("featureWid");
-      // const listGroup = document.createElement("ul");
+
       listGroup.classList.add("row");
       listGroup.classList.add("list-group");
 
@@ -329,15 +325,10 @@ require([
       if (!locationCoOwner && locationGeom) {
         listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner}`;
       } else if (!locationGeom && displayNoGeometry) {
-        listItemHTML = `  ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}<div style="position: absolute; color: red; right: 0; padding-right: 5px";>No Geometry</div>`;
+        listItemHTML = `  ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}<div class="removable-div"; style="position: absolute; color: red; right: 0; padding-right: 5px";>No Geometry</div>`;
       } else {
         listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner} & ${locationCoOwner}`;
       }
-      // } else if (!locationGeom && !locationCoOwner) {
-      //   listItemHTML = `<div style="color: red";>No Geometry</div> ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}`;
-      // } else {
-      //   listItemHTML = `${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner} & ${locationCoOwner}`;
-      // }
 
       // Append the new list item to the list
       listItem.innerHTML += listItemHTML;
@@ -348,34 +339,48 @@ require([
       listGroup.appendChild(listItem);
       // featureWidDiv.appendChild(listGroup);
 
-      $("#detailsButton").hide();
-      $("#featureWid").show();
-      $("#result-btns").show();
-      $("#details-btns").hide();
-      $("#detail-content").empty();
-      $("#dropdown").toggleClass("expanded");
-      $("status-loader").hide();
-      $("#dropdown").show();
-      $("#sidebar2").css("left", "0px");
-      $("#results-div").css("left", "350px");
-      $("#left-arrow-2").show();
-      $("#right-arrow-2").hide();
-      $("#results-div").css("height", "200px");
-      $("#exportSearch").show();
-      $("#exportResults").hide();
-
-      $(".spinner-container").hide();
-      // $("#select-button").addClass("disabled");
-      $("#select-button").prop("disabled", true);
       // $(".spinner-border").css("height", "0px");
     });
+
+    $("#detailsButton").hide();
+    $("#featureWid").show();
+    $("#result-btns").hide();
+    $("#details-btns").hide();
+    $("#detail-content").empty();
+    $("#dropdown").toggleClass("expanded");
+    $("status-loader").hide();
+    $("#dropdown").show();
+    $("#sidebar2").css("left", "0px");
+    $("#results-div").css("left", "350px");
+    $("#left-arrow-2").show();
+    $("#right-arrow-2").hide();
+    $("#results-div").css("height", "200px");
+
+    if (uniqueArray.length < 1) {
+      $("#exportSearch").hide();
+    } else {
+      $("#exportSearch").show();
+    }
+
+    $("#exportResults").hide();
+
+    $(".spinner-container").hide();
+    // $("#select-button").addClass("disabled");
+    if (select) {
+      $("#select-button").prop("disabled", false);
+    } else {
+      $("#select-button").prop("disabled", true);
+    }
+
+    // if (!lasso) {
+    //   $("#lasso").prop("disabled", false);
+    // }
+    $("#lasso").prop("disabled", false);
 
     listGroup.addEventListener("click", function (event) {
       console.log(`list group clicked`);
       if (clickHandle) {
         clickHandle.remove();
-        console.log(clickHandle);
-        console.log(DetailsHandle);
       }
 
       if (DetailsHandle) {
@@ -411,6 +416,7 @@ require([
       $("#exportResults").hide();
       $("#results-div").css("height", "150px");
       $("#backButton-div").css("padding-top", "0px");
+
       buildDetailsPanel(objectID, itemId);
     });
     featureWidDiv.appendChild(listGroup);
@@ -698,13 +704,9 @@ require([
   });
 
   function highlightLasso(lasso) {
-    // clickHandle = view.on("click", handleClick);
     $("#select-button").prop("disabled", false);
     // $("#select-button").addClass("disabled");
 
-    // if (DetailsHandle) {
-    //   DetailsHandle.remove();
-    // }
     let results = [];
     let features = [];
     let totalResults = [];
@@ -781,12 +783,8 @@ require([
 
   $("#lasso").on("click", function (e) {
     lasso = !lasso;
-    clearContents(e);
+    clearContents(e, "no");
     sketchGL.removeAll();
-
-    // if (DetailsHandle) {
-    //   DetailsHandle.remove();
-    // }
 
     // Check if the key exists in sessionStorage
     if (sessionStorage.getItem(key) === "no") {
@@ -820,8 +818,8 @@ require([
 
   $("#select-button").on("click", function (e) {
     select = !select;
-    // clickHandle = view.on("click", handleClick);
-    // clearContents("select");
+    $("#lasso").prop("disabled", true);
+
     if (sessionStorage.getItem(key) === "no") {
       noCondosLayer.visible = true;
     } else {
@@ -1070,6 +1068,7 @@ require([
     }
     DetailsHandle = view.on("click", handleDetailsClick);
     lasso = false;
+    select = false;
   }
 
   // var clickHandle = view.on("click", handleClick);
@@ -1196,7 +1195,11 @@ require([
           DetailsHandle.remove();
         }
 
-        if (clickHandle || select) {
+        if (clickHandle) {
+          clickHandle.remove();
+        }
+
+        if (clickHandle && select) {
           clickHandle.remove();
         }
 
@@ -1233,7 +1236,7 @@ require([
 
       $("#detailBox").hide();
       $("#featureWid").show();
-      $("#result-btns").show();
+      // $("#result-btns").show();
       $("#total-results").show();
       $("#details-btns").hide();
       $("#detail-content").empty();
@@ -1329,14 +1332,16 @@ require([
   });
 
   $(document).ready(function () {
-    $("#exportSearch").on("click", function () {
-      exportSearch("search");
+    $("#exportSearch").on("click", function (e) {
+      e.stopPropagation();
+      ExportDetails("search");
     });
   });
 
   // EXPORT RESULTS
   $(document).ready(function () {
-    $("#exportResults").on("click", function () {
+    $("#exportResults").on("click", function (e) {
+      e.stopPropagation();
       ExportDetails("details");
     });
   });
@@ -1465,101 +1470,31 @@ require([
   //     }
   //   });
 
-  function exportSearch() {
-    const listGroup = document.createElement("ul");
-
-    uniqueArray.forEach(function (feature) {
-      searchResults = uniqueArray.length;
-      let objectID = feature.objectid;
-      let locationVal = feature.location;
-      let locationUniqueId =
-        feature.uniqueId === undefined ? feature.GIS_LINK : feature.uniqueId;
-      let locationGISLINK = feature.GIS_LINK;
-      let locationCoOwner = feature.coOwner;
-      let locationOwner = feature.owner;
-      let locationMBL = feature.MBL;
-      let locationGeom = feature.geometry;
-
-      listGroup.classList.add("row");
-      listGroup.classList.add("list-group");
-
-      const listItem = document.createElement("li");
-
-      listItem.classList.add("search-list");
-
-      let listItemHTML;
-
-      if (!locationCoOwner && locationGeom) {
-        listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner}`;
-      } else if (!locationGeom) {
-        listItemHTML = `  ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}`;
-      } else {
-        listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner} & ${locationCoOwner}`;
-      }
-
-      listItem.innerHTML += listItemHTML;
-
-      listGroup.appendChild(listItem);
-    });
-
-    listItems = document.querySelectorAll(".search-list");
-
-    var transformedContent = "<ul class='label-list'>";
-
-    listItems.forEach(function (item) {
-      transformedContent += "<li>" + item.innerHTML.trim() + "</li>"; // Trim to remove any extra whitespace
-    });
-    transformedContent += "</ul>";
-
-    var style = "<style>";
-    style += "body { margin: 0; padding: 0; font-size: 10pt; }";
-    style +=
-      ".label-list { list-style-type: none; margin: 0; padding: 0; display: flex; align-items: center; text-align: center; flex-wrap: wrap; justify-content: space-between; }";
-    style +=
-      ".label-list li { box-sizing: border-box; width: 2.225in; height: 1in; margin-bottom: 0.0in; padding: 0.1in; display: flex; align-items: center; justify-content: center; font-size: 8pt; }"; // Updated for centering text
-    style += "@media print {";
-    style += "  body { margin: 0.0in 0.1875in; }"; // Adjusted body margin for print
-    style += "  .label-list { padding: 0; }";
-    style += "  .label-list li { margin-right: 0in; margin-bottom: 0; }"; // Remove right margin on labels
-    style +=
-      "  @page { margin-top: 0.5in; margin-bottom: 0.5in; margin-left: 0.25in; margin-right: 0.25in }"; // Adjust as needed for your printer
-    style += "}";
-    style += "</style>";
-
-    var win = window.open(
-      "",
-      "print",
-      "left=0,top=0,width=800,height=600,toolbar=0,status=0"
-    );
-
-    win.document.write("<!DOCTYPE html><html><head>");
-    win.document.write("<title>Print Labels</title>");
-    win.document.write(style);
-    win.document.write("</head><body>");
-    win.document.write(transformedContent);
-    win.document.write("</body></html>");
-    win.document.close();
-    console.log(win.document);
-
-    setTimeout(() => {
-      win.print();
-      win.close();
-    }, 250);
-  }
-
   function ExportDetails(type) {
     var listItems;
-    // if (type === "search") {
-    //   listItems = document.querySelectorAll(".search-list");
-    // } else {
-    listItems = document.querySelectorAll(".abutters-group-item");
-    // }
+    if (type === "search") {
+      listItems = document.querySelectorAll(".search-list");
+    } else {
+      listItems = document.querySelectorAll(".abutters-group-item");
+    }
+
+    const originalContents = [];
+
+    document.querySelectorAll(".search-list").forEach(function (li, index) {
+      // Store the original HTML of each list item
+      originalContents[index] = li.innerHTML;
+    });
+
+    document.querySelectorAll(".removable-div").forEach(function (div) {
+      div.parentNode.removeChild(div); // Remove the div from its parent
+    });
     // Extract all list items from the provided HTML structure.
 
     var transformedContent = "<ul class='label-list'>";
     listItems.forEach(function (item) {
       transformedContent += "<li>" + item.innerHTML.trim() + "</li>"; // Trim to remove any extra whitespace
     });
+
     transformedContent += "</ul>";
 
     var style = "<style>";
@@ -1595,6 +1530,13 @@ require([
     setTimeout(() => {
       win.print();
       win.close();
+      document.querySelectorAll(".search-list").forEach(function (li, index) {
+        // Restore the original HTML content of each list item
+        if (originalContents[index]) {
+          // Check if there was original content stored for this index
+          li.innerHTML = originalContents[index];
+        }
+      });
     }, 250);
   }
 
@@ -2371,7 +2313,8 @@ require([
 
     let searchTerm = runQuerySearchTerm;
 
-    if (searchTerm.length < 3) {
+    if (searchTerm.length < 3 || !searchTerm) {
+      clearContents();
       return;
     } else {
       $("#dropdown").toggleClass("expanded");
@@ -2479,6 +2422,15 @@ require([
                 );
               }
             });
+
+            // let debounceTimer;
+            // function bufferQuery() {
+            //   clearTimeout(debounceTimer);
+            //   debounceTimer = setTimeout(() => {
+            //     queryRelatedRecords(runQuerySearchTerm);
+            //   }, 300);
+            // }
+            // bufferQuery();
             // console.log(whereClause);
             queryRelatedRecords(runQuerySearchTerm);
           }
@@ -2510,6 +2462,7 @@ require([
         secondList = [];
         polygonGraphics = [];
         $("#select-button").prop("disabled", false);
+        $("#lasso").prop("disabled", false);
         // select = true;
         $("#searchInput ul").remove();
         $("#suggestions").hide();
@@ -2527,6 +2480,13 @@ require([
         $("#backButton").hide();
         $("#detailBox").hide();
         $("#exportSearch").hide();
+        if (DetailsHandle) {
+          DetailsHandle.remove();
+        }
+
+        if (clickHandle) {
+          clickHandle.remove();
+        }
 
         let suggestionsContainer = document.getElementById("suggestions");
         suggestionsContainer.innerHTML = "";
@@ -2640,40 +2600,57 @@ require([
     }
   });
 
+  let debounceTimer2;
+
+  function hitQuery() {
+    // console.log(`getting hit`);
+    // $("#sidebar2").css("left", "-350px");
+    // $("#results-div").css("left", "0px");
+    if (sessionStorage.getItem(key) === "no") {
+      noCondosLayer.visible = true;
+    } else {
+      CondosLayer.visible = true;
+    }
+    $("dropdown").empty();
+    $("#featureWid").empty();
+    $("#abutters-content").hide();
+    $("#selected-feature").empty();
+    $("#parcel-feature").empty();
+    $("#total-results").show();
+    $("#backButton").hide();
+    $("#detailsButton").hide();
+    $("#detailBox").hide();
+    $("#result-btns").hide();
+    $("#details-btns").hide();
+    // $("#exportResults").hide();
+    $("#exportSearch").show();
+    $("#abutters-title").html(`Abutting Parcels (0)`);
+    polygonGraphics = [];
+    view.graphics.removeAll();
+    if (DetailsHandle) {
+      DetailsHandle.remove();
+    }
+    if (clickHandle) {
+      clickHandle.remove();
+    }
+
+    runQuery();
+  }
+
   document
     .getElementById("searchButton")
     .addEventListener("click", function () {
       $("#sidebar2").css("left", "-350px");
       $("#results-div").css("left", "0px");
-      if (sessionStorage.getItem(key) === "no") {
-        noCondosLayer.visible = true;
-      } else {
-        CondosLayer.visible = true;
-      }
-      $("dropdown").empty();
-      $("#featureWid").empty();
-      $("#abutters-content").hide();
-      $("#selected-feature").empty();
-      $("#parcel-feature").empty();
-      $("#total-results").show();
-      $("#backButton").hide();
-      $("#detailsButton").hide();
-      $("#detailBox").hide();
-      $("#result-btns").hide();
-      $("#details-btns").hide();
       $("#exportResults").hide();
-      $("#exportSearch").show();
-      $("#abutters-title").html(`Abutting Parcels (0)`);
-      polygonGraphics = [];
-      view.graphics.removeAll();
-      if (DetailsHandle) {
-        DetailsHandle.remove();
+      // let debounceTimer;
+      function throttleQuery() {
+        clearTimeout(debounceTimer2);
+        debounceTimer2 = setTimeout(() => {
+          hitQuery();
+        }, 300);
       }
-      if (clickHandle) {
-        clickHandle.remove();
-      }
-
-      runQuery();
+      throttleQuery();
     });
 
   $(document).ready(function () {
