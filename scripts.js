@@ -386,7 +386,9 @@ require([
       if (DetailsHandle) {
         DetailsHandle.remove();
       }
+
       $("#select-button").attr("title", "Select Enabled");
+      $("#select-button").prop("disabled", true);
       // clickHandle.remove();
       // Check if the clicked element is an li or a descendant of an li
       let targetElement = event.target.closest("li");
@@ -1248,6 +1250,7 @@ require([
       $("#exportResults").hide();
       $("#exportSearch").show();
       $("#results-div").css("height", "200px");
+      $("#select-button").prop("disabled", false);
 
       view.graphics.removeAll();
       const existingBufferGraphicIndex = view.graphics.items.findIndex(
