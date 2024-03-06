@@ -701,7 +701,7 @@ require([
   });
 
   function highlightLasso(lasso) {
-    $("#select-button").prop("disabled", false);
+    $("#select-button").prop("disabled", true);
     // $("#select-button").addClass("disabled");
 
     let results = [];
