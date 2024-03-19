@@ -778,6 +778,15 @@ require([
 
         view.graphics.removeAt(firstIndex);
 
+        const graphicIndex = polygonGraphics.findIndex(
+          (g) => g.id === bufferGraphicId
+        );
+        console.log(graphicIndex);
+        console.log(polygonGraphics);
+        // polygonGraphics.slice(graphicIndex, 1);
+        polygonGraphics.splice(graphicIndex, 1);
+        console.log(polygonGraphics);
+
         // firstList = firstList.filter(
         //   (item) => item.objectid !== bufferGraphicId
         // );
