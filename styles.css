@@ -58,9 +58,9 @@ main {
   position: absolute;
   top: 0;
   left: 100px;
-  width: 450px;
+  width: 500px;
   z-index: 1000;
-  min-width: 450px;
+  min-width: 500px;
   /* padding-left: 25px; */
   border-radius: 0px 0px 3px 3px;
   overflow-y: visible;
