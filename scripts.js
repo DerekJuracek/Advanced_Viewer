@@ -14,6 +14,8 @@ require([
   "esri/widgets/Sketch",
   "esri/widgets/Sketch/SketchViewModel",
   "esri/views/View",
+  "esri/widgets/DistanceMeasurement2D",
+  "esri/widgets/AreaMeasurement2D",
 ], function (
   WebMap,
   MapView,
@@ -29,7 +31,9 @@ require([
   GraphicsLayer,
   Sketch,
   SketchViewModel,
-  View
+  View,
+  DistanceMeasurement2D,
+  AreaMeasurement2D
 ) {
   // Key to check in sessionStorage
   const key = "condos";
@@ -129,9 +133,112 @@ require([
   };
   let DetailsHandle;
   let clickHandle;
+  let removeFromList;
+  let regSearch = false;
 
   let value = document.getElementById("buffer-value");
   const clearBtn = document.getElementById("clear-btn");
+
+  let oldExtent = view.extent;
+  let oldScale = view.scale;
+  let oldZoom = view.zoom;
+  let valueToRemove;
+
+  reactiveUtils.watch(
+    () => [view.zoom, view.extent, view.scale],
+    ([zoom, extent, scale], [wasStationary]) => {
+      if (zoom) {
+        if (zoom !== oldZoom) {
+          oldZoom = zoom;
+
+          console.log(`old zoom is: ${oldZoom} and new ${zoom}`);
+          // currScaleLabel.innerHTML =
+          //   `<span class="title">Current Scale</span><b>` + (Math.round(scale * 100) / 100).toFixed(4) + `</b>`;
+        }
+        // if (extent !== oldExtent) {
+        //   console.log(
+        //     `old extent is: ${oldExtent} and new extent is: ${extent}`
+        //   );
+
+        // }
+      } else if (wasStationary) {
+        oldExtent = extent;
+        oldScale = scale;
+        oldZoom = zoom;
+      }
+      return "";
+    }
+  );
+
+  let measureContainer = document.getElementById("topbar");
+  view.ui.add(measureContainer, "bottom-right");
+
+  let activeWidget1 = null;
+  document
+    .getElementById("distanceButton")
+    .addEventListener("click", function () {
+      setActiveWidget(null);
+      if (!this.classList.contains("active")) {
+        setActiveWidget("distance");
+      } else {
+        setActiveButton(null);
+      }
+    });
+
+  document.getElementById("areaButton").addEventListener("click", function () {
+    setActiveWidget(null);
+    if (!this.classList.contains("active")) {
+      setActiveWidget("area");
+    } else {
+      setActiveButton(null);
+    }
+  });
+
+  function setActiveWidget(type) {
+    switch (type) {
+      case "distance":
+        activeWidget1 = new DistanceMeasurement2D({
+          view: view,
+          unit: "feet",
+        });
+        // skip the initial 'new measurement' button
+        activeWidget1.viewModel.start();
+
+        view.ui.add(activeWidget1, "bottom-right");
+        setActiveButton(document.getElementById("distanceButton"));
+        break;
+      case "area":
+        activeWidget1 = new AreaMeasurement2D({
+          view: view,
+          unit: "square-us-feet",
+        });
+
+        activeWidget1.viewModel.start();
+
+        view.ui.add(activeWidget1, "bottom-right");
+        setActiveButton(document.getElementById("areaButton"));
+        break;
+      case null:
+        if (activeWidget1) {
+          view.ui.remove(activeWidget1);
+          activeWidget1.destroy();
+          activeWidget1 = null;
+        }
+        break;
+    }
+  }
+
+  function setActiveButton(selectedButton) {
+    // focus the view to activate keyboard shortcuts for sketching
+    view.focus();
+    let elements = document.getElementsByClassName("active");
+    for (let i = 0; i < elements.length; i++) {
+      elements[i].classList.remove("active");
+    }
+    if (selectedButton) {
+      selectedButton.classList.add("active");
+    }
+  }
 
   let noCondosLayer = new FeatureLayer({
     url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_NOCONDOS/FeatureServer/0",
@@ -190,10 +297,25 @@ require([
     webmap.tables.add(noCondosTable);
   });
 
+  function changeUniqueArray() {
+    $("#total-results").html(uniqueArray.length + " results returned");
+  }
   function clearContents(e, string) {
     // console.log(e.target.value);
-    noCondosLayer.visible = false;
-    CondosLayer.visible = false;
+    if (sessionStorage.getItem(key) === "no") {
+      noCondosLayer.visible = true;
+    } else {
+      CondosLayer.visible = true;
+    }
+    if (DetailsHandle) {
+      try {
+        DetailsHandle.remove();
+      } catch (error) {
+        console.error("Failed to remove DetailsHandle", error);
+      }
+    }
+    // $("#lasso").removeClass("btn-warning");
+    // $("#select-button").removeClass("btn-warning");
     $("#searchInput ul").remove();
     $("#searchInput").val = "";
     // $("#side-Exp2").addClass("disabled");
@@ -225,8 +347,8 @@ require([
     // $("#select-button").prop("disabled", false);
 
     // To disable
-    $("#select-button").prop("disabled", false);
-    $("#lasso").prop("disabled", false);
+    // $("#select-button").prop("disabled", false);
+    // $("#lasso").prop("disabled", false);
     // $("#select-button").removeClass("disabled");
     $("#select-button").attr("title", "Add to Selection Enabled");
 
@@ -234,17 +356,9 @@ require([
 
     let suggestionsContainer = document.getElementById("suggestions");
     suggestionsContainer.innerHTML = "";
+
+    // sketch.cancel();
     $("#featureWid").empty();
-
-    view.graphics.removeAll();
-
-    if (lasso || e === "select" || string === "no") {
-      return;
-    } else {
-      view.goTo(webmap.portalItem.extent);
-    }
-    lasso = false;
-    select = false;
 
     view.graphics.removeAll();
     polygonGraphics = [];
@@ -279,6 +393,9 @@ require([
     uniqueArray.sort((a, b) =>
       a.owner.toLowerCase().localeCompare(b.owner.toLowerCase())
     );
+
+    // const featureWidDiv = document.getElementById("featureWid");
+
     const featureWidDiv = document.getElementById("featureWid");
     const listGroup = document.createElement("ul");
 
@@ -302,9 +419,11 @@ require([
 
       const listItem = document.createElement("li");
       const imageDiv = document.createElement("li");
-      imageDiv.innerHTML = `<img src="${imageUrl}" alt="Image of ${locationUniqueId}" >`;
+      imageDiv.innerHTML = `<img object-id="${objectID}" src="${imageUrl}" alt="Image of ${locationUniqueId}" >`;
       listItem.classList.add("list-group-item", "col-9");
       listItem.classList.add("search-list");
+      imageDiv.setAttribute("object-id", objectID);
+      imageDiv.setAttribute("data-id", locationGISLINK);
 
       imageDiv.classList.add("image-div", "col-3");
 
@@ -337,15 +456,16 @@ require([
 
       listGroup.appendChild(imageDiv);
       listGroup.appendChild(listItem);
-      // featureWidDiv.appendChild(listGroup);
-
-      // $(".spinner-border").css("height", "0px");
     });
 
+    // createExportList();
+
     $("#detailsButton").hide();
-    $("#featureWid").show();
+    $("#filterDiv").hide();
+
     $("#result-btns").hide();
     $("#details-btns").hide();
+    $("#featureWid").show();
     $("#detail-content").empty();
     $("#dropdown").toggleClass("expanded");
     $("status-loader").hide();
@@ -355,6 +475,7 @@ require([
     $("#left-arrow-2").show();
     $("#right-arrow-2").hide();
     $("#results-div").css("height", "200px");
+    // valueToRemove = 0;
 
     if (uniqueArray.length < 1) {
       $("#exportSearch").hide();
@@ -366,13 +487,13 @@ require([
 
     $(".spinner-container").hide();
     // $("#select-button").addClass("disabled");
-    if (select) {
-      $("#select-button").prop("disabled", false);
-    } else {
-      $("#select-button").prop("disabled", true);
-    }
+    // if (select) {
+    //   $("#select-button").prop("disabled", false);
+    // } else {
+    //   $("#select-button").prop("disabled", true);
+    // }
 
-    $("#lasso").prop("disabled", false);
+    // $("#lasso").prop("disabled", false);
 
     listGroup.addEventListener("click", function (event) {
       console.log(`list group clicked`);
@@ -419,7 +540,7 @@ require([
     featureWidDiv.appendChild(listGroup);
   }
 
-  function processFeatures(features, polygonGraphics, e) {
+  function processFeatures(features, polygonGraphics, e, removeFromList) {
     // console.log(firstList);
     function createList(features) {
       features.forEach(function (feature) {
@@ -506,6 +627,7 @@ require([
     if (e) {
       if (features.length <= 1) {
         const pointGraphic = features[0].attributes.OBJECTID;
+        const pointGisLink = features[0].attributes.GIS_LINK;
 
         const count = firstList.filter(
           (g) => g.objectid === pointGraphic
@@ -558,7 +680,10 @@ require([
     ClickEvent,
     tableSearch
   ) {
-    // console.log(graphicsLayer.items);
+    let count;
+    let countCondos;
+
+    // formats of queries from table and feature layer different
     if (tableSearch) {
       features = polygonGeometries;
     } else {
@@ -567,6 +692,7 @@ require([
 
     let polygonGraphics2 = [];
     let bufferGraphicId;
+    let pointGisLink;
 
     var fillSymbol = {
       type: "simple-fill",
@@ -576,12 +702,22 @@ require([
         width: 2,
       },
     };
+
     // means its been a click event
+    // triggers when details or click handle selected and used to select parcels
+    // this only runs on click handle, shouldn't be used for details?
+    // removed from details handle logic for now
+    // they run separate logic
     if (ClickEvent) {
+      // goes through and creates a graphic on clicked polygon
+      // then removes duplicate if a user clicked on an existing polygon
+      // then at the end adds it back
+      // really just concerned with click logic
       if (polygonGeometries.features.length <= 1) {
         let array = [];
         console.log(polygonGeometries.features[0].attributes.OBJECTID);
         bufferGraphicId = polygonGeometries.features[0].attributes.OBJECTID;
+        pointGisLink = features[0].attributes.GIS_LINK;
 
         const graphic = new Graphic({
           geometry: features[0].geometry,
@@ -591,44 +727,205 @@ require([
 
         polygonGraphics2.push(graphic);
 
-        const count = firstList.filter(
-          (g) => g.objectid === bufferGraphicId
+        // somethings not write here
+        // maybe not getting removed from firstList
+        // so if you remove graphic and click again, firstList still has it
+        // so count > 1 and removes its again not adding
+
+        // getting added to list first now
+        // so its finding the same value that its trying to add as a graphic
+        // this logic wont work as is it will always keep removing graphic
+        // maybe use graphic instead of firstList here
+
+        countCondos = firstList.filter(
+          (g) => g.GIS_LINK === pointGisLink
         ).length;
 
-        if (count >= 1) {
+        // count = view.graphics.findIndex((g) => g.id === bufferGraphicId);
+
+        count = view.graphics.some((g) => g.id === bufferGraphicId);
+
+        // logic for "J0001" on no condos
+        // returns 42 only one has polygon
+        // so logic needs altered here
+        if (countCondos > 3 && sessionStorage.getItem(key) === "no") {
+          // firstList.filter((g) => g.GIS_LINK != pointGisLink);
+
+          const firstListIndex = firstList.findIndex(
+            (g) => g.GIS_LINK === pointGisLink
+          );
+
           const firstIndex = view.graphics.findIndex(
             (g) => g.id === bufferGraphicId
           );
 
+          // removes polygon parcel, only 1 when searching "J0001"
           view.graphics.removeAt(firstIndex);
+          // removes the list correctly, but search Results needs new calculation
+          // filter to removes anything that has same GIS_LINK "J0001"
+          // mutate the firstList array, so removes the items from the list
+          firstList = firstList.filter(
+            (item) => item.GIS_LINK !== pointGisLink
+          );
+
+          $(`li[data-id="${pointGisLink}"]`).remove();
+
+          valueToRemove = pointGisLink;
+          if (firstListIndex > -1) {
+            searchResults = searchResults - countCondos;
+            if (searchResults < 0) {
+              searchResults = 0;
+            }
+            $("#total-results").html(searchResults + " results returned");
+          }
+        } else if (count) {
+          const firstIndex = view.graphics.findIndex(
+            (g) => g.id === bufferGraphicId
+          );
+          const firstListIndex = firstList.findIndex(
+            (g) => g.objectid === bufferGraphicId
+          );
+
+          view.graphics.removeAt(firstIndex);
+          firstList.splice(firstListIndex, 1);
+          $(`li[object-id="${bufferGraphicId}"]`).remove();
+          valueToRemove = bufferGraphicId;
+
+          if (firstListIndex > -1) {
+            searchResults = searchResults - 1;
+            $("#total-results").html(searchResults + " results returned");
+          }
+
+          polygonGraphics = polygonGraphics.filter(
+            (graphic) => graphic.id !== bufferGraphicId
+          );
+        } else {
+          // let id = polygonGraphics2[0].id;
+          console.log(polygonGraphics);
+          graphicsLayer.addMany(polygonGraphics2);
+          // if (polygonGraphics.length >= 1) {
+          //   polygonGraphics = [...polygonGraphics, polygonGraphics2[0]];
+          // }
         }
+
+        // polygonGraphics = [...polygonGraphics, polygonGraphics2[0]];
       } else {
+        // logic for when you click on a condo within a condo main
+        // condos on because it adds "2" polygons
         let array = [];
+        let types = [];
+        let indexesToRemove = [];
+
         polygonGeometries.features.forEach(function (item) {
           array.push(item.attributes.OBJECTID);
           bufferGraphicId = item.attributes.OBJECTID;
+          let type = item.attributes.ACCOUNT_TYPE;
 
-          const graphic = new Graphic({
-            geometry: item.geometry,
-            symbol: fillSymbol,
-            id: bufferGraphicId,
-          });
-          polygonGraphics2.push(graphic);
-        });
+          count = view.graphics.some((g) => g.id === bufferGraphicId);
 
-        let indexesToRemove = [];
-        view.graphics.items.forEach((g, index) => {
-          if (array.includes(g.id)) {
-            indexesToRemove.push(index);
+          if (type == "CONDOMAIN") {
+            // if its already a graphic, dont add it
+
+            // if it a graphic already then check if someone selected a condo or a condo and parcel
+            if (count) {
+              // condo and parcel selected
+              // this will remove parcel
+              if (polygonGeometries.features.length > 1) {
+                return;
+              } else {
+                view.graphics.items.forEach((g, index) => {
+                  if (array.includes(g.id)) {
+                    indexesToRemove.push(index);
+                  }
+                });
+
+                indexesToRemove.reverse().forEach((index) => {
+                  view.graphics.removeAt(index);
+                });
+
+                const firstListIndex = firstList.findIndex(
+                  (g) => g.objectid === bufferGraphicId
+                );
+
+                firstList.splice(firstListIndex, 1);
+
+                $(`li[object-id="${bufferGraphicId}"]`).remove();
+                valueToRemove = bufferGraphicId;
+
+                if (firstListIndex > -1) {
+                  searchResults = searchResults - 1;
+                  $("#total-results").html(searchResults + " results returned");
+                }
+
+                //  indexesToRemove = [];
+              }
+
+              // indexesToRemove.reverse().forEach((index) => {
+              //   view.graphics.removeAt(index);
+              // });
+              // return;
+            } else {
+              // if its not create it, dont add it yet
+              const graphic = new Graphic({
+                geometry: item.geometry,
+                symbol: fillSymbol,
+                id: bufferGraphicId,
+              });
+              polygonGraphics2.push(graphic);
+              if (indexesToRemove.length < 1) {
+                graphicsLayer.addMany(polygonGraphics2);
+              }
+            }
+          } else {
+            //
+            if (count) {
+              // let indexesToRemove = [];
+              view.graphics.items.forEach((g, index) => {
+                if (array.includes(g.id)) {
+                  indexesToRemove.push(index);
+                }
+              });
+              indexesToRemove.reverse().forEach((index) => {
+                view.graphics.removeAt(index);
+              });
+
+              const firstListIndex = firstList.findIndex(
+                (g) => g.objectid === bufferGraphicId
+              );
+
+              firstList.splice(firstListIndex, 1);
+
+              $(`li[object-id="${bufferGraphicId}"]`).remove();
+              valueToRemove = bufferGraphicId;
+              if (firstListIndex > -1) {
+                searchResults = searchResults - 1;
+                $("#total-results").html(searchResults + " results returned");
+              }
+
+              // indexesToRemove.reverse().forEach((index) => {
+              //   view.graphics.removeAt(index);
+              // });
+              // return;
+            } else {
+              // if its not create it, dont add it yet
+              const graphic = new Graphic({
+                geometry: item.geometry,
+                symbol: fillSymbol,
+                id: bufferGraphicId,
+              });
+              polygonGraphics2.push(graphic);
+              if (indexesToRemove.length < 1) {
+                graphicsLayer.addMany(polygonGraphics2);
+              }
+            }
           }
-        });
-
-        indexesToRemove.reverse().forEach((index) => {
-          view.graphics.removeAt(index);
+          count = false;
         });
       }
     } else {
-      bufferGraphicId = "addPolygons";
+      // no a click event
+      // search with only something in table
+      // bufferGraphicId = "addPolygons";
 
       if (tableSearch) {
         // First, filter out features without geometry
@@ -648,7 +945,13 @@ require([
 
           polygonGraphics2.push(graphic);
         });
+
+        if (polygonGraphics2.length >= 1) {
+          graphicsLayer.addMany(polygonGraphics2);
+        }
       } else {
+        regSearch = true;
+        // regular search polygons added here
         features
           .map(function (feature) {
             bufferGraphicId = feature.attributes.OBJECTID;
@@ -664,19 +967,38 @@ require([
             polygonGraphics2.push(graphic);
           })
           .filter((graphic) => graphic !== null);
+
+        if (polygonGraphics2.length >= 1) {
+          graphicsLayer.addMany(polygonGraphics2);
+        }
       }
     }
-    if (polygonGraphics2.length >= 1) {
-      graphicsLayer.addMany(polygonGraphics2);
-    }
+
+    // if (polygonGraphics2.length >= 1) {
+    //   graphicsLayer.addMany(polygonGraphics2);
+    // }
+
+    // if (!polygonGraphics && !ClickEvent) {
+    //   polygonGraphics = polygonGraphics2;
+    // } else {
+    //   polygonGraphics = polygonGraphics2;
+    // }
 
     if (!polygonGraphics) {
       polygonGraphics = polygonGraphics2;
-    } else if (ClickEvent) {
+    }
+
+    if (ClickEvent && !count && countCondos <= 1) {
+      let id = polygonGraphics2[0].id;
       polygonGraphics = [...polygonGraphics, polygonGraphics2[0]];
-    } else {
+      removeFromList = id;
+    }
+    if (regSearch) {
       polygonGraphics = polygonGraphics2;
     }
+    count = false;
+    regSearch = false;
+    // count = 0;
   }
 
   let sketch = new SketchViewModel({
@@ -701,7 +1023,7 @@ require([
   });
 
   function highlightLasso(lasso) {
-    $("#select-button").prop("disabled", true);
+    // $("#select-button").prop("disabled", true);
     // $("#select-button").addClass("disabled");
 
     let results = [];
@@ -780,6 +1102,22 @@ require([
 
   $("#lasso").on("click", function (e) {
     lasso = !lasso;
+    select = false;
+    $("#select-button").removeClass("btn-warning");
+
+    if (lasso && !select) {
+      sketch.create("polygon");
+
+      $("#select-button").removeClass("btn-warning");
+      $("#lasso").addClass("btn-warning");
+    } else {
+      sketch.cancel();
+      $("#lasso").removeClass("btn-warning");
+      $("#lasso").addClass("btn-info");
+      $("#select-button").removeClass("btn-warning");
+      $("#select-button").addClass("btn-info");
+    }
+
     clearContents(e, "no");
     sketchGL.removeAll();
 
@@ -789,11 +1127,11 @@ require([
     } else {
       CondosLayer.visible = true;
     }
-    if (lasso) {
-      sketch.create("polygon");
-    } else {
-      sketch.cancel();
-    }
+    // if (lasso) {
+    //   sketch.create("polygon");
+    // } else {
+    //   sketch.cancel();
+    // }
   });
 
   // listen to create event, only respond when event's state changes to complete
@@ -802,20 +1140,42 @@ require([
       sketchGL.remove(event.graphic);
       sketchGL.add(event.graphic);
       highlightLasso(event.graphic.geometry);
-      lasso = true;
+      // lasso = true;
       if (DetailsHandle) {
         DetailsHandle.remove();
       }
       if (clickHandle) {
         clickHandle.remove();
       }
+
       clickHandle = view.on("click", handleClick);
+      $("#lasso").removeClass("btn-warning");
+      $("#lasso").addClass("btn-info");
+      $("#select-button").addClass("btn-warning");
     }
   });
 
   $("#select-button").on("click", function (e) {
+    sketch.cancel();
     select = !select;
-    $("#lasso").prop("disabled", true);
+    if (!select) {
+      clearContents();
+    }
+    lasso = false;
+
+    if (select && !lasso) {
+      // $("#select-button").removeClass("btn-info");
+      // $("#lasso").removeClass("btn-info");
+
+      $("#lasso").removeClass("btn-warning");
+      $("#select-button").addClass("btn-warning");
+    } else {
+      $("#select-button").removeClass("btn-warning");
+    }
+
+    // $("#lasso").removeClass("btn-warning");
+    // $("#select-button").addClass("btn-warning");
+    // $("#lasso").prop("disabled", true);
 
     if (sessionStorage.getItem(key) === "no") {
       noCondosLayer.visible = true;
@@ -826,10 +1186,18 @@ require([
     // works for search and in details page
     if (select && !lasso) {
       if (clickHandle) {
-        clickHandle.remove();
+        try {
+          clickHandle.remove();
+        } catch (error) {
+          console.error("Failed to remove clickHandle", error);
+        }
       }
       if (DetailsHandle) {
-        DetailsHandle.remove();
+        try {
+          DetailsHandle.remove();
+        } catch (error) {
+          console.error("Failed to remove DetailsHandle", error);
+        }
       }
       // DetailsHandle = view.on("click", handleDetailsClick);
       clickHandle = view.on("click", handleClick);
@@ -843,10 +1211,18 @@ require([
       clickHandle = view.on("click", handleClick);
     } else {
       if (clickHandle) {
-        clickHandle.remove();
+        try {
+          clickHandle.remove();
+        } catch (error) {
+          console.error("Failed to remove clickHandle", error);
+        }
       }
       if (DetailsHandle) {
-        DetailsHandle.remove();
+        try {
+          DetailsHandle.remove();
+        } catch (error) {
+          console.error("Failed to remove DetailsHandle", error);
+        }
       }
     }
   });
@@ -983,7 +1359,7 @@ require([
           if (result.features.length == 1) {
             view.goTo({
               target: result.features,
-              zoom: 15,
+              // zoom: 15,
             });
           } else {
             view.goTo({
@@ -1028,7 +1404,7 @@ require([
 
                   view.goTo({
                     target: result.features,
-                    zoom: 15,
+                    // zoom: 15,
                   });
 
                   noCondosParcelGeom = result.features;
@@ -1048,7 +1424,7 @@ require([
           } else {
             view.goTo({
               target: result.features,
-              zoom: 16,
+              // zoom: 15,
             });
           }
           addPolygons(result, view.graphics);
@@ -1101,7 +1477,7 @@ require([
     $("#results-div").css("height", "150px");
     $("#backButton-div").css("padding-top", "0px");
 
-    isClickEvent = true;
+    // isClickEvent = true;
 
     if (sessionStorage.getItem(key) === "no") {
       let query = CondosLayer.createQuery();
@@ -1162,8 +1538,8 @@ require([
       noCondosLayer.queryFeatures(query).then(function (response) {
         totalResults = response.features;
         console.log(totalResults);
-        addPolygons(response, view.graphics, isClickEvent);
         processFeatures(totalResults, "", event);
+        addPolygons(response, view.graphics, isClickEvent);
       });
     } else {
       let query2 = CondosLayer.createQuery();
@@ -1177,8 +1553,14 @@ require([
       CondosLayer.queryFeatures(query2).then(function (response) {
         totalResults = response.features;
         console.log(totalResults);
-        addPolygons(response, view.graphics, isClickEvent);
+
+        // gets added to firstList in processFeatures
+        // so when you splice it, it will be right back every click
+        // logic needs to be different
         processFeatures(totalResults, "", event);
+        addPolygons(response, view.graphics, isClickEvent);
+
+        // processFeatures(totalResults, "", event, removeFromList);
       });
     }
   }
@@ -1232,6 +1614,7 @@ require([
       }
 
       $("#detailBox").hide();
+      $("#filterDiv").hide();
       $("#featureWid").show();
       // $("#result-btns").show();
       $("#total-results").show();
@@ -1247,19 +1630,19 @@ require([
       $("#results-div").css("height", "200px");
 
       view.graphics.removeAll();
-      const existingBufferGraphicIndex = view.graphics.items.findIndex(
-        (g) => g.id === bufferGraphicId
-      );
-      if (existingBufferGraphicIndex > -1) {
-        view.graphics.removeAt(existingBufferGraphicIndex);
-      }
+
       view.graphics.addMany(polygonGraphics);
       if (polygonGraphics.length > 1) {
-        view.goTo(polygonGraphics);
+        view.goTo({
+          target: polygonGraphics,
+          zoom: oldZoom,
+        });
+
+        console.log(`more than 1`);
       } else {
         view.goTo({
           target: polygonGraphics,
-          zoom: 15,
+          zoom: oldZoom,
         });
       }
     });
@@ -1271,6 +1654,7 @@ require([
       $("#featureWid").hide();
       $("#result-btns").hide();
       $("#total-results").hide();
+      $("#filterDiv").hide();
       $("#details-btns").show();
       $("#detail-content").show();
       $("#detailBox").show();
@@ -1314,10 +1698,12 @@ require([
       $("#total-results").hide();
       $("#details-btns").hide();
       $("#exportSearch").hide();
+      $("#filterDiv").hide();
       $("#abutters-content").show();
       $("#selected-feature").empty();
       $("#backButton").show();
       $("#detailsButton").show();
+      $("#filterDiv").hide();
       $("#parcel-feature").empty();
       $("#backButton-div").css("padding-top", "78px");
       $("#abutters-title").html(`Abutting Parcels (0)`);
@@ -1329,9 +1715,67 @@ require([
   });
 
   $(document).ready(function () {
+    $("#filterButton").on("click", function () {
+      $("#exportResults").hide();
+      $("#detailBox").hide();
+      $("#featureWid").hide();
+      $("#result-btns").hide();
+      $("#total-results").hide();
+      $("#details-btns").hide();
+      $("#exportSearch").hide();
+      $("#abutters-content").hide();
+      $("#selected-feature").empty();
+      $("#backButton").hide();
+      $("#detailsButton").hide();
+      $("#filterDiv").show();
+      $("#backButton").show();
+      // $("#detailsButton").show();
+      $("#parcel-feature").empty();
+      $("#backButton-div").css("padding-top", "78px");
+      $("#abutters-title").html(`Abutting Parcels (0)`);
+    });
+  });
+
+  $(document).ready(function () {
     $("#exportSearch").on("click", function (e) {
       e.stopPropagation();
+
+      const printContainer = document.createElement("div");
+
+      // Optionally, make this container invisible
+      printContainer.style.visibility = "hidden";
+      document.body.appendChild(printContainer);
+
+      const resultsListGroup = document.createElement("ul");
+
+      uniqueArray.forEach(function (feature) {
+        let objectID = feature.objectid;
+        let owner = feature.owner;
+        let coOwner = feature.coOwner;
+        let mailingAddress = feature.mailingAddress;
+        let mailingAddress2 = feature.mailingAddress2;
+        let Mailing_City = feature.Mailing_City;
+        let Mail_State = feature.Mail_State;
+        let Mailing_Zip = feature.Mailing_Zip;
+
+        const listItem = document.createElement("li");
+        listItem.classList.add("export-search-list");
+
+        let listItemHTML;
+
+        listItemHTML = ` ${owner} ${coOwner} <br> ${mailingAddress} ${mailingAddress2} <br> ${Mailing_City}, ${Mail_State} ${Mailing_Zip}`;
+
+        listItem.innerHTML += listItemHTML;
+        listItem.setAttribute("object-id", objectID);
+
+        resultsListGroup.appendChild(listItem);
+      });
+
+      // Append the list to the print container
+      printContainer.appendChild(resultsListGroup);
+
       ExportDetails("search");
+      document.body.removeChild(printContainer);
     });
   });
 
@@ -1470,7 +1914,7 @@ require([
   function ExportDetails(type) {
     var listItems;
     if (type === "search") {
-      listItems = document.querySelectorAll(".search-list");
+      listItems = document.querySelectorAll(".export-search-list");
     } else {
       listItems = document.querySelectorAll(".abutters-group-item");
     }
@@ -1522,6 +1966,8 @@ require([
     win.document.write(transformedContent);
     win.document.write("</body></html>");
     win.document.close();
+    // Optionally, remove the print container after printing
+    // document.body.removeChild(printContainer);
     console.log(win.document);
 
     setTimeout(() => {
@@ -1687,7 +2133,7 @@ require([
 
           listGroup.appendChild(listItem);
           abuttersDiv.appendChild(listGroup);
-          qu;
+          $("#abutters-spinner").hide();
           $("#abutters-title").html(`Abutting Parcels (${totalResults})`);
         });
       });
@@ -1726,7 +2172,7 @@ require([
     view.graphics.add(newBufferGraphic);
     view.goTo({
       target: newBufferGraphic,
-      zoom: 15,
+      zoom: oldZoom,
     });
   }
 
@@ -2031,14 +2477,15 @@ require([
     view.graphics.addMany([polygonGraphic]);
     view.goTo({
       target: polygonGraphic,
-      zoom: 15,
+      zoom: oldZoom,
+      // zoom: 15,
     });
     // }
     // } else {
     // }
   }
 
-  function zoomToFeature(objectid, polygonGraphics, gisLink) {
+  function zoomToFeature(objectid, notPolygonGraphics, gisLink) {
     detailsChanged = {
       isChanged: false,
       item: "",
@@ -2085,7 +2532,7 @@ require([
         view.graphics.addMany([polygonGraphic]);
         view.goTo({
           target: polygonGraphic,
-          zoom: 15,
+          zoom: oldZoom,
         });
       } else {
         let whereClause = `GIS_LINK = '${gisLink}'`;
@@ -2105,7 +2552,7 @@ require([
 
           view.goTo({
             target: geometry,
-            zoom: 15,
+            zoom: oldZoom,
           });
 
           // view.goTo(geometry);
@@ -2142,7 +2589,7 @@ require([
 
           view.goTo({
             target: detailsGeometry,
-            zoom: 15,
+            zoom: oldZoom,
           });
           console.log(detailsGeometry);
 
@@ -2180,7 +2627,7 @@ require([
 
             view.goTo({
               target: geometry,
-              zoom: 15,
+              zoom: oldZoom,
             });
 
             // view.goTo(geometry);
@@ -2458,8 +2905,8 @@ require([
         firstList = [];
         secondList = [];
         polygonGraphics = [];
-        $("#select-button").prop("disabled", false);
-        $("#lasso").prop("disabled", false);
+        $("#select-button").removeClass("btn-warning");
+        // $("#lasso").prop("disabled", false);
         // select = true;
         $("#searchInput ul").remove();
         $("#suggestions").hide();
@@ -2491,7 +2938,7 @@ require([
 
         view.graphics.removeAll();
 
-        view.goTo(webmap.portalItem.extent);
+        // view.goTo(webmap.portalItem.extent);
 
         return;
       }
@@ -2608,6 +3055,9 @@ require([
     } else {
       CondosLayer.visible = true;
     }
+
+    $("#lasso").removeClass("btn-warning");
+    $("#select-button").removeClass("btn-warning");
     $("dropdown").empty();
     $("#featureWid").empty();
     $("#abutters-content").hide();

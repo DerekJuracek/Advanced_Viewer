@@ -579,7 +579,7 @@ img {
 .abutters-title {
   display: flex;
   flex-direction: column;
-  padding-top: 2px;
+  background-color: var(--info-color);
   /* outline-color: tomato; */
   /* background-color: rgba(8, 171, 180, 0.7); */
   background-color: var(--info-color);
@@ -588,6 +588,43 @@ img {
   font-size: 15px;
   align-items: center;
   vertical-align: middle;
+}
+
+#filterDiv {
+  /* background-color: #f5f5f5;  */
+  padding-bottom: 50px;
+}
+
+#filterScrollableContainer {
+  max-height: 400px; /* Adjust based on your needs */
+  overflow-y: auto;
+  margin-top: 20px; /* Add some space between the title and the scrollable container */
+}
+
+.filterContainer {
+  margin-bottom: 10px; /* Adds some space between your filters */
+}
+
+/* .filterContainer {
+  padding-bottom: 10px;
+} */
+#filter-title {
+  background-color: var(--info-color);
+  height: 25px;
+  width: 100%;
+  /* font-size: 15px; */
+  align-items: center;
+  vertical-align: middle;
+}
+
+.filterLabel {
+  color: white;
+  background-color: var(--info-color);
+  height: 25px;
+  width: 100%;
+  text-align: center;
+  /* align-items: center;
+  vertical-align: middle; */
 }
 
 .custom-height {
