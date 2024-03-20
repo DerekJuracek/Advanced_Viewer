@@ -319,9 +319,6 @@ require([
     webmap.tables.add(noCondosTable);
   });
 
-  function changeUniqueArray() {
-    $("#total-results").html(uniqueArray.length + " results returned");
-  }
   function clearContents(e, string) {
     // console.log(e.target.value);
     if (sessionStorage.getItem(key) === "no") {
@@ -386,7 +383,14 @@ require([
     polygonGraphics = [];
   }
 
-  function buildResultsPanel(features, polygonGraphics, e) {
+  function buildResultsPanel(
+    features,
+    polygonGraphics,
+    e,
+    pointGraphic,
+    pointLocation,
+    pointGisLink
+  ) {
     $("status-loader").show();
     $("#featureWid").empty();
 
@@ -416,14 +420,33 @@ require([
       a.owner.toLowerCase().localeCompare(b.owner.toLowerCase())
     );
 
-    // const featureWidDiv = document.getElementById("featureWid");
+    function removeDups(pointGraphic, pointLocation, pointGisLink) {
+      uniqueArray = uniqueArray.filter((item) => item.objectid != pointGraphic);
+      uniqueArray = uniqueArray.filter(
+        (item) => item.location != pointLocation
+      );
+      firstList = firstList.filter((item) => item.objectid != pointGraphic);
+      firstList = firstList.filter((item) => item.location != pointLocation);
+
+      $(`li[object-id="${pointGraphic}"]`).remove();
+
+      if (sessionStorage.getItem(key) == "no") {
+        firstList = firstList.filter((item) => item.GIS_LINK != pointGisLink);
+        uniqueArray = uniqueArray.filter(
+          (item) => item.GIS_LINK != pointGisLink
+        );
+        $(`li[data-id="${pointGisLink}"]`).remove();
+      }
+    }
+
+    removeDups(pointGraphic, pointLocation, pointGisLink);
 
     const featureWidDiv = document.getElementById("featureWid");
     const listGroup = document.createElement("ul");
 
     uniqueArray.forEach(function (feature) {
       // console.log(feature);
-      searchResults = uniqueArray.length;
+
       let objectID = feature.objectid;
       let locationVal = feature.location;
       let locationUniqueId =
@@ -448,11 +471,6 @@ require([
       imageDiv.setAttribute("data-id", locationGISLINK);
 
       imageDiv.classList.add("image-div", "col-3");
-
-      $(document).ready(function () {
-        $("#total-results").show();
-        $("#total-results").html(searchResults + " results returned");
-      });
 
       let listItemHTML;
       let displayNoGeometry;
@@ -480,11 +498,17 @@ require([
       listGroup.appendChild(listItem);
     });
 
+    searchResults = uniqueArray.length;
+
+    $(document).ready(function () {
+      $("#total-results").show();
+      $("#total-results").html(searchResults + " results returned");
+    });
+
     // createExportList();
 
     $("#detailsButton").hide();
     $("#filterDiv").hide();
-
     $("#result-btns").hide();
     $("#details-btns").hide();
     $("#featureWid").show();
@@ -508,6 +532,7 @@ require([
     $("#exportResults").hide();
 
     $(".spinner-container").hide();
+    $(`li[object-id="${pointGraphic}"]`).remove();
     // $("#select-button").addClass("disabled");
     // if (select) {
     //   $("#select-button").prop("disabled", false);
@@ -563,6 +588,9 @@ require([
   }
 
   function processFeatures(features, polygonGraphics, e, removeFromList) {
+    let pointGraphic;
+    let pointLocation;
+    let pointGisLink;
     // console.log(firstList);
     function createList(features) {
       features.forEach(function (feature) {
@@ -570,9 +598,6 @@ require([
         if (feature.attributes.Owner === "" || null || undefined) {
           return;
         } else {
-          // secondList.push(feature.attributes["Uniqueid"]);
-          // console.log("Detailed feature:", feature.attributes.Location);
-          // let uid = feature.uid;
           let objectId = feature.attributes["OBJECTID"];
           let locationVal = feature.attributes.Location;
           let locationUniqueId = feature.attributes["Uniqueid"];
@@ -647,51 +672,54 @@ require([
     }
 
     if (e) {
-      if (features.length <= 1) {
-        const pointGraphic = features[0].attributes.OBJECTID;
-        const pointGisLink = features[0].attributes.GIS_LINK;
+      // if (features.length <= 1) {
+      pointGraphic = features[0].attributes.OBJECTID;
+      pointLocation = features[0].attributes.Location;
+      pointGisLink = features[0].attributes.GIS_LINK;
 
-        const count = firstList.filter(
-          (g) => g.objectid === pointGraphic
-        ).length;
+      const count = firstList.filter((g) => g.objectid === pointGraphic).length;
 
-        if (count >= 1) {
-          // Find the index of the first occurrence
-          const firstIndex = firstList.findIndex(
-            (g) => g.objectid === pointGraphic
-          );
-
-          firstList.splice(firstIndex, 1);
-          console.log(firstList);
-        }
-        createList(features);
+      if (count >= 1) {
+        buildResultsPanel(
+          features,
+          polygonGraphics,
+          e,
+          pointGraphic,
+          pointLocation,
+          pointGisLink
+        );
       } else {
-        features.forEach(function (item, index) {
-          let pointGraphic = features[index].attributes.OBJECTID;
-
-          const count = firstList.filter(
-            (g) => g.objectid === pointGraphic
-          ).length;
-
-          if (count >= 1) {
-            // Find the index of the first occurrence
-            const firstIndex = firstList.findIndex(
-              (g) => g.objectid === pointGraphic
-            );
-
-            firstList.splice(firstIndex, 1);
-          }
-        });
         createList(features);
+        buildResultsPanel(features);
       }
     } else {
       if (!features) {
-        buildResultsPanel("", polygonGraphics, e);
+        buildResultsPanel("", polygonGraphics, e, pointGraphic);
+        // removeDups(pointGraphic)
+      } else if (features.length > 1) {
+        if (!lasso) {
+          features = features.filter(
+            (item) => item.attributes.ACCOUNT_TYPE != "CONDOMAIN"
+          );
+        }
+        createList(features);
       } else {
         createList(features);
       }
     }
-    buildResultsPanel(features, polygonGraphics, e);
+
+    if (e) {
+      return;
+    } else {
+      buildResultsPanel(
+        features,
+        polygonGraphics,
+        e,
+        pointGraphic,
+        pointLocation,
+        pointGisLink
+      );
+    }
   }
 
   let features;
@@ -735,214 +763,69 @@ require([
       // then removes duplicate if a user clicked on an existing polygon
       // then at the end adds it back
       // really just concerned with click logic
-      if (polygonGeometries.features.length <= 1) {
-        let array = [];
-        console.log(polygonGeometries.features[0].attributes.OBJECTID);
-        bufferGraphicId = polygonGeometries.features[0].attributes.OBJECTID;
-        pointGisLink = features[0].attributes.GIS_LINK;
 
-        const graphic = new Graphic({
-          geometry: features[0].geometry,
-          symbol: fillSymbol,
-          id: bufferGraphicId,
-        });
+      let array = [];
+      console.log(polygonGeometries.features[0].attributes.OBJECTID);
+      bufferGraphicId = polygonGeometries.features[0].attributes.OBJECTID;
+      pointGisLink = features[0].attributes.GIS_LINK;
 
-        polygonGraphics2.push(graphic);
+      const graphic = new Graphic({
+        geometry: features[0].geometry,
+        symbol: fillSymbol,
+        id: bufferGraphicId,
+      });
 
-        // somethings not write here
-        // maybe not getting removed from firstList
-        // so if you remove graphic and click again, firstList still has it
-        // so count > 1 and removes its again not adding
+      polygonGraphics2.push(graphic);
 
-        // getting added to list first now
-        // so its finding the same value that its trying to add as a graphic
-        // this logic wont work as is it will always keep removing graphic
-        // maybe use graphic instead of firstList here
+      // somethings not write here
+      // maybe not getting removed from firstList
+      // so if you remove graphic and click again, firstList still has it
+      // so count > 1 and removes its again not adding
 
-        countCondos = firstList.filter(
-          (g) => g.GIS_LINK === pointGisLink
-        ).length;
+      // getting added to list first now
+      // so its finding the same value that its trying to add as a graphic
+      // this logic wont work as is it will always keep removing graphic
+      // maybe use graphic instead of firstList here
 
-        // count = view.graphics.findIndex((g) => g.id === bufferGraphicId);
+      countCondos = firstList.filter((g) => g.GIS_LINK === pointGisLink).length;
 
-        count = view.graphics.some((g) => g.id === bufferGraphicId);
+      // count = view.graphics.findIndex((g) => g.id === bufferGraphicId);
 
-        // logic for "J0001" on no condos
-        // returns 42 only one has polygon
-        // so logic needs altered here
-        if (countCondos > 3 && sessionStorage.getItem(key) === "no") {
-          // firstList.filter((g) => g.GIS_LINK != pointGisLink);
+      count = view.graphics.some((g) => g.id === bufferGraphicId);
 
-          const firstListIndex = firstList.findIndex(
-            (g) => g.GIS_LINK === pointGisLink
-          );
+      if (count) {
+        const firstIndex = view.graphics.findIndex(
+          (g) => g.id === bufferGraphicId
+        );
 
-          const firstIndex = view.graphics.findIndex(
-            (g) => g.id === bufferGraphicId
-          );
+        view.graphics.removeAt(firstIndex);
 
-          // removes polygon parcel, only 1 when searching "J0001"
-          view.graphics.removeAt(firstIndex);
-          // removes the list correctly, but search Results needs new calculation
-          // filter to removes anything that has same GIS_LINK "J0001"
-          // mutate the firstList array, so removes the items from the list
-          firstList = firstList.filter(
-            (item) => item.GIS_LINK !== pointGisLink
-          );
+        const graphicIndex = polygonGraphics.findIndex(
+          (g) => g.id === bufferGraphicId
+        );
+        console.log(graphicIndex);
+        console.log(polygonGraphics);
+        // polygonGraphics.slice(graphicIndex, 1);
+        polygonGraphics.splice(graphicIndex, 1);
+        console.log(polygonGraphics);
 
-          $(`li[data-id="${pointGisLink}"]`).remove();
+        // firstList = firstList.filter(
+        //   (item) => item.objectid !== bufferGraphicId
+        // );
 
-          valueToRemove = pointGisLink;
-          if (firstListIndex > -1) {
-            searchResults = searchResults - countCondos;
-            if (searchResults < 0) {
-              searchResults = 0;
-            }
-            $("#total-results").html(searchResults + " results returned");
-          }
-        } else if (count) {
-          const firstIndex = view.graphics.findIndex(
-            (g) => g.id === bufferGraphicId
-          );
-          const firstListIndex = firstList.findIndex(
-            (g) => g.objectid === bufferGraphicId
-          );
+        // $(`li[object-id="${bufferGraphicId}"]`).remove();
+        // valueToRemove = bufferGraphicId;
 
-          view.graphics.removeAt(firstIndex);
-          firstList.splice(firstListIndex, 1);
-          $(`li[object-id="${bufferGraphicId}"]`).remove();
-          valueToRemove = bufferGraphicId;
-
-          if (firstListIndex > -1) {
-            searchResults = searchResults - 1;
-            $("#total-results").html(searchResults + " results returned");
-          }
-
-          polygonGraphics = polygonGraphics.filter(
-            (graphic) => graphic.id !== bufferGraphicId
-          );
-        } else {
-          // let id = polygonGraphics2[0].id;
-          console.log(polygonGraphics);
-          graphicsLayer.addMany(polygonGraphics2);
-          // if (polygonGraphics.length >= 1) {
-          //   polygonGraphics = [...polygonGraphics, polygonGraphics2[0]];
-          // }
-        }
-
-        // polygonGraphics = [...polygonGraphics, polygonGraphics2[0]];
+        // polygonGraphics = polygonGraphics.filter(
+        //   (graphic) => graphic.id !== bufferGraphicId
+        // );
       } else {
-        // logic for when you click on a condo within a condo main
-        // condos on because it adds "2" polygons
-        let array = [];
-        let types = [];
-        let indexesToRemove = [];
-
-        polygonGeometries.features.forEach(function (item) {
-          array.push(item.attributes.OBJECTID);
-          bufferGraphicId = item.attributes.OBJECTID;
-          let type = item.attributes.ACCOUNT_TYPE;
-
-          count = view.graphics.some((g) => g.id === bufferGraphicId);
-
-          if (type == "CONDOMAIN") {
-            // if its already a graphic, dont add it
-
-            // if it a graphic already then check if someone selected a condo or a condo and parcel
-            if (count) {
-              // condo and parcel selected
-              // this will remove parcel
-              if (polygonGeometries.features.length > 1) {
-                return;
-              } else {
-                view.graphics.items.forEach((g, index) => {
-                  if (array.includes(g.id)) {
-                    indexesToRemove.push(index);
-                  }
-                });
-
-                indexesToRemove.reverse().forEach((index) => {
-                  view.graphics.removeAt(index);
-                });
-
-                const firstListIndex = firstList.findIndex(
-                  (g) => g.objectid === bufferGraphicId
-                );
-
-                firstList.splice(firstListIndex, 1);
-
-                $(`li[object-id="${bufferGraphicId}"]`).remove();
-                valueToRemove = bufferGraphicId;
-
-                if (firstListIndex > -1) {
-                  searchResults = searchResults - 1;
-                  $("#total-results").html(searchResults + " results returned");
-                }
-
-                //  indexesToRemove = [];
-              }
-
-              // indexesToRemove.reverse().forEach((index) => {
-              //   view.graphics.removeAt(index);
-              // });
-              // return;
-            } else {
-              // if its not create it, dont add it yet
-              const graphic = new Graphic({
-                geometry: item.geometry,
-                symbol: fillSymbol,
-                id: bufferGraphicId,
-              });
-              polygonGraphics2.push(graphic);
-              if (indexesToRemove.length < 1) {
-                graphicsLayer.addMany(polygonGraphics2);
-              }
-            }
-          } else {
-            //
-            if (count) {
-              // let indexesToRemove = [];
-              view.graphics.items.forEach((g, index) => {
-                if (array.includes(g.id)) {
-                  indexesToRemove.push(index);
-                }
-              });
-              indexesToRemove.reverse().forEach((index) => {
-                view.graphics.removeAt(index);
-              });
-
-              const firstListIndex = firstList.findIndex(
-                (g) => g.objectid === bufferGraphicId
-              );
-
-              firstList.splice(firstListIndex, 1);
-
-              $(`li[object-id="${bufferGraphicId}"]`).remove();
-              valueToRemove = bufferGraphicId;
-              if (firstListIndex > -1) {
-                searchResults = searchResults - 1;
-                $("#total-results").html(searchResults + " results returned");
-              }
-
-              // indexesToRemove.reverse().forEach((index) => {
-              //   view.graphics.removeAt(index);
-              // });
-              // return;
-            } else {
-              // if its not create it, dont add it yet
-              const graphic = new Graphic({
-                geometry: item.geometry,
-                symbol: fillSymbol,
-                id: bufferGraphicId,
-              });
-              polygonGraphics2.push(graphic);
-              if (indexesToRemove.length < 1) {
-                graphicsLayer.addMany(polygonGraphics2);
-              }
-            }
-          }
-          count = false;
-        });
+        // let id = polygonGraphics2[0].id;
+        console.log(polygonGraphics);
+        graphicsLayer.addMany(polygonGraphics2);
+        // if (polygonGraphics.length >= 1) {
+        //   polygonGraphics = [...polygonGraphics, polygonGraphics2[0]];
+        // }
       }
     } else {
       // no a click event
@@ -1010,7 +893,7 @@ require([
       polygonGraphics = polygonGraphics2;
     }
 
-    if (ClickEvent && !count && countCondos <= 1) {
+    if (ClickEvent && !count) {
       let id = polygonGraphics2[0].id;
       polygonGraphics = [...polygonGraphics, polygonGraphics2[0]];
       removeFromList = id;
@@ -1749,6 +1632,7 @@ require([
       $("#selected-feature").empty();
       $("#backButton").hide();
       $("#detailsButton").hide();
+      $("#dropdown").show();
       $("#filterDiv").show();
       $("#backButton").show();
       // $("#detailsButton").show();

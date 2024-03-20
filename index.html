@@ -360,8 +360,27 @@
                 </calcite-combobox>
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Appraised Value is</div>
-                <calcite-combobox placeholder="All" scale="m">
+                <div class="filterLabel">Appraised Value</div>
+                <!-- <calcite-label>
+                  Appraised Value: -->
+                <calcite-slider
+                  min-value="50"
+                  max-value="65"
+                  min="0"
+                  max="100"
+                  precise
+                  ticks="5"
+                  label-ticks
+                  label-handles
+                  max-label="Lowest Price"
+                  min-label="Highest Price"
+                ></calcite-slider>
+                <!-- <calcite-notice open icon kind="info" width="full" scale="s"> -->
+                <!-- <div slot="title">Temperature Monitor Information</div>
+                      <div slot="message">Readings outside this range will be recorded, but ignored during analysis.</div> -->
+                <!-- </calcite-notice> -->
+                <!-- </calcite-label> -->
+                <!-- <calcite-combobox placeholder="All" scale="m">
                   <calcite-combobox-item
                     value="Natural Resources"
                     text-label="Natural Resources"
@@ -370,11 +389,31 @@
                     value="Agriculture"
                     text-label="Agriculture"
                   ></calcite-combobox-item>
-                </calcite-combobox>
+                </calcite-combobox> -->
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Assessed Value is</div>
-                <calcite-combobox
+                <!-- <div class="filterLabel">Assessed Value is</div> -->
+                <div class="filterLabel">Assessed Value</div>
+                <calcite-label>
+                  <!-- Assessed Value: -->
+                  <calcite-slider
+                    min-value="50"
+                    max-value="65"
+                    min="0"
+                    max="100"
+                    precise
+                    ticks="5"
+                    label-ticks
+                    label-handles
+                    max-label="Lowest Assessed Value"
+                    min-label="Highest Assessed Value"
+                  ></calcite-slider>
+                  <!-- <calcite-notice open icon kind="info" width="full" scale="s"> -->
+                  <!-- <div slot="title">Temperature Monitor Information</div>
+                      <div slot="message">Readings outside this range will be recorded, but ignored during analysis.</div> -->
+                  <!-- </calcite-notice> -->
+                </calcite-label>
+                <!-- <calcite-combobox
                   placeholder="Select an Assessed Value"
                   scale="m"
                 >
@@ -386,7 +425,7 @@
                     value="Agriculture"
                     text-label="Agriculture"
                   ></calcite-combobox-item>
-                </calcite-combobox>
+                </calcite-combobox> -->
               </div>
               <div class="filterContainer">
                 <div class="filterLabel">Property Type is</div>
@@ -455,12 +494,30 @@
                     value="Agriculture"
                     text-label="Agriculture"
                   ></calcite-combobox-item>
-                  <div class="filterLabel">Acres are</div>
                 </calcite-combobox>
               </div>
               <div class="filterContainer">
                 <div class="filterLabel">Acres</div>
-                <calcite-combobox id="acresFilter" placeholder="All" scale="m">
+                <calcite-label>
+                  <!-- Acres: -->
+                  <calcite-slider
+                    min-value="50"
+                    max-value="65"
+                    min="0"
+                    max="100"
+                    precise
+                    ticks="5"
+                    label-ticks
+                    label-handles
+                    max-label="Acres"
+                    min-label="Acres"
+                  ></calcite-slider>
+                  <!-- <calcite-notice open icon kind="info" width="full" scale="s"> -->
+                  <!-- <div slot="title">Temperature Monitor Information</div>
+                      <div slot="message">Readings outside this range will be recorded, but ignored during analysis.</div> -->
+                  <!-- </calcite-notice> -->
+                </calcite-label>
+                <!-- <calcite-combobox id="acresFilter" placeholder="All" scale="m">
                   <calcite-combobox-item
                     value="Natural Resources"
                     text-label="Natural Resources"
@@ -469,11 +526,30 @@
                     value="Agriculture"
                     text-label="Agriculture"
                   ></calcite-combobox-item>
-                </calcite-combobox>
+                </calcite-combobox> -->
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Sold On is</div>
-                <calcite-combobox id="soldFilter" placeholder="All" scale="m">
+                <div class="filterLabel">Sold On</div>
+                <calcite-label>
+                  <!-- Sold By Date -->
+                  <calcite-slider
+                    min-value="50"
+                    max-value="65"
+                    min="0"
+                    max="100"
+                    precise
+                    ticks="5"
+                    label-ticks
+                    label-handles
+                    max-label="Date"
+                    min-label="Date"
+                  ></calcite-slider>
+                  <!-- <calcite-notice open icon kind="info" width="full" scale="s"> -->
+                  <!-- <div slot="title">Temperature Monitor Information</div>
+                      <div slot="message">Readings outside this range will be recorded, but ignored during analysis.</div> -->
+                  <!-- </calcite-notice> -->
+                </calcite-label>
+                <!-- <calcite-combobox id="soldFilter" placeholder="All" scale="m">
                   <calcite-combobox-item
                     value="Natural Resources"
                     text-label="Natural Resources"
@@ -482,24 +558,32 @@
                     value="Agriculture"
                     text-label="Agriculture"
                   ></calcite-combobox-item>
-                </calcite-combobox>
+                </calcite-combobox> -->
               </div>
               <div class="filterContainer">
                 <div class="filterLabel">Sale Price is</div>
-                <calcite-combobox
-                  id="salePriceFilter"
-                  placeholder="All"
-                  scale="m"
-                >
-                  <calcite-combobox-item
-                    value="Natural Resources"
-                    text-label="Natural Resources"
-                  ></calcite-combobox-item>
-                  <calcite-combobox-item
-                    value="Agriculture"
-                    text-label="Agriculture"
-                  ></calcite-combobox-item>
-                </calcite-combobox>
+                <calcite-label>
+                  <!-- Sale Price: -->
+                  <calcite-slider
+                    min-value="50"
+                    max-value="65"
+                    min="0"
+                    max="100"
+                    precise
+                    ticks="5"
+                    label-ticks
+                    label-handles
+                    max-label="Sale Price"
+                    min-label="Sale Price"
+                  ></calcite-slider>
+                  <calcite-notice open icon kind="info" width="full" scale="s">
+                    <div slot="title">Temperature Monitor Information</div>
+                    <div slot="message">
+                      Readings outside this range will be recorded, but ignored
+                      during analysis.
+                    </div>
+                  </calcite-notice>
+                </calcite-label>
               </div>
             </div>
             <div style="padding-top: 10px">
@@ -889,7 +973,7 @@
           <button
             type="button"
             id="clear-btn"
-            class="btn btn-light"
+            class="btn btn-light clear-btn"
             title="Reset"
           >
             <svg
