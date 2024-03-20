@@ -155,6 +155,28 @@ require([
           // currScaleLabel.innerHTML =
           //   `<span class="title">Current Scale</span><b>` + (Math.round(scale * 100) / 100).toFixed(4) + `</b>`;
         }
+
+        if (!noCondosLayer.visible && !CondosLayer.visible) {
+          if (Number(zoom) > 15) {
+            if (DetailsHandle) {
+              DetailsHandle.remove();
+            }
+            if (clickHandle) {
+              clickHandle.remove();
+            }
+
+            clickHandle = view.on("click", handleClick);
+
+            if (sessionStorage.getItem(key) === "no") {
+              noCondosLayer.visible = true;
+            } else {
+              CondosLayer.visible = true;
+            }
+            $("#lasso").removeClass("btn-warning");
+            $("#select-button").addClass("btn-warning");
+            select = true;
+          }
+        }
         // if (extent !== oldExtent) {
         //   console.log(
         //     `old extent is: ${oldExtent} and new extent is: ${extent}`
@@ -1583,7 +1605,7 @@ require([
         }
 
         DetailsHandle = view.on("click", handleDetailsClick);
-      } else if (!lasso && select) {
+      } else if ((!lasso && select) || (!select && lasso)) {
         if (clickHandle) {
           clickHandle.remove();
         }
