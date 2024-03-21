@@ -364,6 +364,7 @@ require([
         }
         // detailsHandleUsed == "";
         view.ui.add(activeWidget1, "bottom-right");
+
         setActiveButton(document.getElementById("areaButton"));
         break;
       case null:
@@ -450,6 +451,126 @@ require([
   noCondosTable.load().then(() => {
     webmap.tables.add(noCondosTable);
   });
+
+  // Updated function to add a layer to the pick list with click event handling
+  function addLayerToPickList(layer, container) {
+    // Assuming the icon is initially set to "plus" for all items
+
+    if (
+      layer.type === "graphics" ||
+      layer.title == "Tax Map Annotation" ||
+      layer.title == "Road Centerline"
+    ) {
+      return;
+    } else {
+      var icon = "plus";
+
+      // Create the pick list item and action for each layer
+      var item =
+        $(`<calcite-pick-list-item label="${layer.title}" value="${layer.id}" description="${layer.type}">
+      <calcite-action id="action-${layer.id}" slot="actions-end" icon="${icon}" text="${layer.title}"></calcite-action>
+    </calcite-pick-list-item>`);
+
+      // Append the item to the specified container
+      container.append(item);
+
+      // Add click event listener for the action
+      // $(`#action-${layer.id}`).on("click", function () {
+      //   // Toggle visibility
+      //   layer.visible = !layer.visible;
+
+      //   // Swap the icon based on the new visibility state
+      //   var newIcon = layer.visible ? "minus" : "plus";
+      //   $(this).attr("icon", newIcon);
+
+      // });
+    }
+  }
+
+  // Function to process and add layers, including handling group layers
+  function processLayers(layers, container) {
+    layers.forEach(function (layer) {
+      if (layer.type === "group") {
+        // For group layers, create a calcite-pick-list-group
+        var groupTitle = layer.title || "Industry"; // Default title or layer title
+        var groupContainer = $(
+          `<calcite-pick-list-group group-title="${groupTitle}"></calcite-pick-list-group>`
+        );
+
+        // Recursively process sublayers, adding them to this group
+        processLayers(layer.layers.items, groupContainer);
+
+        // Append the group container to the main container
+        container.append(groupContainer);
+      } else {
+        // For non-group layers, directly add them to the pick list or current group
+        addLayerToPickList(layer, container);
+      }
+    });
+  }
+
+  function toggleLayerVisibility(layerId, actionElement) {
+    // Find the layer in the webmap
+    let layer = webmap.findLayerById(layerId);
+
+    if (layer) {
+      // Toggle the layer's visibility
+      layer.visible = !layer.visible;
+
+      // If the layer is part of a group layer, you might need to toggle each sublayer
+      if (layer.type === "group") {
+        layer.layers.forEach((subLayer) => {
+          subLayer.visible = layer.visible;
+        });
+      }
+
+      // Update the action icon based on the new visibility state
+      actionElement.attr("icon", layer.visible ? "minus" : "plus");
+
+      // Optionally, refresh the layer or the view if necessary
+      // view.refresh(); // Uncomment if needed
+    }
+  }
+
+  $("#layerList").on("click", "calcite-action", function (event) {
+    // Prevent the default action
+    event.preventDefault();
+
+    // Get the layer ID stored in the value of the pick-list-item
+    let layerId = $(this).closest("calcite-pick-list-item").attr("value");
+
+    // Toggle the layer visibility and icon
+    toggleLayerVisibility(layerId, $(this));
+  });
+
+  // Assuming your webmap is loaded and the view is ready
+  view.when(function () {
+    // Assuming you have a <calcite-pick-list> with an id="layerList"
+    var pickListContainer = $("#layerList");
+
+    // Get the layers from the webmap, might be different based on your actual map setup
+    var layers = webmap.layers.items; // Assuming webmap is your WebMap instance
+
+    // Process each layer and add it to the pick list
+    processLayers(layers, pickListContainer);
+  });
+
+  // view.when(() => {
+  //   // Wait for the map to load
+  //   const layers = webmap.layers.toArray();
+
+  //   layers.forEach((layer) => {
+  //     // For each layer in the web map, create a new pick list item
+  //     const item = $(`
+  //     <calcite-pick-list-item label="${layer.title}" description="${layer.id}" value="${layer.id}">
+  //       <calcite-action slot="actions-end" icon="layer" text="Mountain layer"></calcite-action>
+  //     </calcite-pick-list-item>
+  //   `);
+
+  //     $("#layerList").append(item);
+  //   });
+  // });
+  // });
 
   //   let whereClause = `
   //   1=1
@@ -869,8 +990,10 @@ require([
 
     // createExportList();
 
+    $("#backButton").hide();
     $("#detailsButton").hide();
     $("#filterDiv").hide();
+    $("#layerListDiv").hide();
     $("#result-btns").hide();
     $("#details-btns").hide();
     $("#featureWid").show();
@@ -1884,6 +2007,7 @@ require([
 
       $("#detailBox").hide();
       $("#filterDiv").hide();
+      $("#layerListDiv").hide();
       $("#featureWid").show();
       // $("#result-btns").show();
       $("#total-results").show();
@@ -1924,6 +2048,7 @@ require([
       $("#result-btns").hide();
       $("#total-results").hide();
       $("#filterDiv").hide();
+      $("#layerListDiv").hide();
       $("#details-btns").show();
       $("#detail-content").show();
       $("#detailBox").show();
@@ -1968,11 +2093,11 @@ require([
       $("#details-btns").hide();
       $("#exportSearch").hide();
       $("#filterDiv").hide();
+      $("#layerListDiv").hide();
       $("#abutters-content").show();
       $("#selected-feature").empty();
       $("#backButton").show();
       $("#detailsButton").show();
-      $("#filterDiv").hide();
       $("#parcel-feature").empty();
       $("#backButton-div").css("padding-top", "78px");
       $("#abutters-title").html(`Abutting Parcels (0)`);
@@ -1993,6 +2118,7 @@ require([
       $("#details-btns").hide();
       $("#exportSearch").hide();
       $("#abutters-content").hide();
+      $("#layerListDiv").hide();
       $("#selected-feature").empty();
       $("#backButton").hide();
       $("#detailsButton").hide();
@@ -2005,6 +2131,32 @@ require([
       $("#abutters-title").html(`Abutting Parcels (0)`);
     });
   });
+
+  $(document).ready(function () {
+    $("#layerListBtn").on("click", function () {
+      $("#exportResults").hide();
+      $("#detailBox").hide();
+      $("#featureWid").hide();
+      $("#result-btns").hide();
+      $("#total-results").hide();
+      $("#details-btns").hide();
+      $("#exportSearch").hide();
+      $("#abutters-content").hide();
+      $("#selected-feature").empty();
+      $("#backButton").hide();
+      $("#detailsButton").hide();
+      $("#dropdown").show();
+      $("#filterDiv").hide();
+      $("#backButton").show();
+      $("#layerListDiv").show();
+      // $("#detailsButton").show();
+      $("#parcel-feature").empty();
+      $("#backButton-div").css("padding-top", "78px");
+      $("#abutters-title").html(`Abutting Parcels (0)`);
+    });
+  });
+
+  $("#layerListDiv").hide();
 
   $(document).ready(function () {
     $("#exportSearch").on("click", function (e) {

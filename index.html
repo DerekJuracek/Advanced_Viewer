@@ -331,6 +331,15 @@
               <span class="sr-only">Loading...</span>
             </div>
           </div>
+          <div id="layerListDiv" style="display: none">
+            <h5 id="filter-title" style="text-align: center; color: white">
+              Layer List
+            </h5>
+            <div id="filterScrollableContainer">
+              <calcite-pick-list id="layerList" class="calcite-mode-dark">
+              </calcite-pick-list>
+            </div>
+          </div>
           <div id="filterDiv">
             <h5 id="filter-title" style="text-align: center; color: white">
               Filters
@@ -752,7 +761,11 @@
               />
             </svg>
           </button>
-          <button type="button" class="btn bg-light bar-Buttons">
+          <button
+            type="button"
+            id="layerListBtn"
+            class="btn bg-light bar-Buttons"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
