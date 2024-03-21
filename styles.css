@@ -155,6 +155,10 @@ ul {
   padding-bottom: 50px;
 }
 
+.filterSlider {
+  color: white;
+}
+
 .suggestions-dropdown {
   display: none;
   position: absolute;

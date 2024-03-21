@@ -319,6 +319,236 @@ require([
     webmap.tables.add(noCondosTable);
   });
 
+  //   let whereClause = `
+  //   1=1
+
+  // `;
+
+  function generateFilters() {
+    let query = noCondosLayer.createQuery();
+    query.where = `1=1`;
+    query.returnDistinctValues = true;
+    query.returnGeometry = false; // Adjust based on your needs
+    query.outFields = ["Street_Name"];
+
+    CondosLayer.queryFeatures(query).then(function (response) {
+      console.log(response);
+
+      var features = response.features;
+      var comboBox = $("#streetFilter");
+
+      // let streetFilteEle = $("#streetFilter");
+      features.forEach(function (feature) {
+        var name = feature.attributes.Street_Name; // Assuming 'Name' is the field you want to display
+        // var id = feature.attributes.OBJECTID; // Assuming 'Id' is the value you want to use
+
+        // Create a new Calcite ComboBox item
+        var newItem;
+        if (name == "" || null || undefined) {
+          return;
+        } else {
+          // Create a new Calcite ComboBox item
+          newItem = $(
+            '<calcite-combobox-item value="' +
+              name +
+              '" text-label="' +
+              name +
+              '"></calcite-combobox-item>'
+          );
+        }
+
+        // Append the new item to the ComboBox
+        comboBox.append(newItem);
+      });
+    });
+
+    let query2 = noCondosLayer.createQuery();
+    query2.where = `1=1`;
+    query2.returnDistinctValues = true;
+    query2.returnGeometry = false; // Adjust based on your needs
+    query2.outFields = ["Owner"];
+
+    CondosLayer.queryFeatures(query2).then(function (response) {
+      console.log(response);
+
+      var features = response.features;
+      var comboBox = $("#ownerFilter");
+
+      // let streetFilteEle = $("#streetFilter");
+      features.forEach(function (feature) {
+        var name = feature.attributes.Owner; // Assuming 'Name' is the field you want to display
+        // var id = feature.attributes.OBJECTID; // Assuming 'Id' is the value you want to use
+
+        var newItem;
+        if (name == "" || null || undefined) {
+          return;
+        } else {
+          // Create a new Calcite ComboBox item
+          newItem = $(
+            '<calcite-combobox-item value="' +
+              name +
+              '" text-label="' +
+              name +
+              '"></calcite-combobox-item>'
+          );
+        }
+
+        // Append the new item to the ComboBox
+        comboBox.append(newItem);
+      });
+    });
+
+    let query3 = noCondosLayer.createQuery();
+    query3.where = `1=1`;
+    query3.returnDistinctValues = true;
+    query3.returnGeometry = false; // Adjust based on your needs
+    query3.outFields = ["Parcel_Type"];
+
+    CondosLayer.queryFeatures(query3).then(function (response) {
+      console.log(response);
+
+      var features = response.features;
+      var comboBox = $("#propertyFilter");
+
+      // let streetFilteEle = $("#streetFilter");
+      features.forEach(function (feature) {
+        var name = feature.attributes.Parcel_Type; // Assuming 'Name' is the field you want to display
+        // var id = feature.attributes.OBJECTID; // Assuming 'Id' is the value you want to use
+
+        var newItem;
+        if (name == "" || null || undefined) {
+          return;
+        } else {
+          // Create a new Calcite ComboBox item
+          newItem = $(
+            '<calcite-combobox-item value="' +
+              name +
+              '" text-label="' +
+              name +
+              '"></calcite-combobox-item>'
+          );
+        }
+
+        // Append the new item to the ComboBox
+        comboBox.append(newItem);
+      });
+    });
+
+    let query4 = noCondosLayer.createQuery();
+    query4.where = `1=1`;
+    query4.returnDistinctValues = true;
+    query4.returnGeometry = false; // Adjust based on your needs
+    query4.outFields = ["Building_Type"];
+
+    CondosLayer.queryFeatures(query4).then(function (response) {
+      console.log(response);
+
+      var features = response.features;
+      var comboBox = $("#buildingFilter");
+
+      // let streetFilteEle = $("#streetFilter");
+      features.forEach(function (feature) {
+        var name = feature.attributes.Building_Type; // Assuming 'Name' is the field you want to display
+        // var id = feature.attributes.OBJECTID; // Assuming 'Id' is the value you want to use
+
+        // Create a new Calcite ComboBox item
+        var newItem;
+        if (name == "" || null || undefined) {
+          return;
+        } else {
+          // Create a new Calcite ComboBox item
+          newItem = $(
+            '<calcite-combobox-item value="' +
+              name +
+              '" text-label="' +
+              name +
+              '"></calcite-combobox-item>'
+          );
+        }
+
+        // Append the new item to the ComboBox
+        comboBox.append(newItem);
+      });
+    });
+
+    let query5 = noCondosLayer.createQuery();
+    query5.where = `1=1`;
+    query5.returnDistinctValues = true;
+    query5.returnGeometry = false; // Adjust based on your needs
+    query5.outFields = ["Building_Use_Code"];
+
+    CondosLayer.queryFeatures(query5).then(function (response) {
+      console.log(response);
+
+      var features = response.features;
+      var comboBox = $("#buildingUseFilter");
+
+      // let streetFilteEle = $("#streetFilter");
+      features.forEach(function (feature) {
+        var name = feature.attributes.Building_Use_Code; // Assuming 'Name' is the field you want to display
+        // var id = feature.attributes.OBJECTID; // Assuming 'Id' is the value you want to use
+
+        var newItem;
+        if (name == "" || null || undefined) {
+          return;
+        } else {
+          // Create a new Calcite ComboBox item
+          newItem = $(
+            '<calcite-combobox-item value="' +
+              name +
+              '" text-label="' +
+              name +
+              '"></calcite-combobox-item>'
+          );
+        }
+
+        // Append the new item to the ComboBox
+        comboBox.append(newItem);
+      });
+    });
+
+    let query6 = noCondosLayer.createQuery();
+    query6.where = `1=1`;
+    query6.returnDistinctValues = true;
+    query6.returnGeometry = false; // Adjust based on your needs
+    query6.outFields = ["Design_Type"];
+
+    CondosLayer.queryFeatures(query6).then(function (response) {
+      console.log(response);
+
+      var features = response.features;
+      var comboBox = $("#designTypeFilter");
+
+      // let streetFilteEle = $("#streetFilter");
+      features.forEach(function (feature) {
+        var name = feature.attributes.Design_Type; // Assuming 'Name' is the field you want to display
+        // var id = feature.attributes.OBJECTID; // Assuming 'Id' is the value you want to use
+
+        var newItem;
+        if (name == "" || null || undefined) {
+          return;
+        } else {
+          // Create a new Calcite ComboBox item
+          newItem = $(
+            '<calcite-combobox-item value="' +
+              name +
+              '" text-label="' +
+              name +
+              '"></calcite-combobox-item>'
+          );
+        }
+
+        // Append the new item to the ComboBox
+        comboBox.append(newItem);
+      });
+    });
+  }
+
+  generateFilters();
+
+  // totalResults = response.features;
+  // addResultGraphics(totalResults);
+
   function clearContents(e, string) {
     // console.log(e.target.value);
     if (sessionStorage.getItem(key) === "no") {
