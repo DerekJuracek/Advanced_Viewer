@@ -143,6 +143,8 @@ require([
   let oldScale = view.scale;
   let oldZoom = view.zoom;
   let valueToRemove;
+  let handleUsed;
+  let detailsHandleUsed;
 
   reactiveUtils.watch(
     () => [view.zoom, view.extent, view.scale],
@@ -158,6 +160,12 @@ require([
 
         if (!noCondosLayer.visible && !CondosLayer.visible) {
           if (Number(zoom) > 15) {
+            if (sessionStorage.getItem(key) === "no") {
+              noCondosLayer.visible = true;
+            } else {
+              CondosLayer.visible = true;
+            }
+
             if (DetailsHandle) {
               DetailsHandle.remove();
             }
@@ -165,16 +173,28 @@ require([
               clickHandle.remove();
             }
 
-            clickHandle = view.on("click", handleClick);
-
-            if (sessionStorage.getItem(key) === "no") {
-              noCondosLayer.visible = true;
+            if (
+              handleUsed == "click" ||
+              handleUsed == "details" ||
+              handleUsed == "none yet"
+            ) {
+              $("#select-button").removeClass("btn-warning");
+              return;
             } else {
-              CondosLayer.visible = true;
+              clickHandle = view.on("click", handleClick);
+              $("#lasso").removeClass("btn-warning");
+              $("#select-button").addClass("btn-warning");
+              select = true;
             }
-            $("#lasso").removeClass("btn-warning");
-            $("#select-button").addClass("btn-warning");
-            select = true;
+
+            // if (sessionStorage.getItem(key) === "no") {
+            //   noCondosLayer.visible = true;
+            // } else {
+            //   CondosLayer.visible = true;
+            // }
+            // $("#lasso").removeClass("btn-warning");
+            // $("#select-button").addClass("btn-warning");
+            // select = true;
           }
         }
         // if (extent !== oldExtent) {
@@ -202,8 +222,10 @@ require([
       setActiveWidget(null);
       if (!this.classList.contains("active")) {
         setActiveWidget("distance");
+        // $("#distanceButton").addClass("btn-warning");
       } else {
         setActiveButton(null);
+        // $("#distanceButton").removeClass("btn-warning");
       }
     });
 
@@ -211,8 +233,10 @@ require([
     setActiveWidget(null);
     if (!this.classList.contains("active")) {
       setActiveWidget("area");
+      // $("#areaButton").addClass("btn-warning");
     } else {
       setActiveButton(null);
+      // $("#areaButton").removeClass("btn-warning");
     }
   });
 
@@ -226,6 +250,57 @@ require([
         // skip the initial 'new measurement' button
         activeWidget1.viewModel.start();
 
+        if (!DetailsHandle && !clickHandle) {
+          handleUsed = "none yet";
+        }
+
+        if (DetailsHandle) {
+          try {
+            handleUsed = "details";
+            DetailsHandle.remove();
+            console.log(handleUsed);
+          } catch (error) {
+            console.error("Failed to remove DetailsHandle", error);
+          }
+        }
+
+        if (clickHandle) {
+          try {
+            handleUsed = "click";
+            clickHandle.remove();
+            console.log(handleUsed);
+          } catch (error) {
+            console.error("Failed to remove DetailsHandle", error);
+          }
+        }
+
+        if (detailsHandleUsed == "detailClick") {
+          handleUsed = "details";
+        }
+
+        // handleUsed = "none yet";
+
+        if (activeWidget1 && activeWidget1.viewModel) {
+          // Listen for the "measure-end" event on the viewModel
+          activeWidget1.viewModel.watch("state", function (state) {
+            if (state === "measured") {
+              if (handleUsed == "click") {
+                clickHandle = view.on("click", handleClick);
+              } else if (handleUsed == "details") {
+                DetailsHandle = view.on("click", handleDetailsClick);
+                detailsHandleUsed == "";
+              } else {
+              }
+              // The measurement is complete
+              console.log("Measurement completed");
+
+              // Your custom logic here
+              // For example, you could display the measurement result in a custom UI element,
+              // log it, or store it for further processing.
+            }
+          });
+        }
+
         view.ui.add(activeWidget1, "bottom-right");
         setActiveButton(document.getElementById("distanceButton"));
         break;
@@ -237,6 +312,57 @@ require([
 
         activeWidget1.viewModel.start();
 
+        if (!DetailsHandle && !clickHandle) {
+          handleUsed = "none yet";
+        }
+        if (DetailsHandle) {
+          try {
+            handleUsed = "details";
+            DetailsHandle.remove();
+            console.log(handleUsed);
+          } catch (error) {
+            console.error("Failed to remove DetailsHandle", error);
+          }
+        }
+
+        if (clickHandle) {
+          try {
+            handleUsed = "click";
+            clickHandle.remove();
+            console.log(handleUsed);
+          } catch (error) {
+            console.error("Failed to remove DetailsHandle", error);
+          }
+        }
+
+        if (detailsHandleUsed == "detailClick") {
+          handleUsed = "details";
+        }
+
+        // handleUsed = "none yet";
+
+        // Assuming activeWidget1 is an instance of DistanceMeasurement2D or AreaMeasurement2D
+        if (activeWidget1 && activeWidget1.viewModel) {
+          // Listen for the "measure-end" event on the viewModel
+          activeWidget1.viewModel.watch("state", function (state) {
+            if (state === "measured") {
+              if (handleUsed == "click") {
+                clickHandle = view.on("click", handleClick);
+              } else if (handleUsed == "details") {
+                DetailsHandle = view.on("click", handleDetailsClick);
+                detailsHandleUsed == "";
+              } else {
+              }
+              // The measurement is complete
+              console.log("Measurement completed");
+
+              // Your custom logic here
+              // For example, you could display the measurement result in a custom UI element,
+              // log it, or store it for further processing.
+            }
+          });
+        }
+        // detailsHandleUsed == "";
         view.ui.add(activeWidget1, "bottom-right");
         setActiveButton(document.getElementById("areaButton"));
         break;
@@ -245,6 +371,7 @@ require([
           view.ui.remove(activeWidget1);
           activeWidget1.destroy();
           activeWidget1 = null;
+          detailsHandleUsed == "";
         }
         break;
     }
@@ -253,12 +380,17 @@ require([
   function setActiveButton(selectedButton) {
     // focus the view to activate keyboard shortcuts for sketching
     view.focus();
-    let elements = document.getElementsByClassName("active");
+    // detailsHandleUsed == "";
+    let elements = Array.from(document.getElementsByClassName("active"));
     for (let i = 0; i < elements.length; i++) {
-      elements[i].classList.remove("active");
+      elements[i].classList.remove("active", "btn-warning");
+      // elements[i].classList.remove("btn-warning");
+      elements[i].classList.add("bg-info");
     }
     if (selectedButton) {
-      selectedButton.classList.add("active");
+      selectedButton.classList.add("active", "btn-warning");
+      selectedButton.classList.remove("bg-info");
+      // selectedButton.classList.add("btn-warning");
     }
   }
 
@@ -1655,7 +1787,9 @@ require([
   }
 
   function handleClick(event) {
+    detailsHandleUsed = "click";
     // console.log(event);
+
     isClickEvent = true;
     if (DetailsHandle) {
       DetailsHandle.remove();
@@ -2332,6 +2466,7 @@ require([
   }
 
   function clickDetailsPanel(item) {
+    detailsHandleUsed = "detailClick";
     $("#detail-content").empty();
     $("#selected-feature").empty();
     let features = item[0].attributes;
@@ -2444,6 +2579,11 @@ require([
   }
 
   function buildDetailsPanel(objectId, itemId) {
+    if (clickHandle) {
+      clickHandle.remove();
+    }
+
+    detailsHandleUsed = "detailClick";
     $("#exportResults").hide();
     detailSelected = [objectId, itemId];
 
