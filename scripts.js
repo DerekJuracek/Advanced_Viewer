@@ -1288,22 +1288,13 @@ require([
         const graphicIndex = polygonGraphics.findIndex(
           (g) => g.id === bufferGraphicId
         );
-        console.log(graphicIndex);
-        console.log(polygonGraphics);
+
         // polygonGraphics.slice(graphicIndex, 1);
         polygonGraphics.splice(graphicIndex, 1);
-        console.log(polygonGraphics);
+        // console.log(polygonGraphics);
 
-        // firstList = firstList.filter(
-        //   (item) => item.objectid !== bufferGraphicId
-        // );
-
-        // $(`li[object-id="${bufferGraphicId}"]`).remove();
-        // valueToRemove = bufferGraphicId;
-
-        // polygonGraphics = polygonGraphics.filter(
-        //   (graphic) => graphic.id !== bufferGraphicId
-        // );
+        // will zoom to extent of adding and deselecting
+        // view.goTo(polygonGraphics);
       } else {
         // let id = polygonGraphics2[0].id;
         console.log(polygonGraphics);
@@ -1312,6 +1303,8 @@ require([
         //   polygonGraphics = [...polygonGraphics, polygonGraphics2[0]];
         // }
       }
+      // will zoom to extent of adding and deselecting
+      // view.goTo(polygonGraphics);
     } else {
       // no a click event
       // search with only something in table
@@ -1339,6 +1332,7 @@ require([
         if (polygonGraphics2.length >= 1) {
           graphicsLayer.addMany(polygonGraphics2);
         }
+        view.goTo(polygonGraphics);
       } else {
         regSearch = true;
         // regular search polygons added here
@@ -1361,6 +1355,8 @@ require([
         if (polygonGraphics2.length >= 1) {
           graphicsLayer.addMany(polygonGraphics2);
         }
+
+        view.goTo(polygonGraphics);
       }
     }
 
@@ -1494,6 +1490,7 @@ require([
     lasso = !lasso;
     select = false;
     $("#select-button").removeClass("btn-warning");
+    $("#select-button").prop("disabled", false);
 
     if (lasso && !select) {
       sketch.create("polygon");
@@ -1973,7 +1970,7 @@ require([
         if (clickHandle && select) {
           clickHandle.remove();
         }
-
+        $("#select-button").removeClass("btn-warning");
         DetailsHandle = view.on("click", handleDetailsClick);
       } else if ((!lasso && select) || (!select && lasso)) {
         if (clickHandle) {
@@ -1982,7 +1979,7 @@ require([
         if (DetailsHandle) {
           DetailsHandle.remove();
         }
-
+        $("#select-button").addClass("btn-warning");
         clickHandle = view.on("click", handleClick);
       } else if (lasso && !select) {
         if (clickHandle) {
@@ -1992,6 +1989,7 @@ require([
           DetailsHandle.remove();
         }
         clickHandle = view.on("click", handleClick);
+        $("#select-button").addClass("btn-warning");
       } else {
         // else add the select click, not the details
         // DetailsHandle = view.on("click", handleDetailsClick);
@@ -2001,10 +1999,10 @@ require([
         if (DetailsHandle) {
           DetailsHandle.remove();
         }
-
+        $("#select-button").addClass("btn-warning");
         clickHandle = view.on("click", handleClick);
       }
-
+      $("#select-button").prop("disabled", false);
       $("#detailBox").hide();
       $("#filterDiv").hide();
       $("#layerListDiv").hide();
@@ -2621,6 +2619,8 @@ require([
   }
 
   function clickDetailsPanel(item) {
+    $("#select-button").prop("disabled", true);
+    $("#select-button").removeClass("btn-warning");
     detailsHandleUsed = "detailClick";
     $("#detail-content").empty();
     $("#selected-feature").empty();
@@ -2734,6 +2734,9 @@ require([
   }
 
   function buildDetailsPanel(objectId, itemId) {
+    $("#select-button").prop("disabled", true);
+    $("#select-button").removeClass("btn-warning");
+
     if (clickHandle) {
       clickHandle.remove();
     }
@@ -2929,7 +2932,7 @@ require([
       // zoom: 15,
     });
 
-    buildZoomToFeature(polygonGraphic);
+    // buildZoomToFeature(polygonGraphic);
     // }
     // } else {
     // }
@@ -3349,8 +3352,8 @@ require([
       var searchTerm = e.target.value.toUpperCase();
 
       if (searchTerm.length < 2) {
-        CondosLayer.visible = false;
-        noCondosLayer.visible = false;
+        //CondosLayer.visible = false;
+        //noCondosLayer.visible = false;
 
         firstList = [];
         secondList = [];
