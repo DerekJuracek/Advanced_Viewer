@@ -1047,7 +1047,7 @@ require([
       // Now you can handle the click event as you would in the individual event listener
       let itemId = targetElement.getAttribute("data-id");
       let objectID = targetElement.getAttribute("object-id");
-
+      // buildZoomToFeature(objectID, polygonGraphics, itemId);
       zoomToFeature(objectID, polygonGraphics, itemId);
       // DetailsHandle = view.on("click", handleDetailsClick);
       // clickHandle.remove();
@@ -2025,19 +2025,19 @@ require([
       view.graphics.removeAll();
 
       view.graphics.addMany(polygonGraphics);
-      if (polygonGraphics.length > 1) {
-        view.goTo({
-          target: polygonGraphics,
-          zoom: oldZoom,
-        });
+      // if (polygonGraphics.length > 1) {
+      //   view.goTo({
+      //     target: polygonGraphics,
+      //     zoom: oldZoom,
+      //   });
 
-        console.log(`more than 1`);
-      } else {
-        view.goTo({
-          target: polygonGraphics,
-          zoom: oldZoom,
-        });
-      }
+      //   console.log(`more than 1`);
+      // } else {
+      //   view.goTo({
+      //     target: polygonGraphics,
+      //     zoom: oldZoom,
+      //   });
+      // }
     });
   });
 
@@ -2148,6 +2148,9 @@ require([
       $("#dropdown").show();
       $("#filterDiv").hide();
       $("#backButton").show();
+      // if ( detailsHandleUsed == "detailClick") {
+
+      // }
       $("#layerListDiv").show();
       // $("#detailsButton").show();
       $("#parcel-feature").empty();
@@ -2872,6 +2875,23 @@ require([
     detailsDiv.appendChild(details);
   }
 
+  // function buildZoomToFeature(graphic) {
+  //   const zoomGraphic = graphic;
+  //   // view.goTo({
+  //   //   target: graphic,
+  //   //   zoom: 8,
+  //   // });
+
+  //   $(document).ready(function (graphic) {
+  //     $("#zoomToParcel").on("click", function () {
+  //       view.goTo({
+  //         target: zoomGraphic,
+  //         zoom: 8,
+  //       });
+  //     });
+  //   });
+  // }
+
   function zoomToDetail(objectid, geom, item) {
     detailsChanged = {
       isChanged: true,
@@ -2908,6 +2928,8 @@ require([
       zoom: oldZoom,
       // zoom: 15,
     });
+
+    buildZoomToFeature(polygonGraphic);
     // }
     // } else {
     // }
