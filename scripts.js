@@ -2122,9 +2122,14 @@ require([
       $("#detailsButton").hide();
       $("#dropdown").show();
       $("#filterDiv").show();
-      $("#backButton").show();
-      // $("#detailsButton").show();
+      $("#dropdown").toggleClass("expanded");
+      $("#sidebar2").css("left", "0px");
+      $("#results-div").css("left", "350px");
+      $("#left-arrow-2").show();
+      $("#right-arrow-2").hide();
+      $("#results-div").css("height", "200px");
       $("#parcel-feature").empty();
+      $("#backButton").show();
       $("#backButton-div").css("padding-top", "78px");
       $("#abutters-title").html(`Abutting Parcels (0)`);
     });
@@ -2146,9 +2151,12 @@ require([
       $("#dropdown").show();
       $("#filterDiv").hide();
       $("#backButton").show();
-      // if ( detailsHandleUsed == "detailClick") {
-
-      // }
+      $("#dropdown").toggleClass("expanded");
+      $("#sidebar2").css("left", "0px");
+      $("#results-div").css("left", "350px");
+      $("#left-arrow-2").show();
+      $("#right-arrow-2").hide();
+      $("#results-div").css("height", "200px");
       $("#layerListDiv").show();
       // $("#detailsButton").show();
       $("#parcel-feature").empty();
