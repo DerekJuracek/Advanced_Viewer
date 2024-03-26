@@ -357,9 +357,25 @@
               </div>
               <div class="filterContainer">
                 <div class="filterLabel">Appraised Value</div>
+                <div class="filterInputDiv">
+                  <div class="slider-div">
+                    <calcite-input-text
+                      id="app-val-min"
+                      placeholder="min"
+                    ></calcite-input-text>
+                  </div>
+                  <span style="color: white">-</span>
+                  <div style="right: 0px" class="slider-div">
+                    <calcite-input-text
+                      id="app-val-max"
+                      placeholder="max"
+                    ></calcite-input-text>
+                  </div>
+                </div>
                 <!-- <calcite-label>
                   Appraised Value: -->
                 <calcite-slider
+                  id="app-val-slider"
                   class="calcite-mode-dark"
                   min-value="10000"
                   max-value="250000"
@@ -373,28 +389,30 @@
                   min-label="Highest Price"
                   style="color: white; width: 90%; padding-left: 20px"
                 ></calcite-slider>
-                <!-- <calcite-notice style="color: white;" open icon kind="info" width="full" scale="s">  -->
-                <!-- <div style="color: white;"slot="title">Temperature Monitor Information</div>
-                      <div slot="message">Readings outside this range will be recorded, but ignored during analysis.</div>  -->
-                <!-- </calcite-notice>  -->
-                <!-- </calcite-label>  -->
-                <!-- <calcite-combobox placeholder="All" scale="m">
-                  <calcite-combobox-item
-                    value="Natural Resources"
-                    text-label="Natural Resources"
-                  ></calcite-combobox-item>
-                  <calcite-combobox-item
-                    value="Agriculture"
-                    text-label="Agriculture"
-                  ></calcite-combobox-item>
-                </calcite-combobox> -->
+                <!-- dynamically created -->
               </div>
               <div class="filterContainer">
                 <!-- <div class="filterLabel">Assessed Value is</div> -->
                 <div class="filterLabel">Assessed Value</div>
                 <calcite-label>
+                  <div class="filterInputDiv">
+                    <div class="slider-div">
+                      <calcite-input-text
+                        id="assess-val-min"
+                        placeholder="min"
+                      ></calcite-input-text>
+                    </div>
+                    <span style="color: white">-</span>
+                    <div style="right: 0px" class="slider-div">
+                      <calcite-input-text
+                        id="assess-val-max"
+                        placeholder="max"
+                      ></calcite-input-text>
+                    </div>
+                  </div>
                   <!-- Assessed Value: -->
                   <calcite-slider
+                    id="assess-val-slider"
                     class="calcite-mode-dark"
                     min-value="10000"
                     max-value="250000"
@@ -413,19 +431,6 @@
                       <div slot="message">Readings outside this range will be recorded, but ignored during analysis.</div> -->
                   <!-- </calcite-notice> -->
                 </calcite-label>
-                <!-- <calcite-combobox
-                  placeholder="Select an Assessed Value"
-                  scale="m"
-                >
-                  <calcite-combobox-item
-                    value="Natural Resources"
-                    text-label="Natural Resources"
-                  ></calcite-combobox-item>
-                  <calcite-combobox-item
-                    value="Agriculture"
-                    text-label="Agriculture"
-                  ></calcite-combobox-item>
-                </calcite-combobox> -->
               </div>
               <div class="filterContainer">
                 <div class="filterLabel">Property Type is</div>
@@ -444,18 +449,7 @@
                   placeholder="Select a Building Type"
                   scale="m"
                 >
-                  <calcite-combobox-item
-                    value="Residential"
-                    text-label="Residential"
-                  ></calcite-combobox-item>
-                  <calcite-combobox-item
-                    value="Condominium"
-                    text-label="Condominium"
-                  ></calcite-combobox-item>
-                  <calcite-combobox-item
-                    value="Commercial"
-                    text-label="Commercial"
-                  ></calcite-combobox-item>
+                  <!-- dynamically created -->
                 </calcite-combobox>
               </div>
               <div class="filterContainer">
@@ -465,6 +459,7 @@
                   placeholder="All"
                   scale="m"
                 >
+                  <!-- dynamically created -->
                 </calcite-combobox>
               </div>
               <div class="filterContainer">
@@ -474,13 +469,30 @@
                   placeholder="Select a Design Type"
                   scale="m"
                 >
+                  <!-- dynamically created -->
                 </calcite-combobox>
               </div>
               <div class="filterContainer">
                 <div class="filterLabel">Acres</div>
                 <calcite-label>
+                  <div class="filterInputDiv">
+                    <div class="slider-div">
+                      <calcite-input-text
+                        id="acres-val-min"
+                        placeholder="min"
+                      ></calcite-input-text>
+                    </div>
+                    <span style="color: white">-</span>
+                    <div style="right: 0px" class="slider-div">
+                      <calcite-input-text
+                        id="acres-val-max"
+                        placeholder="max"
+                      ></calcite-input-text>
+                    </div>
+                  </div>
                   <!-- Acres: -->
                   <calcite-slider
+                    id="acres-val-slider"
                     class="calcite-mode-dark"
                     min-value="1"
                     max-value="20"
@@ -503,8 +515,24 @@
               <div class="filterContainer">
                 <div class="filterLabel">Sold On</div>
                 <calcite-label>
+                  <div class="filterInputDiv">
+                    <div class="slider-div">
+                      <calcite-input-text
+                        id="sold-val-min"
+                        placeholder="min"
+                      ></calcite-input-text>
+                    </div>
+                    <span style="color: white">-</span>
+                    <div style="right: 0px" class="slider-div">
+                      <calcite-input-text
+                        id="sold-val-max"
+                        placeholder="max"
+                      ></calcite-input-text>
+                    </div>
+                  </div>
                   <!-- Sold By Date -->
                   <calcite-slider
+                    id="soldon-val-slider"
                     class="calcite-mode-dark"
                     min-value="2018"
                     max-value="2021"
@@ -537,8 +565,24 @@
               <div class="filterContainer">
                 <div class="filterLabel">Sale Price is</div>
                 <calcite-label>
+                  <div class="filterInputDiv">
+                    <div class="slider-div">
+                      <calcite-input-text
+                        id="saleP-val-min"
+                        placeholder="min"
+                      ></calcite-input-text>
+                    </div>
+                    <span style="color: white">-</span>
+                    <div style="right: 0px" class="slider-div">
+                      <calcite-input-text
+                        id="saleP-val-max"
+                        placeholder="max"
+                      ></calcite-input-text>
+                    </div>
+                  </div>
                   <!-- Sale Price: -->
                   <calcite-slider
+                    id="saleP-val-slider"
                     class="calcite-mode-dark"
                     min-value="10000"
                     max-value="250000"
@@ -832,21 +876,70 @@
 
     <div class="container">
       <div id="sidebar" class="bg-dark sidebar collapsed">
-        <ul class="list-right">
-          <li class="list-group-item">CAMA Viewer</li>
-
-          <li class="list-group-item list-group-item-info">Basemap</li>
-          <li class="list-group-item list-group-item-info">Bookmarks</li>
-          <li class="list-group-item list-group-item-info">Measure</li>
-          <li class="list-group-item list-group-item-dark">Draw</li>
-          <li class="list-group-item list-group-item-info">ArcGIS Online</li>
-          <li class="list-group-item list-group-item-info">Print</li>
-          <li class="list-group-item list-group-item-light">Help</li>
-          <li class="list-group-item list-group-item-info">Feedback</li>
-          <li class="list-group-item list-group-item-info">
-            Contact Information
-          </li>
-        </ul>
+        <div id="group-right-Btn-div">
+          <div
+            id="Right-Btn-div"
+            style="padding-top: 20px; padding-bottom: 10px; display: none"
+          >
+            <button
+              class="btn btn-outline-light btn-sm backButtons"
+              id="right-btn-back"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-arrow-90deg-left"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4z"
+                />
+              </svg>
+              Main Menu
+            </button>
+          </div>
+        </div>
+        <div id="group-container-right" style="display: none">
+          <div id="BasemapDiv" style="display: none; color: white">
+            Basemaps
+          </div>
+          <div id="BookmarksDiv" style="display: none; color: white">
+            Bookmarks
+          </div>
+          <div id="PrintDiv" style="display: none; color: white">Print</div>
+        </div>
+        <div id="rightPanel">
+          <ul style="padding-top: 20px" class="list-right">
+            <div style="color: white; text-align: center">Options Bar</div>
+            <li
+              id="Basemap-selector"
+              class="list-group-item list-group-item-info"
+            >
+              Basemaps
+            </li>
+            <li
+              id="Bookmarks-selector"
+              class="list-group-item list-group-item-info"
+            >
+              Bookmarks
+            </li>
+            <li class="list-group-item list-group-item-info">ArcGIS Online</li>
+            <li
+              id="Print-selector"
+              class="list-group-item list-group-item-info"
+            >
+              Print
+            </li>
+            <li class="list-group-item list-group-item-light">Help</li>
+            <li class="list-group-item list-group-item-info">Feedback</li>
+            <li class="list-group-item list-group-item-info">
+              Contact Information
+            </li>
+          </ul>
+        </div>
       </div>
       <div id="small-div" class="bg-light" style="right: 0px">
         <button id="side-Exp" type="button" class="btn btn-info btn-sm">

@@ -1114,17 +1114,21 @@ require([
           let Influence_Factor = feature.attributes["Influence_Factor"];
           let Influence_Type = feature.attributes["Influence_Type"];
           let Land_Type = feature.attributes["Land_Type"];
-          let geometry = feature.attributes["geometry"];
 
+          let Prior_Assessment_Year =
+            feature.attributes["Prior_Assessment_Year"];
+          let Prior_Assessed_Total = feature.attributes["Prior_Assessed_Total"];
+          let Prior_Appraised_Total =
+            feature.attributes["Prior_Appraised_Total"];
           firstList.push(
             new Parcel(
               objectId,
               locationVal,
-              locationMBL,
               locationUniqueId,
+              locationGISLINK,
               locationCoOwner,
               locationOwner,
-              locationGISLINK,
+              locationMBL,
               locationGeom,
               mailingAddress,
               mailingAddress2,
@@ -1149,7 +1153,9 @@ require([
               Influence_Factor,
               Influence_Type,
               Land_Type,
-              geometry
+              Prior_Assessment_Year,
+              Prior_Assessed_Total,
+              Prior_Appraised_Total
             )
           );
         }
@@ -1622,11 +1628,11 @@ require([
     constructor(
       objectid,
       location,
-      MBL,
       uniqueId,
+      gisLink,
       coOwner,
       owner,
-      gisLink,
+      MBL,
       geometry,
       mailingAddress,
       mailingAddress2,
@@ -1650,15 +1656,18 @@ require([
       Appraised_Total,
       Influence_Factor,
       Influence_Type,
-      Land_Type
+      Land_Type,
+      Prior_Assessment_Year,
+      Prior_Assessed_Total,
+      Prior_Appraised_Total
     ) {
       this.objectid = objectid;
       this.location = location;
-      this.MBL = MBL;
       this.uniqueId = uniqueId;
+      this.GIS_LINK = gisLink;
       this.coOwner = coOwner;
       this.owner = owner;
-      this.GIS_LINK = gisLink;
+      this.MBL = MBL;
       this.geometry = geometry;
       this.mailingAddress = mailingAddress;
       this.mailingAddress2 = mailingAddress2;
@@ -1683,6 +1692,9 @@ require([
       this.Influence_Factor = Influence_Factor;
       this.Influence_Type = Influence_Type;
       this.Land_Type = Land_Type;
+      this.Prior_Assessment_Year = Prior_Assessment_Year;
+      this.Prior_Assessed_Total = Prior_Assessed_Total;
+      this.Prior_Appraised_Total = Prior_Appraised_Total;
     }
   }
 
@@ -1953,6 +1965,8 @@ require([
       });
     }
   }
+
+  // items on the left panel
 
   $(document).ready(function () {
     $("#backButton").on("click", function () {
@@ -2397,17 +2411,13 @@ require([
     win.document.write(transformedContent);
     win.document.write("</body></html>");
     win.document.close();
-    // Optionally, remove the print container after printing
-    // document.body.removeChild(printContainer);
     console.log(win.document);
 
     setTimeout(() => {
       win.print();
       win.close();
       document.querySelectorAll(".search-list").forEach(function (li, index) {
-        // Restore the original HTML content of each list item
         if (originalContents[index]) {
-          // Check if there was original content stored for this index
           li.innerHTML = originalContents[index];
         }
       });
@@ -2634,7 +2644,7 @@ require([
     $("#selected-feature").empty();
     let features = item[0].attributes;
     // console.log(features);
-
+    let Location = features.Location === undefined ? "" : features.Location;
     let locationUniqueId =
       features.Uniqueid === undefined ? "" : features.Uniqueid;
     let locationCoOwner =
@@ -2682,6 +2692,18 @@ require([
       features.Assessed_Total === undefined ? "" : features.Assessed_Total;
     let Appraised_Total =
       features.Appraised_Total === undefined ? "" : features.Appraised_Total;
+    let Prior_Appraised_Total =
+      features.Prior_Appraised_Total === undefined
+        ? ""
+        : features.Prior_Appraised_Total;
+    let Prior_Assessed_Total =
+      features.Prior_Assessed_Total === undefined
+        ? ""
+        : features.Prior_Assessed_Total;
+    let Prior_Assessment_Year =
+      features.Prior_Assessment_Year === undefined
+        ? ""
+        : features.Prior_Assessment_Year;
 
     const imageUrl = `https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/${locationUniqueId}.jpg`;
     // console.log(matchedObject);
@@ -2693,50 +2715,50 @@ require([
     details.classList.add("details");
 
     details.innerHTML = `
+        <p>
+        <span style="font-family:Tahoma;font-size:14px;"><strong>${Location}</strong></span> <br>
+        </p>
+
         <div>
-            <p>
-                <span style="font-size:9pt;">Owners:&nbsp;</span><br>
-                <span style="font-size:9pt;"><strong>${locationOwner} & ${locationCoOwner}</strong></span><br>
-                <span style="font-size:9pt;">Unique ID: <strong>${locationUniqueId}</strong></span><br>
-                <span style="font-size:9pt;">MBL: <strong>${locationMBL}</strong></span><br>
-                <span style="font-size:9pt;">Mailing Address:&nbsp;</span><br>
-                <span style="font-size:9pt;"><strong>${mailingAddress}</strong></span><br>
-                <span style="font-size:9pt;"><strong>${Mailing_City}${Mail_State} ${Mailing_Zip}</strong></span>
-            </p>
+        <img src=https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/${locationUniqueId}.jpg alt="Building Photo" width="200" height="100"><br>
         </div>
-        <div>
-            <img src="${imageUrl}"alt="Image of ${locationUniqueId}">
-        </div>
-        <div>
-            <span style="font-size:9pt;">Total Acres: <strong>${Total_Acres}</strong></span><br>
-            <span style="font-size:9pt;">Primary Use: <strong>${Parcel_Primary_Use}</strong></span><br>
-            <span style="font-size:9pt;">Primary Bldg Use: <strong>${Building_Use_Code}</strong></span><br>
-            <span style="font-size:9pt;">Parcel Type: <strong>${Parcel_Type}</strong></span><br>
-            <span style="font-size:9pt;">Design Type: <strong>${Design_Type}</strong></span><br>
-            <span style="font-size:9pt;">Zone: <strong>${Zoning}</strong></span><br>
-            <span style="font-size:9pt;">Nhbd: <strong>${Neighborhood}</strong></span><br>
-            <span style="font-size:9pt;">Land Rate: <strong>${Land_Type_Rate}</strong></span><br>
-            <span style="font-size:9pt;">Functional Obsolescence: <strong>${Functional_Obs}</strong></span><br>
-            <span style="font-size:9pt;">External Obsolescence: <strong>${External_Obs}</strong></span><br>
-            &nbsp;
-        </div>
-        
-        <div>
-            <span style="font-size:9pt;">Latest Qualified Sale:&nbsp;</span><br>
-            <span style="font-size:9pt;">Sold on: <strong>${Sale_Date}</strong></span><br>
-            <span style="font-size:9pt;">Sale Price: <strong>${Sale_Price}</strong></span><br>
-            <span style="font-size:9pt;">Volume/Page: <strong>${Vol_Page}</strong></span><br>
-            &nbsp;
-        </div>
-      
-        <div>
-            <span style="font-size:9pt;">Valuations:&nbsp;</span><br>
-            <span style="font-size:9pt;">Asssessment: <strong>${Assessed_Total}</strong></span><br>
-            <span style="font-size:9pt;">Appraised: <strong>${Appraised_Total}</strong></span><br>
-            &nbsp;
-        </div>
-       
-      `;
+        <p>
+        <span style="font-family:Tahoma;font-size:12px;"><strong>${locationOwner} ${locationCoOwner}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;"><strong>${mailingAddress}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;"><strong>${Mailing_City} ${Mail_State} ${Mailing_Zip}</strong></span><br>
+
+        </p>
+        <p>
+        <span style="font-family:Tahoma;font-size:12px;">Unique ID: <strong>${locationUniqueId}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">MBL: <strong>${locationMBL}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">Total Acres: <strong>${Total_Acres}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">Primary Use: <strong>${Parcel_Primary_Use}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">Primary Bldg Use: <strong>${Building_Use_Code}</strong></span><br>
+
+        </p>
+        <p>
+        <span style="font-family:Tahoma;font-size:12px;"><strong>Latest Qualified Sale:</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">Sold on: <strong>${Sale_Date}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">Sale Price: <strong>${Sale_Price}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">Volume/Page: <strong>${Vol_Page}</strong></span><br>
+
+        </p>
+        <p>
+        <span style="font-family:Tahoma;font-size:12px;"><strong>Valuations:</strong></span><br>
+        <span style="font-family:Tahoma;font-size:12px;">GL Year: <strong>${Prior_Assessment_Year}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">Assessment: <strong>${Prior_Assessed_Total}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">Appraised: <strong>${Prior_Appraised_Total}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;"></span>
+        </p>
+        <p>
+        <a target="_blank" rel="noopener noreferrer" href=https://www.propertyrecordcards.com/PropertyResults.aspx?towncode=150&amp;uniqueid=${locationUniqueId}><span style="font-family:Tahoma;font-size:12px;"><strong>Property Card</strong></span></a><br>
+        <a target="_blank" rel="noopener noreferrer" href=https://publicweb-gis.s3.amazonaws.com/PDFs/CT_Washington/Quick_Maps/QM_${locationUniqueId}.pdf><span style="font-family:Tahoma;font-size:12px;"><strong>Parcel Map</strong></span></a><span style="font-family:Tahoma;font-size:12px;"> </span><br>
+        <a target="_blank" rel="noopener noreferrer" href=https://publicweb-gis.s3.amazonaws.com/PDFs/CT_Washington/Tax_Maps/TaxMap_{Map}.pdf><span style="font-family:Tahoma;font-size:12px;"><strong>Tax map</strong></span></a><br>
+        <a target="_blank" rel="noopener noreferrer" href=https://www.mytaxbill.org/inet/bill/parcel.do?town=washington&amp;uniqueId=${locationUniqueId}><span style="font-family:Tahoma;font-size:12px;"><strong>Tax Bills</strong></span></a><br>
+        <a target="_blank" rel="noopener noreferrer" href=https://publicweb-gis.s3.amazonaws.com/CT_Town_Profiles/Washington_Demographics_2023.pdf><span style="font-family:Tahoma;font-size:12px;"><strong>Demographics Profile</strong></span></a><br>
+        <a target="_blank" rel="noopener noreferrer" href=https://publicweb-gis.s3.amazonaws.com/CT_Town_Profiles/Washington_Housing_2022.pdf><span style="font-family:Tahoma;font-size:12px;"><strong>Housing Profile</strong></span></a><br>
+              
+        `;
     $("#details-spinner").hide();
     detailsDiv.appendChild(details);
   }
@@ -2764,7 +2786,8 @@ require([
         return item.GIS_LINK === itemId || item.uniqueId === itemId;
       });
     }
-
+    let Location =
+      matchedObject.location === undefined ? "" : matchedObject.location;
     let locationUniqueId =
       matchedObject.uniqueId === undefined ? "" : matchedObject.uniqueId;
     let locationCoOwner =
@@ -2830,6 +2853,19 @@ require([
         ? ""
         : matchedObject.Appraised_Total;
 
+    let Prior_Appraised_Total =
+      matchedObject.Prior_Appraised_Total === undefined
+        ? ""
+        : matchedObject.Prior_Appraised_Total;
+    let Prior_Assessed_Total =
+      matchedObject.Prior_Assessed_Total === undefined
+        ? ""
+        : matchedObject.Prior_Assessed_Total;
+    let Prior_Assessment_Year =
+      matchedObject.Prior_Assessment_Year === undefined
+        ? ""
+        : matchedObject.Prior_Assessment_Year;
+
     const imageUrl = `https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/${locationUniqueId}.jpg`;
     const detailsDiv = document.getElementById("detail-content");
     const details = document.createElement("div");
@@ -2838,70 +2874,54 @@ require([
     details.classList.add("details");
 
     details.innerHTML = `
-          <div>
-              <p>
-                  <span style="font-size:9pt;">Owners:&nbsp;</span><br>
-                  <span style="font-size:9pt;"><strong>${locationOwner} & ${locationCoOwner}</strong></span><br>
-                  <span style="font-size:9pt;">Unique ID: <strong>${locationUniqueId}</strong></span><br>
-                  <span style="font-size:9pt;">MBL: <strong>${locationMBL}</strong></span><br>
-                  <span style="font-size:9pt;">Mailing Address:&nbsp;</span><br>
-                  <span style="font-size:9pt;"><strong>${mailingAddress}</strong></span><br>
-                  <span style="font-size:9pt;"><strong>${Mailing_City}${Mail_State} ${Mailing_Zip}</strong></span>
-              </p>
-          </div>
-          <div>
-              <img src="${imageUrl}"alt="Image of ${locationUniqueId}">
-          </div>
-          <div>
-              <span style="font-size:9pt;">Total Acres: <strong>${Total_Acres}</strong></span><br>
-              <span style="font-size:9pt;">Primary Use: <strong>${Parcel_Primary_Use}</strong></span><br>
-              <span style="font-size:9pt;">Primary Bldg Use: <strong>${Building_Use_Code}</strong></span><br>
-              <span style="font-size:9pt;">Parcel Type: <strong>${Parcel_Type}</strong></span><br>
-              <span style="font-size:9pt;">Design Type: <strong>${Design_Type}</strong></span><br>
-              <span style="font-size:9pt;">Zone: <strong>${Zoning}</strong></span><br>
-              <span style="font-size:9pt;">Nhbd: <strong>${Neighborhood}</strong></span><br>
-              <span style="font-size:9pt;">Land Rate: <strong>${Land_Type_Rate}</strong></span><br>
-              <span style="font-size:9pt;">Functional Obsolescence: <strong>${Functional_Obs}</strong></span><br>
-              <span style="font-size:9pt;">External Obsolescence: <strong>${External_Obs}</strong></span><br>
-              &nbsp;
-          </div>
+    <p>
+    <span style="font-family:Tahoma;font-size:14px;"><strong>${Location}</strong></span> <br>
+    </p>
+
+    <div>
+    <img src=https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/${locationUniqueId}.jpg alt="Building Photo" width="200" height="100"><br>
+    </div>
+    <p>
+    <span style="font-family:Tahoma;font-size:12px;"><strong>${locationOwner} ${locationCoOwner}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;"><strong>${mailingAddress}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;"><strong>${Mailing_City} ${Mail_State} ${Mailing_Zip}</strong></span><br>
+
+    </p>
+    <p>
+    <span style="font-family:Tahoma;font-size:12px;">Unique ID: <strong>${locationUniqueId}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">MBL: <strong>${locationMBL}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">Total Acres: <strong>${Total_Acres}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">Primary Use: <strong>${Parcel_Primary_Use}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">Primary Bldg Use: <strong>${Building_Use_Code}</strong></span><br>
+
+    </p>
+    <p>
+    <span style="font-family:Tahoma;font-size:12px;"><strong>Latest Qualified Sale:</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">Sold on: <strong>${Sale_Date}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">Sale Price: <strong>${Sale_Price}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">Volume/Page: <strong>${Vol_Page}</strong></span><br>
+
+    </p>
+    <p>
+    <span style="font-family:Tahoma;font-size:12px;"><strong>Valuations:</strong></span><br>
+    <span style="font-family:Tahoma;font-size:12px;">GL Year: <strong>${Prior_Assessment_Year}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">Assessment: <strong>${Prior_Assessed_Total}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">Appraised: <strong>${Prior_Appraised_Total}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;"></span>
+    </p>
+    <p>
+    <a target="_blank" rel="noopener noreferrer" href=https://www.propertyrecordcards.com/PropertyResults.aspx?towncode=150&amp;uniqueid=${locationUniqueId}><span style="font-family:Tahoma;font-size:12px;"><strong>Property Card</strong></span></a><br>
+    <a target="_blank" rel="noopener noreferrer" href=https://publicweb-gis.s3.amazonaws.com/PDFs/CT_Washington/Quick_Maps/QM_${locationUniqueId}.pdf><span style="font-family:Tahoma;font-size:12px;"><strong>Parcel Map</strong></span></a><span style="font-family:Tahoma;font-size:12px;"> </span><br>
+    <a target="_blank" rel="noopener noreferrer" href=https://publicweb-gis.s3.amazonaws.com/PDFs/CT_Washington/Tax_Maps/TaxMap_{Map}.pdf><span style="font-family:Tahoma;font-size:12px;"><strong>Tax map</strong></span></a><br>
+    <a target="_blank" rel="noopener noreferrer" href=https://www.mytaxbill.org/inet/bill/parcel.do?town=washington&amp;uniqueId=${locationUniqueId}><span style="font-family:Tahoma;font-size:12px;"><strong>Tax Bills</strong></span></a><br>
+    <a target="_blank" rel="noopener noreferrer" href=https://publicweb-gis.s3.amazonaws.com/CT_Town_Profiles/Washington_Demographics_2023.pdf><span style="font-family:Tahoma;font-size:12px;"><strong>Demographics Profile</strong></span></a><br>
+    <a target="_blank" rel="noopener noreferrer" href=https://publicweb-gis.s3.amazonaws.com/CT_Town_Profiles/Washington_Housing_2022.pdf><span style="font-family:Tahoma;font-size:12px;"><strong>Housing Profile</strong></span></a><br>
           
-          <div>
-              <span style="font-size:9pt;">Latest Qualified Sale:&nbsp;</span><br>
-              <span style="font-size:9pt;">Sold on: <strong>${Sale_Date}</strong></span><br>
-              <span style="font-size:9pt;">Sale Price: <strong>${Sale_Price}</strong></span><br>
-              <span style="font-size:9pt;">Volume/Page: <strong>${Vol_Page}</strong></span><br>
-              &nbsp;
-          </div>
-        
-          <div>
-              <span style="font-size:9pt;">Valuations:&nbsp;</span><br>
-              <span style="font-size:9pt;">Asssessment: <strong>${Assessed_Total}</strong></span><br>
-              <span style="font-size:9pt;">Appraised: <strong>${Appraised_Total}</strong></span><br>
-              &nbsp;
-          </div>
-         
-        `;
+    `;
+
     $("#details-spinner").hide();
     detailsDiv.appendChild(details);
   }
-
-  // function buildZoomToFeature(graphic) {
-  //   const zoomGraphic = graphic;
-  //   // view.goTo({
-  //   //   target: graphic,
-  //   //   zoom: 8,
-  //   // });
-
-  //   $(document).ready(function (graphic) {
-  //     $("#zoomToParcel").on("click", function () {
-  //       view.goTo({
-  //         target: zoomGraphic,
-  //         zoom: 8,
-  //       });
-  //     });
-  //   });
-  // }
 
   function zoomToDetail(objectid, geom, item) {
     detailsChanged = {
@@ -3289,16 +3309,22 @@ require([
                 let Influence_Factor = feature.attributes["Influence_Factor"];
                 let Influence_Type = feature.attributes["Influence_Type"];
                 let Land_Type = feature.attributes["Land_Type"];
+                let Prior_Assessment_Year =
+                  feature.attributes["Prior_Assessment_Year"];
+                let Prior_Assessed_Total =
+                  feature.attributes["Prior_Assessed_Total"];
+                let Prior_Appraised_Total =
+                  feature.attributes["Prior_Appraised_Total"];
 
                 firstList.push(
                   new Parcel(
                     objectId,
                     locationVal,
-                    locationMBL,
                     locationUniqueId,
+                    locationGISLINK,
                     locationCoOwner,
                     locationOwner,
-                    locationGISLINK,
+                    locationMBL,
                     locationGeom,
                     mailingAddress,
                     mailingAddress2,
@@ -3322,7 +3348,10 @@ require([
                     Appraised_Total,
                     Influence_Factor,
                     Influence_Type,
-                    Land_Type
+                    Land_Type,
+                    Prior_Assessment_Year,
+                    Prior_Assessed_Total,
+                    Prior_Appraised_Total
                   )
                 );
               }
@@ -3562,6 +3591,317 @@ require([
     });
 
   $(document).ready(function () {
+    let queryParameters = {
+      streetName: null,
+      owner: null,
+      appraisedValueMin: null,
+      appraisedValueMax: null,
+      assessedValueMin: null,
+      assessedValueMax: null,
+      propertyType: null,
+      buildingType: null,
+      buildingUseType: null,
+      designType: null,
+      acresValueMin: null,
+      acresValueMax: null,
+      soldOnMin: null,
+      soldOnMax: null,
+      soldPMin: null,
+      soldPMax: null,
+    };
+
+    function updateQuery() {
+      let queryParts = [];
+      if (
+        queryParameters.streetName !== null &&
+        queryParameters.streetName.length > 1
+      ) {
+        if (Array.isArray(queryParameters.streetName)) {
+          // Map each name in the array to a LIKE query part with % wildcards
+          const streetNameParts = queryParameters.streetName.map(
+            (name) => `Street_Name LIKE '%${name.trim()}%'`
+          );
+          // Join these parts with OR
+          queryParts.push(`(${streetNameParts.join(" OR ")})`);
+        } else {
+          queryParts.push(
+            `(Street_Name LIKE '%${queryParameters.streetName.trim()}%')`
+          );
+        }
+      }
+      if (queryParameters.owner !== null && queryParameters.owner.length > 1) {
+        if (Array.isArray(queryParameters.owner)) {
+          // Map each name in the array to a LIKE query part with % wildcards
+          const ownerParts = queryParameters.owner.map(
+            (name) => `Owner LIKE '%${name.trim()}%'`
+          );
+          // Join these parts with OR
+          queryParts.push(`(${ownerParts.join(" OR ")})`);
+        } else {
+          queryParts.push(`(Owner LIKE '%${queryParameters.owner.trim()}%')`);
+        }
+      }
+
+      if (
+        queryParameters.appraisedValueMin !== null &&
+        queryParameters.appraisedValueMax !== null
+      ) {
+        queryParts.push(
+          `Appraised_Total BETWEEN ${queryParameters.appraisedValueMin} AND ${queryParameters.appraisedValueMax}`
+        );
+      }
+
+      if (
+        queryParameters.assessedValueMin !== null &&
+        queryParameters.assessedValueMax !== null
+      ) {
+        queryParts.push(
+          `Assessed_Total BETWEEN ${queryParameters.assessedValueMin} AND ${queryParameters.assessedValueMax}`
+        );
+      }
+      if (
+        queryParameters.propertyType !== null &&
+        queryParameters.propertyType.length > 1
+      ) {
+        if (Array.isArray(queryParameters.propertyType)) {
+          // Map each name in the array to a LIKE query part with % wildcards
+          const PropertyParts = queryParameters.propertyType.map(
+            (name) => `Parcel_Type LIKE '%${name.trim()}%'`
+          );
+          // Join these parts with OR
+          queryParts.push(`(${PropertyParts.join(" OR ")})`);
+        } else {
+          queryParts.push(
+            `(Parcel_Type LIKE '%${queryParameters.propertyType.trim()}%')`
+          );
+        }
+      }
+
+      if (
+        queryParameters.buildingType !== null &&
+        queryParameters.buildingType.length > 1
+      ) {
+        if (Array.isArray(queryParameters.buildingType)) {
+          // Map each name in the array to a LIKE query part with % wildcards
+          const BuildingParts = queryParameters.buildingType.map(
+            (name) => `Building_Type LIKE '%${name.trim()}%'`
+          );
+          // Join these parts with OR
+          queryParts.push(`(${BuildingParts.join(" OR ")})`);
+        } else {
+          queryParts.push(
+            `(Building_Type LIKE '%${queryParameters.buildingType.trim()}%')`
+          );
+        }
+      }
+
+      if (
+        queryParameters.buildingUseType !== null &&
+        queryParameters.buildingUseType.length > 1
+      ) {
+        if (Array.isArray(queryParameters.buildingUseType)) {
+          // Map each name in the array to a LIKE query part with % wildcards
+          const BuildingUseParts = queryParameters.buildingUseType.map(
+            (name) => `Building_Use_Type LIKE '%${name.trim()}%'`
+          );
+          // Join these parts with OR
+          queryParts.push(`(${BuildingUseParts.join(" OR ")})`);
+        } else {
+          queryParts.push(
+            `(Building_Use_Type LIKE '%${queryParameters.buildingUseType.trim()}%')`
+          );
+        }
+      }
+
+      if (
+        queryParameters.designType !== null &&
+        queryParameters.designType.length > 1
+      ) {
+        if (Array.isArray(queryParameters.designType)) {
+          // Map each name in the array to a LIKE query part with % wildcards
+          const DesignParts = queryParameters.designType.map(
+            (name) => `Design_Type LIKE '%${name.trim()}%'`
+          );
+          // Join these parts with OR
+          queryParts.push(`(${DesignParts.join(" OR ")})`);
+        } else {
+          queryParts.push(
+            `(Design_Type LIKE '%${queryParameters.designType.trim()}%')`
+          );
+        }
+      }
+
+      if (
+        queryParameters.acresValueMin !== null &&
+        queryParameters.acresValueMax !== null
+      ) {
+        queryParts.push(
+          `Total_Acres BETWEEN ${queryParameters.acresValueMin} AND ${queryParameters.acresValueMin}`
+        );
+      }
+
+      if (
+        queryParameters.soldOnMin !== null &&
+        queryParameters.soldOnMax !== null
+      ) {
+        queryParts.push(
+          `Sale_Date BETWEEN ${queryParameters.soldOnMin} AND ${queryParameters.soldOnMax}`
+        );
+      }
+
+      if (
+        queryParameters.soldPMin !== null &&
+        queryParameters.soldPMax !== null
+      ) {
+        queryParts.push(
+          `Sale_Price BETWEEN ${queryParameters.soldPMin} AND ${queryParameters.soldPMax}`
+        );
+      }
+
+      let queryString = queryParts.join(" AND ");
+
+      let query = noCondosLayer.createQuery();
+      query.where = queryString;
+      query.returnDistinctValues = false;
+      query.returnGeometry = true;
+      query.outFields = ["*"];
+
+      CondosLayer.queryFeatures(query).then(function (response) {
+        clearContents();
+        addPolygons(response, view.graphics);
+        processFeatures(response.features);
+        function clearQueryParameters() {
+          Object.keys(queryParameters).forEach((key) => {
+            queryParameters[key] = null;
+          });
+
+          // $("#app-val-min").value()
+
+          $("#streetFilter").value = "";
+        }
+
+        clearQueryParameters();
+      });
+
+      console.log(`Query: ${queryString}`);
+
+      // Here, you can use this query string to fetch data from your feature service
+    }
+
+    $("#streetFilter").on("calciteComboboxChange", function (e) {
+      // value = e.target.value;
+      queryParameters.streetName = e.target.value;
+      console.log(queryParameters.streetName);
+
+      // console.log(`street filter is: ${value}`);
+    });
+
+    $("#ownerFilter").on("calciteComboboxChange", function (e) {
+      queryParameters.owner = e.target.value;
+      console.log(queryParameters.owner);
+    });
+
+    $("#app-val-slider").on("calciteSliderChange", function (e) {
+      value = e.target.value;
+      minVal = value[0];
+      maxVal = value[1];
+
+      queryParameters.appraisedValueMin = minVal;
+      $("#app-val-min").val(minVal);
+      queryParameters.appraisedValueMax = maxVal;
+      $("#app-val-max").val(maxVal);
+      // console.log(`appraised value is: ${value}`);
+    });
+
+    // Listen for input event on the input elements
+    $("#app-val-min, #app-val-max").on("input", function () {
+      // Get the values from the input elements
+      var minVal = parseInt($("#app-val-min").val());
+      var maxVal = parseInt($("#app-val-max").val());
+
+      // Update the slider values
+      $("#app-val-slider").calciteSlider("update", [minVal, maxVal]);
+    });
+
+    $("#assess-val-slider").on("calciteSliderChange", function (e) {
+      value = e.target.value;
+      minVal = value[0];
+      maxVal = value[1];
+
+      queryParameters.assessedValueMin = minVal;
+      $("#assess-val-min").val(minVal);
+      queryParameters.assessedValueMax = maxVal;
+      $("#assess-val-max").val(maxVal);
+
+      // console.log(`assessed value slider is: ${value}`);
+    });
+
+    $("#propertyFilter").on("calciteComboboxChange", function (e) {
+      queryParameters.propertyType = e.target.value;
+      // console.log(`property filter: ${value}`);
+    });
+
+    $("#buildingFilter").on("calciteComboboxChange", function (e) {
+      queryParameters.buildingType = e.target.value;
+      // console.log(`building filter is: ${value}`);
+    });
+
+    $("#buildingUseFilter").on("calciteComboboxChange", function (e) {
+      queryParameters.buildingUseType = e.target.value;
+      // console.log(`building use filter is: ${value}`);
+    });
+
+    $("#designTypeFilter").on("calciteComboboxChange", function (e) {
+      queryParameters.designType = e.target.value;
+      // console.log(`design type filter is: ${value}`);
+    });
+
+    $("#acres-val-slider").on("calciteSliderChange", function (e) {
+      value = e.target.value;
+      minVal = value[0];
+      maxVal = value[1];
+
+      queryParameters.acresValueMin = minVal;
+      $("#acres-val-min").val(minVal);
+      queryParameters.acresValueMax = maxVal;
+      $("#acres-val-max").val(maxVal);
+      // console.log(`acres slider is: ${value}`);
+    });
+
+    $("#soldon-val-slider").on("calciteSliderChange", function (e) {
+      value = e.target.value;
+      minVal = value[0];
+      maxVal = value[1];
+
+      queryParameters.soldOnMin = minVal;
+      $("#sold-val-min").val(minVal);
+
+      queryParameters.soldOnMax = maxVal;
+      $("#sold-val-max").val(maxVal);
+
+      // console.log(`sold on slider is: ${value}`);
+    });
+
+    $("#saleP-val-slider").on("calciteSliderChange", function (e) {
+      value = e.target.value;
+      minVal = value[0];
+      maxVal = value[1];
+
+      queryParameters.soldPMin = minVal;
+      $("#saleP-val-min").val(minVal);
+
+      queryParameters.soldPMax = maxVal;
+      $("#saleP-val-max").val(maxVal);
+
+      // console.log(`sale price slider is: ${value}`);
+    });
+
+    $("#submitFilter").on("click", function () {
+      updateQuery();
+    });
+  });
+
+  $(document).ready(function () {
     $("#side-Exp").on("click", function () {
       $("#sidebar").toggleClass("collapsed");
       if ($("#sidebar").hasClass("collapsed")) {
@@ -3573,6 +3913,44 @@ require([
         $("#left-arrow").hide();
         $("#right-arrow").show();
       }
+    });
+  });
+
+  $(document).ready(function () {
+    $("#Basemap-selector").on("click", function () {
+      $("#rightPanel").hide();
+      $("#BookmarksDiv").hide();
+      $("#PrintDiv").hide();
+      $("#Right-Btn-div").show();
+      $("#BasemapDiv").show();
+      $("#group-container-right").show();
+    });
+
+    $("#Bookmarks-selector").on("click", function () {
+      $("#rightPanel").hide();
+      $("#BasemapDiv").hide();
+      $("#PrintDiv").hide();
+      $("#Right-Btn-div").show();
+      $("#BookmarksDiv").show();
+      $("#group-container-right").show();
+    });
+
+    $("#Print-selector").on("click", function () {
+      $("#rightPanel").hide();
+      $("#BookmarksDiv").hide();
+      $("#BasemapDiv").hide();
+      $("#Right-Btn-div").show();
+      $("#PrintDiv").show();
+      $("#group-container-right").show();
+    });
+
+    $("#right-btn-back").on("click", function () {
+      $("#group-container-right").hide();
+      $("#PrintDiv").hide();
+      $("#BookmarksDiv").hide();
+      $("#BasemapDiv").hide();
+      $("#Right-Btn-div").hide();
+      $("#rightPanel").show();
     });
   });
 
