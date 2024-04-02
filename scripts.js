@@ -396,7 +396,7 @@ require([
   }
 
   let noCondosLayer = new FeatureLayer({
-    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_NOCONDOS/FeatureServer/0",
+    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels/FeatureServer/1",
     visible: false,
     popupEnabled: true,
 
@@ -416,7 +416,7 @@ require([
   };
 
   let CondosLayer = new FeatureLayer({
-    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels_CONDOS/FeatureServer/0",
+    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels/FeatureServer/1",
     visible: false,
     popupEnabled: true,
   });
@@ -435,11 +435,11 @@ require([
   };
 
   const CondosTable = new FeatureLayer({
-    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_CONDOS/FeatureServer/1",
+    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels/FeatureServer/0",
   });
 
   const noCondosTable = new FeatureLayer({
-    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/arcgis/rest/services/CT_Washington_Adv_Viewer_Parcels_NOCONDOS/FeatureServer/1",
+    url: "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels/FeatureServer/0",
   });
 
   webmap.add(noCondosLayer);
