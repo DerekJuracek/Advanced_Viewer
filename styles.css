@@ -54,22 +54,25 @@ main {
 
 .navbar .container {
   display: block;
-  padding-right: 0; /* 'block' will make it a standard block-level element */
+  padding-right: 0;
+  /* 'block' will make it a standard block-level element */
 }
 
 .navbar.bg-dark {
-  background-color: var(--background-color) !important; /* 0.5 is 50% opacity */
+  background-color: var(--background-color) !important;
+  margin-top: 3px; /* 0.5 is 50% opacity */
 }
 
 .custom-navbar {
   position: absolute;
   top: 0;
+
   left: 100px;
-  width: 500px;
+  width: 400px;
   z-index: 1000;
-  min-width: 500px;
+  min-width: 400px;
   /* padding-left: 25px; */
-  border-radius: 0px 0px 3px 3px;
+  border-radius: 3px 3px 3px 3px;
   overflow-y: visible;
   /* This ensures the navbar is always on top */
 }
@@ -91,7 +94,6 @@ main {
   right: 0;
   margin-right: 0px;
   padding-left: 0;
-  width: 200px;
 }
 
 ul {
@@ -496,6 +498,25 @@ img {
 .filterInputDiv {
   text-align: center;
   padding-top: 5px;
+}
+
+.options-bar-li {
+  height: 50px;
+}
+
+#BookmarksDiv {
+  font-size: medium;
+  font-weight: 500;
+  /* text-align: center; */
+}
+
+.esri-bookmarks__list {
+  background-color: white; /* Light background */
+  color: black; /* Dark text for contrast */
+}
+
+.esri-bookmarks__item {
+  border-color: #e0e0e0; /* Lighter borders for each item */
 }
 
 .slider-div {
