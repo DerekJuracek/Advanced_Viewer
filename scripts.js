@@ -16,6 +16,8 @@ require([
   "esri/views/View",
   "esri/widgets/DistanceMeasurement2D",
   "esri/widgets/AreaMeasurement2D",
+  "esri/widgets/BasemapLayerList",
+  "esri/widgets/Bookmarks",
 ], function (
   WebMap,
   MapView,
@@ -33,7 +35,9 @@ require([
   SketchViewModel,
   View,
   DistanceMeasurement2D,
-  AreaMeasurement2D
+  AreaMeasurement2D,
+  BasemapLayerList,
+  Bookmarks
 ) {
   // Key to check in sessionStorage
   const key = "condos";
@@ -70,6 +74,116 @@ require([
     ui: {
       components: ["attribution"],
     },
+  });
+
+  view.when(() => {
+    $("#starterModal").modal("show");
+
+    $(document).ready(function () {
+      $("#agreeBtn").prop("disabled", true);
+      $("#agreeCheck").change(function () {
+        if ($(this).is(":checked")) {
+          $("#agreeBtn").prop("disabled", false);
+          console.log("Checkbox is checked.");
+          // Perform actions when checkbox is checked
+        } else {
+          $("#agreeBtn").prop("disabled", true);
+          // Perform actions when checkbox is unchecked
+        }
+      });
+    });
+  });
+
+  // let basemapDiv = $("#BookmarksDiv");
+
+  view.when(() => {
+    const bookmarks = new Bookmarks({
+      view: view,
+      container: $("#BookmarksDiv")[0],
+      // allows bookmarks to be added, edited, or deleted
+      dragEnabled: true,
+    });
+  });
+
+  view.when(() => {
+    const basemaps = new BasemapLayerList({
+      view: view,
+      container: $("#BasemapDiv")[0],
+      // allows bookmarks to be added, edited, or deleted
+      dragEnabled: true,
+    });
+
+    basemaps.visibleElements = {
+      statusIndicators: true,
+      baseLayers: true,
+      referenceLayers: false,
+      referenceLayersTitle: false,
+      errors: true,
+      heading: false,
+    };
+
+    reactiveUtils.watch(
+      () => [view.map.basemap.baseLayers.map((layer) => layer.visible)],
+      () => {
+        const orthoLayersVisible = isAnyOrthoLayerVisible(
+          view.map.basemap.baseLayers
+        );
+        manageBasemapVisibility(view.map.basemap.baseLayers);
+
+        view.map.allLayers.forEach((layer) => {
+          if (layer.title === "Parcel Boundaries") {
+            layer.renderer = orthoLayersVisible
+              ? {
+                  type: "simple",
+                  symbol: {
+                    type: "simple-fill",
+                    color: [255, 255, 255, 0.1],
+                    outline: {
+                      width: 1,
+                      color: [5, 252, 207],
+                    },
+                  },
+                }
+              : originalRenderer;
+          }
+        });
+      }
+    );
+
+    function isAnyOrthoLayerVisible(baseLayers) {
+      const orthoLayerTitles = ["Ortho 2012", "Ortho 2016", "Ortho 2019"];
+
+      return baseLayers.some((layer) => {
+        return layer.visible && orthoLayerTitles.includes(layer.title);
+      });
+    }
+    function manageBasemapVisibility(baseLayers) {
+      const orthoLayerTitles = ["Ortho 2012", "Ortho 2016", "Ortho 2019"];
+
+      // Filter out the layers that we're interested in
+      let basemapLayers = baseLayers.filter((layer) =>
+        orthoLayerTitles.includes(layer.title)
+      );
+
+      // Find the newly visible layer
+      let newlyVisibleLayer = basemapLayers.find(
+        (layer) => layer.visible && !layer.wasVisible
+      );
+
+      // If a newly visible layer is found, turn off all other layers
+      if (newlyVisibleLayer) {
+        basemapLayers.forEach((layer) => {
+          if (layer !== newlyVisibleLayer) {
+            layer.visible = false;
+          }
+        });
+      }
+
+      // Update wasVisible property
+      basemapLayers.forEach((layer) => {
+        layer.wasVisible = layer.visible;
+      });
+    }
   });
 
   webmap.add(sketchGL);
@@ -463,7 +577,7 @@ require([
     ) {
       return;
     } else {
-      var icon = "plus";
+      var icon = "square";
 
       // Create the pick list item and action for each layer
       var item =
@@ -525,7 +639,7 @@ require([
       }
 
       // Update the action icon based on the new visibility state
-      actionElement.attr("icon", layer.visible ? "minus" : "plus");
+      actionElement.attr("icon", layer.visible ? "check-square" : "square");
 
       // Optionally, refresh the layer or the view if necessary
       // view.refresh(); // Uncomment if needed
@@ -846,22 +960,28 @@ require([
     $("#backButton").hide();
     $("#exportResults").hide();
     $("#exportSearch").hide();
-    // $("#select-button").prop("disabled", false);
-
-    // To disable
-    // $("#select-button").prop("disabled", false);
-    // $("#lasso").prop("disabled", false);
-    // $("#select-button").removeClass("disabled");
+    $("#total-results").hide();
+    $("#featureWid").hide();
+    $("#dropdown").show();
+    $("#WelcomeBox").show();
     $("#select-button").attr("title", "Add to Selection Enabled");
-
-    // $("#details-conetnt").hide();
 
     let suggestionsContainer = document.getElementById("suggestions");
     suggestionsContainer.innerHTML = "";
 
-    // sketch.cancel();
+    $("#distanceButton").removeClass("btn-warning");
+    $("#distanceButton").addClass("bg-info");
+    $("#areaButton").removeClass("btn-warning");
+    $("#distanceButton").addClass("bg-info");
     $("#featureWid").empty();
 
+    view.ui.remove(activeWidget1);
+    if (activeWidget1) {
+      activeWidget1.destroy();
+      activeWidget1 = null;
+    }
+
+    detailsHandleUsed == "";
     view.graphics.removeAll();
     polygonGraphics = [];
   }
@@ -967,7 +1087,7 @@ require([
       if (!locationCoOwner && locationGeom) {
         listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner}`;
       } else if (!locationGeom && displayNoGeometry) {
-        listItemHTML = `  ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}<div class="removable-div"; style="position: absolute; color: red; right: 0; padding-right: 5px";>No Geometry</div>`;
+        listItemHTML = `  ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}`;
       } else {
         listItemHTML = ` ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner} & ${locationCoOwner}`;
       }
@@ -1005,6 +1125,7 @@ require([
     $("#results-div").css("left", "350px");
     $("#left-arrow-2").show();
     $("#right-arrow-2").hide();
+    $("#WelcomeBox").hide();
     $("#results-div").css("height", "200px");
     // valueToRemove = 0;
 
@@ -1018,14 +1139,6 @@ require([
 
     $(".spinner-container").hide();
     $(`li[object-id="${pointGraphic}"]`).remove();
-    // $("#select-button").addClass("disabled");
-    // if (select) {
-    //   $("#select-button").prop("disabled", false);
-    // } else {
-    //   $("#select-button").prop("disabled", true);
-    // }
-
-    // $("#lasso").prop("disabled", false);
 
     listGroup.addEventListener("click", function (event) {
       console.log(`list group clicked`);
@@ -1052,6 +1165,7 @@ require([
       // DetailsHandle = view.on("click", handleDetailsClick);
       // clickHandle.remove();
       $("#details-spinner").show();
+      $("#WelcomeBox").hide();
       $("#featureWid").hide();
       $("#result-btns").hide();
       $("#total-results").hide();
@@ -1970,6 +2084,39 @@ require([
 
   $(document).ready(function () {
     $("#backButton").on("click", function () {
+      if (polygonGraphics && polygonGraphics.length > 1) {
+        $("#WelcomeBox").hide();
+        $("#select-button").prop("disabled", false);
+        $("#detailBox").hide();
+        $("#filterDiv").hide();
+        $("#layerListDiv").hide();
+        $("#featureWid").show();
+        // $("#result-btns").show();
+        $("#total-results").show();
+        $("#details-btns").hide();
+        $("#detail-content").empty();
+        $("#backButton").hide();
+        $("#detailsButton").hide();
+        $("#abutters-content").hide();
+        $("#selected-feature").empty();
+        $("#parcel-feature").empty();
+        $("#exportResults").hide();
+        $("#exportSearch").show();
+        $("#results-div").css("height", "200px");
+
+        view.graphics.removeAll();
+
+        view.graphics.addMany(polygonGraphics);
+      } else {
+        $("#total-results").hide();
+        $("#backButton").hide();
+        $("#detailBox").hide();
+        $("#filterDiv").hide();
+        $("#layerListDiv").hide();
+        $("#dropdown").show();
+        $("#WelcomeBox").show();
+        return;
+      }
       // clickHandle = view.on("click", handleClick);
       if (!lasso && !select) {
         // add details and remove when search and no lasso
@@ -2016,27 +2163,7 @@ require([
         $("#select-button").addClass("btn-warning");
         clickHandle = view.on("click", handleClick);
       }
-      $("#select-button").prop("disabled", false);
-      $("#detailBox").hide();
-      $("#filterDiv").hide();
-      $("#layerListDiv").hide();
-      $("#featureWid").show();
-      // $("#result-btns").show();
-      $("#total-results").show();
-      $("#details-btns").hide();
-      $("#detail-content").empty();
-      $("#backButton").hide();
-      $("#detailsButton").hide();
-      $("#abutters-content").hide();
-      $("#selected-feature").empty();
-      $("#parcel-feature").empty();
-      $("#exportResults").hide();
-      $("#exportSearch").show();
-      $("#results-div").css("height", "200px");
 
-      view.graphics.removeAll();
-
-      view.graphics.addMany(polygonGraphics);
       // if (polygonGraphics.length > 1) {
       //   view.goTo({
       //     target: polygonGraphics,
@@ -2098,6 +2225,7 @@ require([
         clickHandle.remove();
       }
       $("#exportResults").hide();
+      $("#WelcomeBox").hide();
       $("#detailBox").hide();
       $("#featureWid").hide();
       $("#result-btns").hide();
@@ -2122,6 +2250,7 @@ require([
 
   $(document).ready(function () {
     $("#filterButton").on("click", function () {
+      $("#WelcomeBox").hide();
       $("#exportResults").hide();
       $("#detailBox").hide();
       $("#featureWid").hide();
@@ -2151,6 +2280,7 @@ require([
 
   $(document).ready(function () {
     $("#layerListBtn").on("click", function () {
+      $("#WelcomeBox").hide();
       $("#exportResults").hide();
       $("#detailBox").hide();
       $("#featureWid").hide();
@@ -2371,9 +2501,9 @@ require([
       originalContents[index] = li.innerHTML;
     });
 
-    document.querySelectorAll(".removable-div").forEach(function (div) {
-      div.parentNode.removeChild(div); // Remove the div from its parent
-    });
+    // document.querySelectorAll(".removable-div").forEach(function (div) {
+    //   div.parentNode.removeChild(div); // Remove the div from its parent
+    // });
     // Extract all list items from the provided HTML structure.
 
     var transformedContent = "<ul class='label-list'>";
@@ -3776,6 +3906,7 @@ require([
           });
 
           // $("#app-val-min").value()
+          $(".wrapper .x-button").click();
 
           $("#streetFilter").value = "";
         }
@@ -3792,6 +3923,19 @@ require([
       // value = e.target.value;
       queryParameters.streetName = e.target.value;
       console.log(queryParameters.streetName);
+      let itemsList = $("#streetFilter");
+      let selectedItems = itemsList[0].selectedItems;
+      // selectedItems = [];
+
+      // Select all close buttons within the chips and trigger the click event
+
+      // let child = Array.from(itemsList[0].children);
+
+      // child.map((item) => item.selected == false);
+      // `selectedItems` is an array of the selected item elements. You can loop through it or perform any other operations you need:
+      selectedItems.forEach((item) => {
+        console.log(item.value); // Assuming each item has a value attribute
+      });
 
       // console.log(`street filter is: ${value}`);
     });
@@ -3920,6 +4064,7 @@ require([
     $("#Basemap-selector").on("click", function () {
       $("#rightPanel").hide();
       $("#BookmarksDiv").hide();
+      $("#ContactDiv").hide();
       $("#PrintDiv").hide();
       $("#Right-Btn-div").show();
       $("#BasemapDiv").show();
@@ -3929,6 +4074,7 @@ require([
     $("#Bookmarks-selector").on("click", function () {
       $("#rightPanel").hide();
       $("#BasemapDiv").hide();
+      $("#ContactDiv").hide();
       $("#PrintDiv").hide();
       $("#Right-Btn-div").show();
       $("#BookmarksDiv").show();
@@ -3938,9 +4084,22 @@ require([
     $("#Print-selector").on("click", function () {
       $("#rightPanel").hide();
       $("#BookmarksDiv").hide();
+      $("#ContactDiv").hide();
       $("#BasemapDiv").hide();
       $("#Right-Btn-div").show();
       $("#PrintDiv").show();
+
+      $("#group-container-right").show();
+    });
+
+    $("#Contact-selector").on("click", function () {
+      $("#rightPanel").hide();
+      $("#BookmarksDiv").hide();
+      $("#BasemapDiv").hide();
+      $("#Right-Btn-div").hide();
+      $("#PrintDiv").hide();
+      $("#Right-Btn-div").show();
+      $("#ContactDiv").show();
       $("#group-container-right").show();
     });
 
@@ -3950,6 +4109,7 @@ require([
       $("#BookmarksDiv").hide();
       $("#BasemapDiv").hide();
       $("#Right-Btn-div").hide();
+      $("#ContactDiv").hide();
       $("#rightPanel").show();
     });
   });
