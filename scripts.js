@@ -18,6 +18,8 @@ require([
   "esri/widgets/AreaMeasurement2D",
   "esri/widgets/BasemapLayerList",
   "esri/widgets/Bookmarks",
+  "esri/widgets/Print",
+  "esri/widgets/Legend",
 ], function (
   WebMap,
   MapView,
@@ -37,7 +39,9 @@ require([
   DistanceMeasurement2D,
   AreaMeasurement2D,
   BasemapLayerList,
-  Bookmarks
+  Bookmarks,
+  Print,
+  Legend
 ) {
   // Key to check in sessionStorage
   const key = "condos";
@@ -94,6 +98,31 @@ require([
     });
   });
 
+  view.when(() => {
+    let urlButton = document.getElementById("urlButton");
+
+    urlButton.addEventListener("click", function (event) {
+      let urlValue = urlInput.value;
+
+      function addFeatureLayer() {
+        urlInputLayer = new FeatureLayer({
+          url: `${urlValue}`,
+        });
+
+        // Add the layer to the web map
+        webmap.add(urlInputLayer);
+
+        // Add the newly added layer to the pick list
+        var pickListContainer = $("#layerList");
+        addLayerToPickList(urlInputLayer, pickListContainer);
+
+        urlInput.value = "";
+      }
+
+      addFeatureLayer();
+    });
+  });
+
   // let basemapDiv = $("#BookmarksDiv");
 
   view.when(() => {
@@ -102,6 +131,20 @@ require([
       container: $("#BookmarksDiv")[0],
       // allows bookmarks to be added, edited, or deleted
       dragEnabled: true,
+    });
+  });
+
+  view.when(() => {
+    const print = new Print({
+      view: view,
+      container: $("#PrintDiv")[0],
+    });
+  });
+
+  view.when(() => {
+    const legend = new Legend({
+      view: view,
+      container: $("#LegendDiv")[0],
     });
   });
 
@@ -577,7 +620,10 @@ require([
     ) {
       return;
     } else {
-      var icon = "square";
+      var icon;
+
+      layer.visible ? (icon = "check-square") : (icon = "square");
+      // var icon = "square";
 
       // Create the pick list item and action for each layer
       var item =
@@ -668,28 +714,6 @@ require([
     // Process each layer and add it to the pick list
     processLayers(layers, pickListContainer);
   });
-
-  // view.when(() => {
-  //   // Wait for the map to load
-  //   const layers = webmap.layers.toArray();
-
-  //   layers.forEach((layer) => {
-  //     // For each layer in the web map, create a new pick list item
-  //     const item = $(`
-  //     <calcite-pick-list-item label="${layer.title}" description="${layer.id}" value="${layer.id}">
-  //       <calcite-action slot="actions-end" icon="layer" text="Mountain layer"></calcite-action>
-  //     </calcite-pick-list-item>
-  //   `);
-
-  //     $("#layerList").append(item);
-  //   });
-  // });
-  // });
-
-  //   let whereClause = `
-  //   1=1
-
-  // `;
 
   function generateFilters() {
     let query = noCondosLayer.createQuery();
@@ -4064,8 +4088,10 @@ require([
     $("#Basemap-selector").on("click", function () {
       $("#rightPanel").hide();
       $("#BookmarksDiv").hide();
+      $("#AddDataDiv").hide();
       $("#ContactDiv").hide();
       $("#PrintDiv").hide();
+      $("#LegendDiv").hide();
       $("#Right-Btn-div").show();
       $("#BasemapDiv").show();
       $("#group-container-right").show();
@@ -4074,8 +4100,10 @@ require([
     $("#Bookmarks-selector").on("click", function () {
       $("#rightPanel").hide();
       $("#BasemapDiv").hide();
+      $("#AddDataDiv").hide();
       $("#ContactDiv").hide();
       $("#PrintDiv").hide();
+      $("#LegendDiv").hide();
       $("#Right-Btn-div").show();
       $("#BookmarksDiv").show();
       $("#group-container-right").show();
@@ -4084,32 +4112,80 @@ require([
     $("#Print-selector").on("click", function () {
       $("#rightPanel").hide();
       $("#BookmarksDiv").hide();
+      $("#AddDataDiv").hide();
       $("#ContactDiv").hide();
       $("#BasemapDiv").hide();
       $("#Right-Btn-div").show();
       $("#PrintDiv").show();
-
+      $("#LegendDiv").hide();
       $("#group-container-right").show();
     });
 
     $("#Contact-selector").on("click", function () {
       $("#rightPanel").hide();
       $("#BookmarksDiv").hide();
+      $("#AddDataDiv").hide();
       $("#BasemapDiv").hide();
       $("#Right-Btn-div").hide();
       $("#PrintDiv").hide();
       $("#Right-Btn-div").show();
       $("#ContactDiv").show();
+      $("#PrintDiv").hide();
+      $("#LegendDiv").hide();
+      $("#group-container-right").show();
+    });
+
+    $("#addData-selector").on("click", function () {
+      $("#rightPanel").hide();
+      $("#BookmarksDiv").hide();
+      $("#BasemapDiv").hide();
+      $("#Right-Btn-div").hide();
+      $("#PrintDiv").hide();
+      $("#ContactDiv").hide();
+      $("#Right-Btn-div").show();
+      $("#AddDataDiv").show();
+      $("#PrintDiv").hide();
+      $("#LegendDiv").hide();
+      $("#group-container-right").show();
+    });
+
+    $("#Print-selector").on("click", function () {
+      $("#rightPanel").hide();
+      $("#BookmarksDiv").hide();
+      $("#BasemapDiv").hide();
+      $("#Right-Btn-div").hide();
+      $("#PrintDiv").hide();
+      $("#ContactDiv").hide();
+      $("#Right-Btn-div").show();
+      $("#AddDataDiv").hide();
+      $("#PrintDiv").show();
+      $("#LegendDiv").hide();
+      $("#group-container-right").show();
+    });
+
+    $("#Legend-selector").on("click", function () {
+      $("#rightPanel").hide();
+      $("#BookmarksDiv").hide();
+      $("#BasemapDiv").hide();
+      $("#Right-Btn-div").hide();
+      $("#PrintDiv").hide();
+      $("#ContactDiv").hide();
+      $("#Right-Btn-div").show();
+      $("#AddDataDiv").hide();
+      $("#PrintDiv").hide();
+      $("#LegendDiv").show();
       $("#group-container-right").show();
     });
 
     $("#right-btn-back").on("click", function () {
       $("#group-container-right").hide();
       $("#PrintDiv").hide();
+      $("#AddDataDiv").hide();
       $("#BookmarksDiv").hide();
       $("#BasemapDiv").hide();
       $("#Right-Btn-div").hide();
       $("#ContactDiv").hide();
+      $("#LegendDiv").hide();
       $("#rightPanel").show();
     });
   });
