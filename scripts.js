@@ -302,6 +302,7 @@ require([
   let valueToRemove;
   let handleUsed;
   let detailsHandleUsed;
+  let exportCsv;
 
   reactiveUtils.watch(
     () => [view.zoom, view.extent, view.scale],
@@ -983,9 +984,12 @@ require([
     $("#parcel-feature").empty();
     $("#backButton").hide();
     $("#exportResults").hide();
+    $("#csvExportResults").hide();
+    $("#csvExportSearch").hide();
     $("#exportSearch").hide();
     $("#total-results").hide();
     $("#featureWid").hide();
+    $("#exportButtons").hide();
     $("#dropdown").show();
     $("#WelcomeBox").show();
     $("#select-button").attr("title", "Add to Selection Enabled");
@@ -1158,8 +1162,9 @@ require([
     } else {
       $("#exportSearch").show();
     }
-
+    $("#exportButtons").show();
     $("#exportResults").hide();
+    $("#csvExportSearch").show();
 
     $(".spinner-container").hide();
     $(`li[object-id="${pointGraphic}"]`).remove();
@@ -1200,8 +1205,11 @@ require([
       $("#detailsButton").hide();
       $("#detail-content").empty();
       $("#selected-feature").empty();
+      $("#exportButtons").hide();
       $("#exportSearch").hide();
       $("#exportResults").hide();
+      $("#csvExportResults").hide();
+      $("#csvExportSearch").hide();
       $("#results-div").css("height", "150px");
       $("#backButton-div").css("padding-top", "0px");
 
@@ -2011,6 +2019,7 @@ require([
     $("#detail-content").empty();
     $("#selected-feature").empty();
     $("#exportSearch").hide();
+    $("#exportButtons").hide();
     $("#results-div").css("height", "150px");
     $("#backButton-div").css("padding-top", "0px");
 
@@ -2125,6 +2134,9 @@ require([
         $("#selected-feature").empty();
         $("#parcel-feature").empty();
         $("#exportResults").hide();
+        $("#csvExportResults").hide();
+        $("#csvExportSearch").show();
+        $("#exportButtons").show();
         $("#exportSearch").show();
         $("#results-div").css("height", "200px");
 
@@ -2221,7 +2233,10 @@ require([
       $("#selected-feature").empty();
       $("#parcel-feature").empty();
       $("#exportResults").hide();
+      $("#csvExportResults").hide();
+      $("#csvExportSearch").hide();
       $("#exportSearch").hide();
+      $("#exportButtons").hide();
       $("#abutters-title").html(`Abutting Parcels (0)`);
       $("#backButton-div").css("padding-top", "0px");
       $("#results-div").css("height", "150px");
@@ -2248,14 +2263,19 @@ require([
       if (clickHandle) {
         clickHandle.remove();
       }
-      $("#exportResults").hide();
+      $("#exportButtons").show();
+      $("#exportResults").show();
+      $("#exportButtons").show();
+      $("#exportSearch").hide();
+      $("#csvExportResults").show();
+      $("#csvExportSearch").hide();
       $("#WelcomeBox").hide();
       $("#detailBox").hide();
       $("#featureWid").hide();
       $("#result-btns").hide();
       $("#total-results").hide();
       $("#details-btns").hide();
-      $("#exportSearch").hide();
+
       $("#filterDiv").hide();
       $("#layerListDiv").hide();
       $("#abutters-content").show();
@@ -2276,12 +2296,14 @@ require([
     $("#filterButton").on("click", function () {
       $("#WelcomeBox").hide();
       $("#exportResults").hide();
+      $("#csvExportResults").hide();
       $("#detailBox").hide();
       $("#featureWid").hide();
       $("#result-btns").hide();
       $("#total-results").hide();
       $("#details-btns").hide();
       $("#exportSearch").hide();
+      $("#csvExportSearch").hide();
       $("#abutters-content").hide();
       $("#layerListDiv").hide();
       $("#selected-feature").empty();
@@ -2306,12 +2328,16 @@ require([
     $("#layerListBtn").on("click", function () {
       $("#WelcomeBox").hide();
       $("#exportResults").hide();
+      $("#csvExportResults").hide();
       $("#detailBox").hide();
       $("#featureWid").hide();
       $("#result-btns").hide();
       $("#total-results").hide();
       $("#details-btns").hide();
       $("#exportSearch").hide();
+      $("#csvExportResults").hide();
+      $("#csvExportSearch").hide();
+      $("#exportButtons").hide();
       $("#abutters-content").hide();
       $("#selected-feature").empty();
       $("#backButton").hide();
@@ -2375,6 +2401,108 @@ require([
 
       ExportDetails("search");
       document.body.removeChild(printContainer);
+    });
+  });
+
+  $(document).ready(function () {
+    $("#csvExportResults").on("click", function (e) {
+      e.stopPropagation();
+
+      // Initialize headers for CSV
+      const headers = [
+        "Owner",
+        "Co-Owner",
+        "Mailing Address",
+        "Mailing Address 2",
+        "Mailing City",
+        "Mailing State",
+        "Mailing Zip",
+      ];
+
+      // Create CSV content with row headers
+      let csvContent = headers.join(",") + "\n";
+
+      // Loop through each feature in foundLocs array
+      exportCsv.forEach(function (feature) {
+        let owner = feature.attributes["Owner"] || "";
+        let coOwner = feature.attributes["Co_Owner"] || "";
+        let mailingAddress = feature.attributes["Mailing_Address_1"] || "";
+        let mailingAddress2 = feature.attributes["Mailing_Address_2"] || "";
+        let Mailing_City = feature.attributes["Mailing_City"] || "";
+        let Mail_State = feature.attributes["Mail_State"] || "";
+        let Mailing_Zip = feature.attributes["Mailing_Zip"] || "";
+
+        // Append data to CSV content
+        csvContent += `"${owner}","${coOwner}","${mailingAddress}","${mailingAddress2}","${Mailing_City}","${Mail_State}","${Mailing_Zip}"\n`;
+      });
+
+      // Create blob
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+      // Create anchor element to download CSV
+      const link = document.createElement("a");
+      if (link.download !== undefined) {
+        // Feature detection for download attribute
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "export.csv");
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    });
+  });
+
+  $(document).ready(function () {
+    $("#csvExportSearch").on("click", function (e) {
+      e.stopPropagation();
+
+      // Row headers
+      const headers = [
+        "Owner",
+        "Co-Owner",
+        "Mailing Address",
+        "Mailing Address 2",
+        "Mailing City",
+        "Mailing State",
+        "Mailing Zip",
+      ];
+
+      // Create CSV content with row headers
+      let csvContent = headers.join(",") + "\n";
+
+      uniqueArray.forEach(function (feature) {
+        let owner = feature.owner || "";
+        let coOwner = feature.coOwner || "";
+        let mailingAddress = feature.mailingAddress || "";
+        let mailingAddress2 = feature.mailingAddress2 || "";
+        let Mailing_City = feature.Mailing_City || "";
+        let Mail_State = feature.Mail_State || "";
+        let Mailing_Zip = feature.Mailing_Zip || "";
+
+        // Append data to CSV content
+        csvContent += `"${owner}","${coOwner}","${mailingAddress}","${mailingAddress2}","${Mailing_City}","${Mail_State}","${Mailing_Zip}"\n`;
+      });
+
+      // Create blob
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+      // Create anchor element to download CSV
+      const link = document.createElement("a");
+      if (link.download !== undefined) {
+        // Feature detection for download attribute
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "export.csv");
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      // Call ExportDetails function if needed
+      // ExportDetails("search");
     });
   });
 
@@ -2628,6 +2756,9 @@ require([
         console.log(exportResults);
 
         let listItemHTML = "";
+
+        exportCsv = foundLocs;
+
         // console.log(lastResults);
         foundLocs.forEach(function (feature) {
           let locationGISLINK = feature.attributes["GIS_LINK"];
@@ -2696,6 +2827,7 @@ require([
         // console.log(exportResults);
 
         let listItemHTML = "";
+        exportCsv = foundLocs;
 
         foundLocs.forEach(function (feature) {
           let locationGISLINK = feature.attributes["GIS_LINK"];
@@ -2735,6 +2867,7 @@ require([
     }
     $("#results-div").css("height", "200px");
     $("#exportResults").show();
+    $("#csvExportResults").show();
   }
 
   function addOrUpdateBufferGraphic(bufferResults) {
@@ -2927,6 +3060,7 @@ require([
 
     detailsHandleUsed = "detailClick";
     $("#exportResults").hide();
+    $("#csvExportResults").hide();
     detailSelected = [objectId, itemId];
 
     var matchedObject;
@@ -3403,6 +3537,8 @@ require([
       $("#detailsButton").hide();
       $("#featureWid").empty();
       $("#exportSearch").hide();
+      $("#csvExportResults").hide();
+      $("#exportButtons").hide();
 
       let whereClause = `
               Street_Name LIKE '%${searchTerm}%' OR 
@@ -3568,6 +3704,9 @@ require([
         $("#backButton").hide();
         $("#detailBox").hide();
         $("#exportSearch").hide();
+        $("#csvExportSearch").hide();
+        $("#csvExportResults").hide();
+        $("#exportButtons").hide();
         if (DetailsHandle) {
           DetailsHandle.remove();
         }
@@ -3734,6 +3873,7 @@ require([
       $("#sidebar2").css("left", "-350px");
       $("#results-div").css("left", "0px");
       $("#exportResults").hide();
+      $("#csvExportResults").hide();
       // let debounceTimer;
       function throttleQuery() {
         clearTimeout(debounceTimer2);
