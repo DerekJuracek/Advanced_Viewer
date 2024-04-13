@@ -1064,7 +1064,7 @@
         <div id="group-right-Btn-div">
           <div
             id="Right-Btn-div"
-            style="padding-top: 30px; padding-bottom: 10px; display: none"
+            style="padding-top: 35px; padding-bottom: 10px; display: none"
           >
             <button
               class="btn btn-outline-light btn-sm backButtons"
@@ -1089,6 +1089,10 @@
         </div>
         <div id="group-container-right" style="display: none">
           <div
+          id="LegendDiv"
+          style="display: none; color: white; height: 80%"
+        ></div>
+          <div
             id="BasemapDiv"
             style="display: none; color: white; height: 80%"
           ></div>
@@ -1100,6 +1104,21 @@
             Bookmarks
           </div>
           <div id="PrintDiv" style="display: none; color: white">Print</div>
+          <div id="AddDataDiv" style="display: none;">
+            <div>
+                  <label style="color: white">Feature Service URL:</label>
+                  <form style="width: 100%; padding-left: 5px; padding-right: 10px;">
+                    <input style="width: 100%;" id="urlInput" type="text" placeholder="Enter your URL"></input>
+                  </form>
+ 
+            <div style="position: absolute; right: 0; padding-top: 10px; padding-right: 10px;">
+                <button style="color: white" class="btn btn-info" id="urlButton">Add</button>
+            </div>
+                <!-- <p style="color: white; font-size: 12px;" id="urlText"><strong>Url Examples:</strong> 
+                  https://gis.mta.info/agencies/rest/services/DOS_EAMPRD_EQUIPMENT/Deep_Wells/MapServer/0
+                </p> -->
+              </div>
+              </div>
           <div
             id="ContactDiv"
             style="
@@ -1130,6 +1149,12 @@
               Options Bar
             </div>
             <li
+            id="Legend-selector"
+            class="list-group-item list-group-item-info options-bar-li"
+          >
+            Legend
+          </li>
+            <li
               id="Basemap-selector"
               class="list-group-item list-group-item-info options-bar-li"
             >
@@ -1141,8 +1166,10 @@
             >
               Bookmarks
             </li>
-            <li class="list-group-item list-group-item-info options-bar-li">
-              ArcGIS Online
+            <li 
+              id="addData-selector" 
+              class="list-group-item list-group-item-info options-bar-li">
+              Add Data
             </li>
             <li
               id="Print-selector"
