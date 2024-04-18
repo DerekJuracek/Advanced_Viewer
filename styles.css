@@ -502,6 +502,14 @@ img {
 
 .options-bar-li {
   height: 50px;
+  font-size: 12px;
+}
+
+.esri-icon-non-visible::before {
+  content: "\e610";
+}
+.esri-icon-visible::before {
+  content: "\e611";
 }
 
 #BookmarksDiv {
