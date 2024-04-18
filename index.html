@@ -216,7 +216,7 @@
             <span style="padding-right: 2px">
               <button
                 type="button"
-                id="clear-btn"
+                id="clear-btn1"
                 class="btn btn-light btn-sm clear-btn"
                 title="Reset"
                 style="
@@ -465,6 +465,7 @@
                     <calcite-input-text
                       id="app-val-min"
                       placeholder="min"
+                      value="10000"
                     ></calcite-input-text>
                   </div>
                   <span style="color: white">-</span>
@@ -472,6 +473,7 @@
                     <calcite-input-text
                       id="app-val-max"
                       placeholder="max"
+                      value="20000000"
                     ></calcite-input-text>
                   </div>
                 </div>
@@ -485,7 +487,6 @@
                   min="10000"
                   max="20000000"
                   precise
-                  ticks="5"
                   label-ticks
                   label-handles
                   max-label="Lowest Price"
@@ -503,6 +504,7 @@
                       <calcite-input-text
                         id="assess-val-min"
                         placeholder="min"
+                        value="10000"
                       ></calcite-input-text>
                     </div>
                     <span style="color: white">-</span>
@@ -510,6 +512,7 @@
                       <calcite-input-text
                         id="assess-val-max"
                         placeholder="max"
+                        value="20000000"
                       ></calcite-input-text>
                     </div>
                   </div>
@@ -522,7 +525,6 @@
                     min="10000"
                     max="20000000"
                     precise
-                    ticks="5"
                     label-ticks
                     label-handles
                     max-label="Lowest Price"
@@ -583,6 +585,7 @@
                       <calcite-input-text
                         id="acres-val-min"
                         placeholder="min"
+                        value="1"
                       ></calcite-input-text>
                     </div>
                     <span style="color: white">-</span>
@@ -590,6 +593,7 @@
                       <calcite-input-text
                         id="acres-val-max"
                         placeholder="max"
+                        value="20"
                       ></calcite-input-text>
                     </div>
                   </div>
@@ -602,7 +606,6 @@
                     min="0"
                     max="100"
                     precise
-                    ticks=""
                     label-ticks
                     label-handles
                     max-label="Acres"
@@ -623,6 +626,7 @@
                       <calcite-input-text
                         id="sold-val-min"
                         placeholder="min"
+                        value="1900"
                       ></calcite-input-text>
                     </div>
                     <span style="color: white">-</span>
@@ -630,6 +634,7 @@
                       <calcite-input-text
                         id="sold-val-max"
                         placeholder="max"
+                        value="2024"
                       ></calcite-input-text>
                     </div>
                   </div>
@@ -637,12 +642,11 @@
                   <calcite-slider
                     id="soldon-val-slider"
                     class="calcite-mode-dark"
-                    min-value="2018"
+                    min-value="1900"
                     max-value="2021"
                     min="1900"
                     max="2024"
                     precise
-                    ticks="5"
                     label-ticks
                     label-handles
                     max-label="Date"
@@ -673,6 +677,7 @@
                       <calcite-input-text
                         id="saleP-val-min"
                         placeholder="min"
+                        value="10000"
                       ></calcite-input-text>
                     </div>
                     <span style="color: white">-</span>
@@ -680,6 +685,7 @@
                       <calcite-input-text
                         id="saleP-val-max"
                         placeholder="max"
+                        value="20000000"
                       ></calcite-input-text>
                     </div>
                   </div>
@@ -692,7 +698,6 @@
                     min="10000"
                     max="20000000"
                     precise
-                    ticks="5"
                     label-ticks
                     label-handles
                     max-label="Lowest Price"
@@ -712,6 +717,9 @@
             <div style="padding-top: 10px">
               <button type="button" id="submitFilter" class="btn btn-info">
                 Submit
+              </button>
+              <button type="button" id="clearFilter" class="btn btn-info">
+              Clear
               </button>
             </div>
           </div>
@@ -1104,15 +1112,7 @@
         </div>
         <div id="rightPanel">
           <ul style="padding-top: 20px" class="list-right">
-            <div
-              style="
-                color: white;
-                text-align: center;
-                font-size: larger;
-                padding-top: 20px;
-                font-weight: 500;
-              "
-            >
+            <div style="color: white; text-align: center; font-size: larger;padding-top: 20px;font-weight: 500;">
               Options Bar
             </div>
             <li
@@ -1136,7 +1136,7 @@
             <li 
               id="addData-selector" 
               class="list-group-item list-group-item-info options-bar-li">
-              Add Data
+              Add REST Service
             </li>
             <li
               id="Print-selector"
@@ -1265,7 +1265,7 @@
           </button>
           <button
             type="button"
-            id="clear-btn"
+            id="clear-btn2"
             class="btn btn-light clear-btn"
             title="Reset"
           >

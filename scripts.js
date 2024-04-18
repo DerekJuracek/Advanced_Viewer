@@ -50,7 +50,7 @@ require([
   // Check if the key exists in sessionStorage
   if (sessionStorage.getItem(key) === null) {
     // If the key doesn't exist, set it to "none"
-    sessionStorage.setItem(key, "no");
+    sessionStorage.setItem(key, "yes");
   } else {
   }
 
@@ -119,7 +119,9 @@ require([
         urlInput.value = "";
       }
 
-      addFeatureLayer();
+      if (urlInputLayer.length > 0) {
+        addFeatureLayer();
+      }
     });
   });
 
@@ -294,7 +296,8 @@ require([
   let regSearch = false;
 
   let value = document.getElementById("buffer-value");
-  const clearBtn = document.getElementById("clear-btn");
+  const clearBtn1 = document.getElementById("clear-btn1");
+  const clearBtn2 = document.getElementById("clear-btn2");
 
   let oldExtent = view.extent;
   let oldScale = view.scale;
@@ -303,6 +306,7 @@ require([
   let handleUsed;
   let detailsHandleUsed;
   let exportCsv;
+  let queryValues = [];
 
   reactiveUtils.watch(
     () => [view.zoom, view.extent, view.scale],
@@ -1856,7 +1860,11 @@ require([
     };
   });
 
-  clearBtn.addEventListener("click", function () {
+  clearBtn1.addEventListener("click", function () {
+    clearContents();
+  });
+
+  clearBtn2.addEventListener("click", function () {
     clearContents();
   });
 
@@ -2417,6 +2425,7 @@ require([
         "Mailing City",
         "Mailing State",
         "Mailing Zip",
+        "Location",
       ];
 
       // Create CSV content with row headers
@@ -2431,9 +2440,10 @@ require([
         let Mailing_City = feature.attributes["Mailing_City"] || "";
         let Mail_State = feature.attributes["Mail_State"] || "";
         let Mailing_Zip = feature.attributes["Mailing_Zip"] || "";
+        let Location = feature.attributes["Location"] || "";
 
         // Append data to CSV content
-        csvContent += `"${owner}","${coOwner}","${mailingAddress}","${mailingAddress2}","${Mailing_City}","${Mail_State}","${Mailing_Zip}"\n`;
+        csvContent += `"${owner}","${coOwner}","${mailingAddress}","${mailingAddress2}","${Mailing_City}","${Mail_State}","${Mailing_Zip}","${Location}"\n`;
       });
 
       // Create blob
@@ -2467,6 +2477,7 @@ require([
         "Mailing City",
         "Mailing State",
         "Mailing Zip",
+        "Location",
       ];
 
       // Create CSV content with row headers
@@ -2480,9 +2491,10 @@ require([
         let Mailing_City = feature.Mailing_City || "";
         let Mail_State = feature.Mail_State || "";
         let Mailing_Zip = feature.Mailing_Zip || "";
+        let Location = feature.location || "";
 
         // Append data to CSV content
-        csvContent += `"${owner}","${coOwner}","${mailingAddress}","${mailingAddress2}","${Mailing_City}","${Mail_State}","${Mailing_Zip}"\n`;
+        csvContent += `"${owner}","${coOwner}","${mailingAddress}","${mailingAddress2}","${Mailing_City}","${Mail_State}","${Mailing_Zip}","${Location}"\n`;
       });
 
       // Create blob
@@ -3885,6 +3897,7 @@ require([
     });
 
   $(document).ready(function () {
+    // let queryValues = [];
     let queryParameters = {
       streetName: null,
       owner: null,
@@ -4030,7 +4043,7 @@ require([
         queryParameters.acresValueMax !== null
       ) {
         queryParts.push(
-          `Total_Acres BETWEEN ${queryParameters.acresValueMin} AND ${queryParameters.acresValueMin}`
+          `Total_Acres BETWEEN ${queryParameters.acresValueMin} AND ${queryParameters.acresValueMax}`
         );
       }
 
@@ -4038,8 +4051,11 @@ require([
         queryParameters.soldOnMin !== null &&
         queryParameters.soldOnMax !== null
       ) {
+        var minDate = new Date(queryParameters.soldOnMin);
+        var maxDate = new Date(queryParameters.soldOnMax);
+
         queryParts.push(
-          `Sale_Date BETWEEN ${queryParameters.soldOnMin} AND ${queryParameters.soldOnMax}`
+          `Sale_Date >= '01/01/${queryParameters.soldOnMin}' AND Sale_Date <= '12/31/${queryParameters.soldOnMax}'`
         );
       }
 
@@ -4064,18 +4080,6 @@ require([
         clearContents();
         addPolygons(response, view.graphics);
         processFeatures(response.features);
-        function clearQueryParameters() {
-          Object.keys(queryParameters).forEach((key) => {
-            queryParameters[key] = null;
-          });
-
-          // $("#app-val-min").value()
-          $(".wrapper .x-button").click();
-
-          $("#streetFilter").value = "";
-        }
-
-        clearQueryParameters();
       });
 
       console.log(`Query: ${queryString}`);
@@ -4110,6 +4114,22 @@ require([
     });
 
     $("#app-val-slider").on("calciteSliderChange", function (e) {
+      // Replace "id" with your specific field name
+
+      // Define the statistics options for maximum and minimum
+
+      // Execute the query
+      //   queryTask.execute(query).then(function(result){
+      //     // Process the result
+      //     var max = result.features[0].attributes.maxValue;
+      //     var min = result.features[0].attributes.minValue;
+      //     console.log("Max Value:", max);
+      //     console.log("Min Value:", min);
+      //   }).catch(function(error){
+      //     console.error(error);
+      //   });
+      // });
+
       value = e.target.value;
       minVal = value[0];
       maxVal = value[1];
@@ -4128,7 +4148,9 @@ require([
       var maxVal = parseInt($("#app-val-max").val());
 
       // Update the slider values
-      $("#app-val-slider").calciteSlider("update", [minVal, maxVal]);
+      const slider1 = document.querySelector("#app-val-slider");
+      slider1.value = [minVal, maxVal];
+      //$("#app-val-slider").value("update", [minVal, maxVal]);
     });
 
     $("#assess-val-slider").on("calciteSliderChange", function (e) {
@@ -4142,6 +4164,18 @@ require([
       $("#assess-val-max").val(maxVal);
 
       // console.log(`assessed value slider is: ${value}`);
+    });
+
+    // Listen for input event on the input elements
+    $("#assess-val-min, #assess-val-max").on("input", function () {
+      // Get the values from the input elements
+      var minVal = parseInt($("#assess-val-min").val());
+      var maxVal = parseInt($("#assess-val-max").val());
+
+      // Update the slider values
+      const slider2 = document.querySelector("#assess-val-slider");
+      slider2.value = [minVal, maxVal];
+      //$("#app-val-slider").value("update", [minVal, maxVal]);
     });
 
     $("#propertyFilter").on("calciteComboboxChange", function (e) {
@@ -4176,6 +4210,18 @@ require([
       // console.log(`acres slider is: ${value}`);
     });
 
+    // Listen for input event on the input elements
+    $("#acres-val-min, #acres-val-max").on("input", function () {
+      // Get the values from the input elements
+      var minVal = parseInt($("#acres-val-min").val());
+      var maxVal = parseInt($("#acres-val-max").val());
+
+      // Update the slider values
+      const slider3 = document.querySelector("#acres-val-slider");
+      slider3.value = [minVal, maxVal];
+      //$("#app-val-slider").value("update", [minVal, maxVal]);
+    });
+
     $("#soldon-val-slider").on("calciteSliderChange", function (e) {
       value = e.target.value;
       minVal = value[0];
@@ -4188,6 +4234,18 @@ require([
       $("#sold-val-max").val(maxVal);
 
       // console.log(`sold on slider is: ${value}`);
+    });
+
+    // Listen for input event on the input elements
+    $("#sold-val-min, #sold-val-max").on("input", function () {
+      // Get the values from the input elements
+      var minVal = parseInt($("#sold-val-min").val());
+      var maxVal = parseInt($("#sold-val-max").val());
+
+      // Update the slider values
+      const slider4 = document.querySelector("#soldon-val-slider");
+      slider4.value = [minVal, maxVal];
+      //$("#app-val-slider").value("update", [minVal, maxVal]);
     });
 
     $("#saleP-val-slider").on("calciteSliderChange", function (e) {
@@ -4204,8 +4262,271 @@ require([
       // console.log(`sale price slider is: ${value}`);
     });
 
+    // Listen for input event on the input elements
+    $("#saleP-val-min, #saleP-val-max").on("input", function () {
+      // Get the values from the input elements
+      var minVal = parseInt($("#saleP-val-min").val());
+      var maxVal = parseInt($("#saleP-val-max").val());
+
+      // Update the slider values
+      const slider5 = document.querySelector("#saleP-val-slider");
+      slider5.value = [minVal, maxVal];
+      //$("#app-val-slider").value("update", [minVal, maxVal]);
+    });
+    function changeSliderValues(vals) {
+      const sliderVals = [
+        {
+          fieldName: "Appraised_Total",
+          slider: "app-val-slider",
+          minInput: "app-val-min",
+          maxInput: "app-val-max",
+          index: 0,
+        },
+        {
+          fieldName: "Assessed_Total",
+          slider: "assess-val-slider",
+          minInput: "assess-val-min",
+          maxInput: "assess-val-max",
+          index: 1,
+        },
+        {
+          fieldName: "Total_Acres",
+          slider: "acres-val-slider",
+          minInput: "acres-val-min",
+          maxInput: "acres-val-max",
+          index: 2,
+        },
+        {
+          fieldName: "Sale_Date",
+          slider: "soldon-val-slider",
+          minInput: "sold-val-min",
+          maxInput: "sold-val-max",
+          index: 3,
+        },
+        {
+          fieldName: "Sale_Price",
+          slider: "saleP-val-slider",
+          minInput: "saleP-val-min",
+          maxInput: "saleP-val-max",
+          index: 4,
+        },
+      ];
+
+      sliderVals.forEach(function (slider) {
+        const sliderEl = document.getElementById(slider.slider);
+        const sliderInputMin = document.getElementById(slider.minInput);
+        const sliderInputMax = document.getElementById(slider.maxInput);
+
+        // Access nested min and max properties using index
+        sliderEl.minValue = vals[slider.index][slider.fieldName].min;
+        sliderEl.maxValue = vals[slider.index][slider.fieldName].max;
+
+        sliderEl.min = vals[slider.index][slider.fieldName].min;
+        sliderEl.max = vals[slider.index][slider.fieldName].max;
+
+        sliderInputMin.value = vals[slider.index][slider.fieldName].min;
+        sliderInputMax.value = vals[slider.index][slider.fieldName].max;
+      });
+    }
+
+    function buildQueries() {
+      let queryValues = []; // Initialize queryValues array here
+      let queryFields = [
+        "Appraised_Total",
+        "Assessed_Total",
+        "Total_Acres",
+        "Sale_Date",
+        "Sale_Price",
+      ];
+
+      // Map each field to a query promise
+      let queryPromises = queryFields.map(function (field) {
+        let query = CondosTable.createQuery();
+        query.outStatistics = [
+          {
+            statisticType: "max",
+            onStatisticField: field, // Use field directly
+            outStatisticFieldName: "maxValue",
+          },
+          {
+            statisticType: "min",
+            onStatisticField: field, // Use field directly
+            outStatisticFieldName: "minValue",
+          },
+        ];
+
+        // Return the promise of queryFeatures()
+        return CondosTable.queryFeatures(query).then(function (response) {
+          // Process response and create valPair
+          let valPair;
+          if (field === "Sale_Date") {
+            let max = new Date(response.features[0].attributes.maxValue);
+            let min = new Date(response.features[0].attributes.minValue);
+            let maxYear = max.getFullYear();
+            let minYear = min.getFullYear();
+            valPair = {
+              [field]: {
+                min: minYear,
+                max: maxYear,
+              },
+            };
+          } else {
+            let max = response.features[0].attributes.maxValue;
+            let min = response.features[0].attributes.minValue;
+            valPair = {
+              [field]: {
+                min: min,
+                max: max,
+              },
+            };
+          }
+
+          // Push valPair into queryValues array
+          queryValues.push(valPair);
+        });
+      });
+
+      // Wait for all promises to resolve
+      Promise.all(queryPromises).then(function () {
+        // All queries have completed, do something with queryValues
+        console.log(queryValues);
+        let vals = queryValues;
+        changeSliderValues(vals);
+      });
+    }
+
+    buildQueries();
+
+    // console.log(queryValues);
+
     $("#submitFilter").on("click", function () {
       updateQuery();
+    });
+
+    function clearQueryParameters() {
+      $("#lasso").removeClass("btn-warning");
+      // $("#select-button").removeClass("btn-warning");
+      $("#searchInput ul").remove();
+      $("#searchInput").val = "";
+      // $("#side-Exp2").addClass("disabled");
+
+      // Get a reference to the search input field
+      const searchInput = document.getElementById("searchInput");
+
+      // To clear the text in the input field, set its value to an empty string
+      searchInput.value = "";
+      runQuerySearchTerm = "";
+      searchTerm = "";
+      firstList = [];
+      secondList = [];
+
+      $("#result-btns").hide();
+      $("#details-btns").hide();
+      // $("#dropdown").toggleClass("expanded");
+      $("#dropdown").hide();
+      // $("#results-div").css("left", "0px");
+      // $("#sidebar2").css("left", "-350px");
+      $("#right-arrow-2").show();
+      $("#left-arrow-2").hide();
+      $("#abutters-content").hide();
+      $("#selected-feature").empty();
+      $("#parcel-feature").empty();
+      $("#backButton").show();
+      $("#exportResults").hide();
+      $("#csvExportResults").hide();
+      $("#csvExportSearch").hide();
+      $("#exportSearch").hide();
+      $("#total-results").hide();
+      $("#featureWid").hide();
+      $("#exportButtons").hide();
+      $("#dropdown").show();
+      $("#WelcomeBox").show();
+      $("#select-button").attr("title", "Add to Selection Enabled");
+
+      let suggestionsContainer = document.getElementById("suggestions");
+      suggestionsContainer.innerHTML = "";
+
+      $("#distanceButton").removeClass("btn-warning");
+      $("#distanceButton").addClass("bg-info");
+      $("#areaButton").removeClass("btn-warning");
+      $("#distanceButton").addClass("bg-info");
+      $("#featureWid").empty();
+
+      view.ui.remove(activeWidget1);
+      if (activeWidget1) {
+        activeWidget1.destroy();
+        activeWidget1 = null;
+      }
+
+      detailsHandleUsed == "";
+      view.graphics.removeAll();
+      polygonGraphics = [];
+      Object.keys(queryParameters).forEach((key) => {
+        queryParameters[key] = null;
+      });
+
+      // put this in its own function
+      // can use this for setting the values and clearing them
+      // keep clearQueryParamters for just resetting other values
+      const combobox1ID = document.querySelector("#streetFilter");
+      const combobox2ID = document.querySelector("#ownerFilter");
+      const combobox3ID = document.querySelector("#propertyFilter");
+      const combobox4ID = document.querySelector("#buildingFilter");
+      const combobox5ID = document.querySelector("#buildingUseFilter");
+      const combobox6ID = document.querySelector("#designTypeFilter");
+
+      // const slider1 = document.querySelector("#app-val-slider");
+      // slider1.value = [10000, 200000];
+      // const slider1Min = document.querySelector("#app-val-min");
+      // const slider1Max = document.querySelector("#app-val-max");
+      // slider1Min.value = 10000;
+      // slider1Max.value = 200000;
+
+      // const slider2 = document.querySelector("#assess-val-slider");
+      // slider2.value = [10000, 200000];
+      // const slider2Min = document.querySelector("#assess-val-min");
+      // const slider2Max = document.querySelector("#assess-val-max");
+      // slider2Min.value = 10000;
+      // slider2Max.value = 200000;
+
+      // const slider3 = document.querySelector("#acres-val-slider");
+      // slider3.value = [1, 20];
+      // const slider3Min = document.querySelector("#acres-val-min");
+      // const slider3Max = document.querySelector("#acres-val-max");
+      // slider3Min.value = 1;
+      // slider3Max.value = 20;
+
+      // const slider4 = document.querySelector("#soldon-val-slider");
+      // slider4.value = [1900, 2018];
+      // const slider4Min = document.querySelector("#sold-val-min");
+      // const slider4Max = document.querySelector("#sold-val-max");
+      // slider4Min.value = 1900;
+      // slider4Max.value = 2018;
+
+      // const slider5 = document.querySelector("#saleP-val-slider");
+      // slider5.value = [10000, 200000];
+      // const slider5Min = document.querySelector("#saleP-val-min");
+      // const slider5Max = document.querySelector("#saleP-val-max");
+      // slider5Min.value = 10000;
+      // slider5Max.value = 200000;
+
+      combobox1ID.selectedItems = [];
+      combobox2ID.selectedItems = [];
+      combobox3ID.selectedItems = [];
+      combobox4ID.selectedItems = [];
+      combobox5ID.selectedItems = [];
+      combobox6ID.selectedItems = [];
+
+      buildQueries();
+
+      // $("#app-val-min").value()
+      $(".wrapper .x-button").click();
+
+      $("#streetFilter").value = "";
+    }
+
+    $("#clearFilter").on("click", function () {
+      clearQueryParameters();
     });
   });
 
