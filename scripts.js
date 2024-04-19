@@ -101,11 +101,13 @@ require([
   view.when(() => {
     let urlButton = document.getElementById("urlButton");
 
+    let urlValue;
+
     urlButton.addEventListener("click", function (event) {
       let urlValue = urlInput.value;
 
       function addFeatureLayer() {
-        urlInputLayer = new FeatureLayer({
+        let urlInputLayer = new FeatureLayer({
           url: `${urlValue}`,
         });
 
@@ -119,7 +121,7 @@ require([
         urlInput.value = "";
       }
 
-      if (urlInputLayer.length > 0) {
+      if (urlValue.length > 0) {
         addFeatureLayer();
       }
     });
