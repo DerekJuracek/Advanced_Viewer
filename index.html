@@ -271,6 +271,7 @@
     </nav>
 
     <div id="viewDiv"></div>
+    <div id="sketchDiv"></div>
 
     <div class="container">
       <div id="sidebar2" class="bg-dark sidebar2" style="left: 0px">
@@ -424,7 +425,8 @@
         <div
           class="container"
           id="dropdown"
-          style="max-height: 500px; padding-bottom: 40px"
+          style="padding-bottom: 20px"
+      
         >
           <div class="spinner-container" style="display: none">
             <div class="spinner-border text-light" role="status">
@@ -435,9 +437,9 @@
             <h5 id="filter-title" style="text-align: center; color: white">
               Layer List
             </h5>
-            <div id="filterScrollableContainer">
-              <calcite-pick-list id="layerList" class="calcite-mode-dark">
-              </calcite-pick-list>
+            <div >
+              <calcite-list id="layerList" class="calcite-mode-dark">
+              </calcite-list>
             </div>
           </div>
           <div id="filterDiv" style="display: none">
@@ -715,12 +717,13 @@
               </div>
             </div>
             <div style="padding-top: 10px">
+              <button type="button" id="clearFilter" class="btn btn-info">
+                Reset Filters
+                </button>
               <button type="button" id="submitFilter" class="btn btn-info">
                 Submit
               </button>
-              <button type="button" id="clearFilter" class="btn btn-info">
-              Clear
-              </button>
+            
             </div>
           </div>
           <div id="total-results" style="display: none"></div>

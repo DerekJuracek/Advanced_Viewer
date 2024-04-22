@@ -20,6 +20,7 @@ require([
   "esri/widgets/Bookmarks",
   "esri/widgets/Print",
   "esri/widgets/Legend",
+  "esri/widgets/Expand",
 ], function (
   WebMap,
   MapView,
@@ -41,7 +42,8 @@ require([
   BasemapLayerList,
   Bookmarks,
   Print,
-  Legend
+  Legend,
+  Expand
 ) {
   // Key to check in sessionStorage
   const key = "condos";
@@ -169,12 +171,24 @@ require([
       heading: false,
     };
 
+    let originalRenderer;
+
+    view.map.allLayers.forEach((layer) => {
+      if (layer.title === "Parcel Boundaries") {
+        originalRenderer = layer.renderer;
+      }
+    });
+
+    console.log(view.map.basemap.baseLayers);
+
     reactiveUtils.watch(
       () => [view.map.basemap.baseLayers.map((layer) => layer.visible)],
       () => {
         const orthoLayersVisible = isAnyOrthoLayerVisible(
           view.map.basemap.baseLayers
         );
+
+        console.log(orthoLayersVisible);
         manageBasemapVisibility(view.map.basemap.baseLayers);
 
         view.map.allLayers.forEach((layer) => {
@@ -184,7 +198,7 @@ require([
                   type: "simple",
                   symbol: {
                     type: "simple-fill",
-                    color: [255, 255, 255, 0.1],
+                    color: [255, 255, 255, 1.0],
                     outline: {
                       width: 1,
                       color: [5, 252, 207],
@@ -198,19 +212,25 @@ require([
     );
 
     function isAnyOrthoLayerVisible(baseLayers) {
-      const orthoLayerTitles = ["Ortho 2012", "Ortho 2016", "Ortho 2019"];
+      // const orthoLayerTitles = ["Ortho 2012", "Ortho 2016", "Ortho 2019"];
+
+      // return baseLayers.some((layer) => {
+      //   return layer.visible && orthoLayerTitles.includes(layer.title);
+      // });
 
       return baseLayers.some((layer) => {
-        return layer.visible && orthoLayerTitles.includes(layer.title);
+        return layer.visible;
       });
     }
     function manageBasemapVisibility(baseLayers) {
-      const orthoLayerTitles = ["Ortho 2012", "Ortho 2016", "Ortho 2019"];
+      // const orthoLayerTitles = ["Ortho 2012", "Ortho 2016", "Ortho 2019"];
 
       // Filter out the layers that we're interested in
-      let basemapLayers = baseLayers.filter((layer) =>
-        orthoLayerTitles.includes(layer.title)
-      );
+      // let basemapLayers = baseLayers.filter((layer) =>
+      //   orthoLayerTitles.includes(layer.title)
+      // );
+
+      let basemapLayers = view.map.basemap.baseLayers;
 
       // Find the newly visible layer
       let newlyVisibleLayer = basemapLayers.find(
@@ -267,6 +287,47 @@ require([
       },
       creationMode: "update",
     });
+  });
+
+  const sketchGraphicsLayer = new GraphicsLayer();
+  view.map.add(sketchGraphicsLayer);
+
+  const sketchDiv = document.getElementById("sketchDiv");
+
+  view.when(() => {
+    const sketch = new Sketch({
+      layer: sketchGraphicsLayer,
+
+      visibleElements: {
+        // createTools: {
+        //   point: false,
+        //   circle: false,
+        //   rectangle: false,
+        //   polygon: false,
+        //   polyline: false,
+        //   select: false,
+        // },
+        // creationMode: "single",
+        selectionTools: {
+          "lasso-selection": false,
+          "rectangle-selection": false,
+        },
+        settingsMenu: true,
+        undoRedoMenu: true,
+        sketchPanel: true,
+      },
+      creationMode: "update",
+    });
+
+    const sketchExpand = new Expand({
+      expandIcon: "pencil-tip", // see https://developers.arcgis.com/calcite-design-system/icons/
+      // expandTooltip: "Expand LayerList", // optional, defaults to "Expand" for English locale
+      view: view,
+      content: sketch,
+    });
+    view.ui.add(sketchExpand, "bottom-right");
+
+    // view.ui.add(sketchDiv, "top-right");
   });
 
   let runQuerySearchTerm;
@@ -634,7 +695,7 @@ require([
 
       // Create the pick list item and action for each layer
       var item =
-        $(`<calcite-pick-list-item label="${layer.title}" value="${layer.id}" description="${layer.type}">
+        $(`<calcite-pick-list-item scale="m" label="${layer.title}" value="${layer.id}" description="${layer.type}">
       <calcite-action id="action-${layer.id}" slot="actions-end" icon="${icon}" text="${layer.title}"></calcite-action>
     </calcite-pick-list-item>`);
 
@@ -658,19 +719,24 @@ require([
   function processLayers(layers, container) {
     layers.forEach(function (layer) {
       if (layer.type === "group") {
-        // For group layers, create a calcite-pick-list-group
+        // For group layers, create a calcite-accordion-item
         var groupTitle = layer.title || "Industry"; // Default title or layer title
-        var groupContainer = $(
-          `<calcite-pick-list-group group-title="${groupTitle}"></calcite-pick-list-group>`
+        var accordionItem = $(`
+        <calcite-accordion scale="m">
+          <calcite-accordion-item heading="${groupTitle}">
+          </calcite-accordion-item>
+        </calcite-accordion>`);
+
+        // Recursively process sublayers, adding them as pick list items
+        processLayers(
+          layer.layers.items,
+          accordionItem.find("calcite-accordion-item")
         );
 
-        // Recursively process sublayers, adding them to this group
-        processLayers(layer.layers.items, groupContainer);
-
-        // Append the group container to the main container
-        container.append(groupContainer);
+        // Append the accordion item to the main container
+        container.append(accordionItem);
       } else {
-        // For non-group layers, directly add them to the pick list or current group
+        // For non-group layers, add them as pick list items
         addLayerToPickList(layer, container);
       }
     });
@@ -724,9 +790,10 @@ require([
 
   function generateFilters() {
     let query = noCondosLayer.createQuery();
-    query.where = `1=1`;
+    query.where = `1=1 AND Street_Name IS NOT NULL`;
     query.returnDistinctValues = true;
-    query.returnGeometry = false; // Adjust based on your needs
+    query.returnGeometry = false;
+    query.orderByFields = ["Street_Name ASC"]; // Adjust based on your needs
     query.outFields = ["Street_Name"];
 
     CondosLayer.queryFeatures(query).then(function (response) {
@@ -761,7 +828,7 @@ require([
     });
 
     let query2 = noCondosLayer.createQuery();
-    query2.where = `1=1`;
+    query2.where = `1=1 AND Owner IS NOT NULL`;
     query2.returnDistinctValues = true;
     query2.returnGeometry = false; // Adjust based on your needs
     query2.outFields = ["Owner"];
@@ -797,9 +864,10 @@ require([
     });
 
     let query3 = noCondosLayer.createQuery();
-    query3.where = `1=1`;
+    query3.where = `1=1 AND Parcel_Type IS NOT NULL`;
     query3.returnDistinctValues = true;
-    query3.returnGeometry = false; // Adjust based on your needs
+    query3.returnGeometry = false;
+    query3.orderByFields = ["Parcel_Type ASC"]; // Adjust based on your needs
     query3.outFields = ["Parcel_Type"];
 
     CondosLayer.queryFeatures(query3).then(function (response) {
@@ -833,7 +901,7 @@ require([
     });
 
     let query4 = noCondosLayer.createQuery();
-    query4.where = `1=1`;
+    query4.where = `1=1 AND Building_Type IS NOT NULL`;
     query4.returnDistinctValues = true;
     query4.returnGeometry = false; // Adjust based on your needs
     query4.outFields = ["Building_Type"];
@@ -870,7 +938,7 @@ require([
     });
 
     let query5 = noCondosLayer.createQuery();
-    query5.where = `1=1`;
+    query5.where = `1=1 AND Building_Use_Code IS NOT NULL`;
     query5.returnDistinctValues = true;
     query5.returnGeometry = false; // Adjust based on your needs
     query5.outFields = ["Building_Use_Code"];
@@ -906,7 +974,7 @@ require([
     });
 
     let query6 = noCondosLayer.createQuery();
-    query6.where = `1=1`;
+    query6.where = `1=1 AND Design_Type IS NOT NULL`;
     query6.returnDistinctValues = true;
     query6.returnGeometry = false; // Adjust based on your needs
     query6.outFields = ["Design_Type"];
@@ -2392,13 +2460,14 @@ require([
         let Mailing_City = feature.Mailing_City;
         let Mail_State = feature.Mail_State;
         let Mailing_Zip = feature.Mailing_Zip;
+        let Location = feature.location;
 
         const listItem = document.createElement("li");
         listItem.classList.add("export-search-list");
 
         let listItemHTML;
 
-        listItemHTML = ` ${owner} ${coOwner} <br> ${mailingAddress} ${mailingAddress2} <br> ${Mailing_City}, ${Mail_State} ${Mailing_Zip}`;
+        listItemHTML = ` ${owner} ${coOwner} <br> ${mailingAddress} ${mailingAddress2} <br> ${Mailing_City}, ${Mail_State} ${Mailing_Zip} <br> ${Location}`;
 
         listItem.innerHTML += listItemHTML;
         listItem.setAttribute("object-id", objectID);
@@ -3453,6 +3522,12 @@ require([
     let locationUniqueId;
     let locationGISLINK;
     let locationOwner;
+    let locationCoOwner;
+    let locationMailZip;
+    let locationAddress;
+    let locationAddress2;
+    let locationMailCity;
+    let locationMailState;
     let locationMBL;
 
     if (detailsChanged.isChanged) {
@@ -3487,6 +3562,32 @@ require([
       locationOwner =
         matchedObject.owner === undefined ? "" : matchedObject.owner;
 
+      locationCoOwner =
+        matchedObject.coOwner === undefined ? "" : matchedObject.coOwner;
+
+      locationAddress =
+        matchedObject.mailingAddress === undefined
+          ? ""
+          : matchedObject.mailingAddress;
+
+      locationAddress2 =
+        matchedObject.mailingAddress2 === undefined
+          ? ""
+          : matchedObject.mailingAddress2;
+
+      locationMailCity =
+        matchedObject.Mailing_City === undefined
+          ? ""
+          : matchedObject.Mailing_City;
+
+      locationMailState =
+        matchedObject.Mail_State === undefined ? "" : matchedObject.Mail_State;
+
+      locationMailZip =
+        matchedObject.Mailing_Zip === undefined
+          ? ""
+          : matchedObject.Mailing_Zip;
+
       locationMBL = matchedObject.MBL === undefined ? "" : matchedObject.MBL;
     }
 
@@ -3502,7 +3603,9 @@ require([
 
     let listItemHTML;
 
-    listItemHTML = ` ${locationMaillingAddress} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner}`;
+    listItemHTML = ` ${locationOwner} ${locationCoOwner} <br> ${locationAddress} ${locationAddress2} <br> ${locationMailCity}, ${locationMailState} ${locationMailZip}`;
+
+    // listItemHTML = ` ${locationMaillingAddress} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner}`;
 
     // Append the new list item to the list
     listItem.innerHTML += listItemHTML;
@@ -4393,13 +4496,28 @@ require([
         // All queries have completed, do something with queryValues
         console.log(queryValues);
         let vals = queryValues;
-        changeSliderValues(vals);
+
+        function throttleSliderVals() {
+          clearTimeout(debounceTimer2);
+          debounceTimer2 = setTimeout(() => {
+            changeSliderValues(vals);
+          }, 300);
+        }
+        throttleSliderVals();
+
+        // changeSliderValues(vals);
       });
     }
 
-    buildQueries();
+    // function throttleQueryBuild() {
+    //   clearTimeout(debounceTimer2);
+    //   debounceTimer2 = setTimeout(() => {
+    //     buildQueries();
+    //   }, 700);
+    // }
+    // throttleQueryBuild();
 
-    // console.log(queryValues);
+    buildQueries();
 
     $("#submitFilter").on("click", function () {
       updateQuery();
@@ -4442,7 +4560,8 @@ require([
       $("#featureWid").hide();
       $("#exportButtons").hide();
       $("#dropdown").show();
-      $("#WelcomeBox").show();
+
+      $("#WelcomeBox").hide();
       $("#select-button").attr("title", "Add to Selection Enabled");
 
       let suggestionsContainer = document.getElementById("suggestions");
