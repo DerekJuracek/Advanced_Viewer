@@ -77,6 +77,10 @@ main {
   /* This ensures the navbar is always on top */
 }
 
+#sketchDiv {
+  /* left: 30%; */
+}
+
 .col-md {
   padding-left: 0px;
 }
@@ -152,7 +156,7 @@ ul {
 }
 
 #dropdown {
-  overflow-y: auto;
+  /* overflow-y: auto; */
   /* padding-top: 100px; */
   height: 85%;
 }
