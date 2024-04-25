@@ -791,3 +791,28 @@ img {
   margin-right: 0px;
   margin-left: 0px;
 }
+
+.justZoomBtn {
+  position: absolute;
+  right: 0;
+}
+
+.justZoom {
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+
+.justZoom:hover {
+  background-color: paleturquoise;
+  border-color: transparent !important;
+}
+
+.listText {
+  padding-right: 5px !important;
+}
+
+#welcomeImage {
+  text-align: center; /* Align the content (image) horizontally */
+  display: flex; /* Use flexbox */
+  justify-content: center;
+}
