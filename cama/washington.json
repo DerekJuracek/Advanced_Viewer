@@ -10,6 +10,7 @@
   "condos": "yes",
   "imageUrl": "https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/",
   "welcomeImage": "https://publicweb-gis.s3.amazonaws.com/Images/MunicipalSeals/Washington_CT.png",
+  "accessorName": "-Cory Iacino – Assessor  <br>    -Mildred Johnson – Assistant Assessor",
   "propertyCard": "https://www.propertyrecordcards.com/PropertyResults.aspx?towncode=150",
   "pdf_Image": "https://publicweb-gis.s3.amazonaws.com/PDFs/CT_Washington",
   "pdf_demographics": "https://publicweb-gis.s3.amazonaws.com/CT_Town_Profiles/Washington_Demographics_2023.pdf",
