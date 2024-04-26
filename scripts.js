@@ -717,17 +717,17 @@ require([
         defaultPopupTemplateEnabled: true,
       });
 
-      noCondosLayer.renderer = {
-        type: "simple",
-        symbol: {
-          type: "simple-fill",
-          color: [255, 255, 255, 0],
-          outline: {
-            width: 1,
-            color: [169, 169, 169, 1],
-          },
-        },
-      };
+      // noCondosLayer.renderer = {
+      //   type: "simple",
+      //   symbol: {
+      //     type: "simple-fill",
+      //     color: [255, 255, 255, 0],
+      //     outline: {
+      //       width: 1,
+      //       color: [169, 169, 169, 1],
+      //     },
+      //   },
+      // };
 
       let CondosLayer = new FeatureLayer({
         url: `${configVars.condoLayer}`,
@@ -735,18 +735,18 @@ require([
         popupEnabled: true,
       });
 
-      CondosLayer.renderer = {
-        type: "simple", // autocasts as new SimpleRenderer()
-        symbol: {
-          type: "simple-fill", // autocasts as new SimpleMarkerSymbol()
-          color: [255, 255, 255, 0],
-          outline: {
-            // autocasts as new SimpleLineSymbol()
-            width: 1,
-            color: [169, 169, 169, 1],
-          },
-        },
-      };
+      // CondosLayer.renderer = {
+      //   type: "simple", // autocasts as new SimpleRenderer()
+      //   symbol: {
+      //     type: "simple-fill", // autocasts as new SimpleMarkerSymbol()
+      //     color: [255, 255, 255, 0],
+      //     outline: {
+      //       // autocasts as new SimpleLineSymbol()
+      //       width: 1,
+      //       color: [169, 169, 169, 1],
+      //     },
+      //   },
+      // };
 
       const CondosTable = new FeatureLayer({
         url: `${configVars.masterTable}`,
