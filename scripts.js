@@ -76,6 +76,9 @@ require([
       configVars.housingUrl = config.housingUrl;
       configVars.propertyCard = config.propertyCard;
       configVars.tax_bill = config.tax_bill;
+      configVars.accessorName = config.accessorName;
+
+      document.getElementById("AccessorName").innerHTML = config.accessorName;
       // configVars.homeExtent = config.homeExtent;
 
       document.getElementById("title").innerHTML = configVars.title;
@@ -232,9 +235,24 @@ require([
       });
 
       view.when(() => {
+        // Filter out layers belonging to the "hidden group"
+        const visibleLayers = webmap.layers.items.filter((layer) => {
+          return !(
+            layer.type === "group" &&
+            layer.title &&
+            layer.title.toLowerCase() === "hidden group"
+          );
+        });
+
+        // Create legend with filtered layers
         const legend = new Legend({
           view: view,
           container: $("#LegendDiv")[0],
+          layerInfos: visibleLayers.map((layer) => {
+            return {
+              layer: layer,
+            };
+          }),
         });
       });
 
@@ -773,7 +791,9 @@ require([
         if (
           layer.type === "graphics" ||
           layer.title == "Tax Map Annotation" ||
-          layer.title == "Road Centerline"
+          layer.title == "Road Centerline" ||
+          layer.title == null ||
+          layer.title == ""
         ) {
           return;
         } else {
@@ -804,17 +824,22 @@ require([
         }
       }
 
-      // Function to process and add layers, including handling group layers
       function processLayers(layers, container) {
         layers.forEach(function (layer) {
           if (layer.type === "group") {
+            // Check if the group layer is named "hidden group"
+            if (layer.title && layer.title.toLowerCase() === "hidden group") {
+              // Skip processing this layer and its sublayers
+              return;
+            }
+
             // For group layers, create a calcite-accordion-item
             var groupTitle = layer.title || "Industry"; // Default title or layer title
             var accordionItem = $(`
-        <calcite-accordion scale="m">
-          <calcite-accordion-item heading="${groupTitle}">
-          </calcite-accordion-item>
-        </calcite-accordion>`);
+              <calcite-accordion scale="m">
+                <calcite-accordion-item heading="${groupTitle}">
+                </calcite-accordion-item>
+              </calcite-accordion>`);
 
             // Recursively process sublayers, adding them as pick list items
             processLayers(
