@@ -77,12 +77,17 @@ require([
       configVars.propertyCard = config.propertyCard;
       configVars.tax_bill = config.tax_bill;
       configVars.accessorName = config.accessorName;
+      configVars.parcelTitle = config.parcelServiceTitle;
+      configVars.tabTitle = config.tabTitle;
+      configVars.basemapTitle = config.basemapTitle;
+      configVars.parcelRenderer = config.parcelRenderer;
 
       document.getElementById("AccessorName").innerHTML = config.accessorName;
       // configVars.homeExtent = config.homeExtent;
 
       document.getElementById("title").innerHTML = configVars.title;
       document.getElementById("imageContainer").src = configVars.welcomeImage;
+      document.getElementById("tab-title").innerHTML = configVars.tabTitle;
 
       // use the webMapPortalId in your app as needed
 
@@ -119,6 +124,13 @@ require([
 
       // const filterList = document.getElementById("filterDiv");
       // filterList.appendChild(filterButton);
+      function formatDate(timestamp) {
+        var date = new Date(timestamp);
+        var day = date.getDate(); // Get the day of the month
+        var month = date.getMonth() + 1; // Get the month (0-11, hence add 1)
+        var year = date.getFullYear(); // Get the full year
+        return month + "/" + day + "/" + year; // Format as "MM/DD/YYYY"
+      }
 
       // Key to check in sessionStorage
       const key = "condos";
@@ -128,7 +140,6 @@ require([
       if (sessionStorage.getItem(key) === null) {
         // If the key doesn't exist, set it to "none"
         sessionStorage.setItem(key, configVars.isCondosLayer);
-      } else {
       }
 
       if (sessionStorage.getItem(key2) === null) {
@@ -146,13 +157,6 @@ require([
         },
         layers: [searchGraphicsLayers],
       });
-
-      // const webmap = new WebMap({
-      //   portalItem: {
-      //     id: "6448b08504de4244973a28305b18271f",
-      //   },
-      //   layers: [searchGraphicsLayers],
-      // });
 
       var view = new MapView({
         container: "viewDiv",
@@ -281,6 +285,12 @@ require([
           }
         });
 
+        if (sessionStorage.getItem(key) === "yes") {
+          originalRenderer = CondosLayer.renderer;
+        } else {
+          originalRenderer = noCondosLayer.renderer;
+        }
+
         // console.log(view.map.basemap.baseLayers);
 
         reactiveUtils.watch(
@@ -289,27 +299,8 @@ require([
             const orthoLayersVisible = isAnyOrthoLayerVisible(
               view.map.basemap.baseLayers
             );
-
             console.log(orthoLayersVisible);
             manageBasemapVisibility(view.map.basemap.baseLayers);
-
-            view.map.allLayers.forEach((layer) => {
-              if (layer.title === "Parcel Boundaries") {
-                layer.renderer = orthoLayersVisible
-                  ? {
-                      type: "simple",
-                      symbol: {
-                        type: "simple-fill",
-                        color: [255, 255, 255, 1.0],
-                        outline: {
-                          width: 1,
-                          color: [5, 252, 207],
-                        },
-                      },
-                    }
-                  : originalRenderer;
-              }
-            });
           }
         );
 
@@ -346,6 +337,40 @@ require([
                 layer.visible = false;
               }
             });
+
+            if (newlyVisibleLayer.title !== `${configVars.basemapTitle}`) {
+              if (sessionStorage.getItem(key) === "yes") {
+                CondosLayer.renderer = {
+                  type: "simple",
+                  symbol: {
+                    type: "simple-fill",
+                    color: [255, 255, 255, 0.0],
+                    outline: {
+                      width: 1,
+                      color: `${configVars.parcelRenderer}`,
+                    },
+                  },
+                };
+              } else {
+                NoCondosLayer.renderer = {
+                  type: "simple",
+                  symbol: {
+                    type: "simple-fill",
+                    color: [255, 255, 255, 0.0],
+                    outline: {
+                      width: 1,
+                      color: `${configVars.parcelRenderer}`,
+                    },
+                  },
+                };
+              }
+            } else {
+              if (sessionStorage.getItem(key) === "yes") {
+                CondosLayer.renderer = originalRenderer;
+              } else {
+                noCondosLayer.renderer = originalRenderer;
+              }
+            }
           }
 
           // Update wasVisible property
@@ -356,81 +381,82 @@ require([
       });
 
       webmap.add(sketchGL);
-      const sketchWidget = document.getElementById("sketch-widget");
+      // SKETCH WIDGET
+      // const sketchWidget = document.getElementById("sketch-widget");
 
-      view.when(() => {
-        const sketch = new Sketch({
-          layer: searchGraphicsLayers,
-          view: view,
-          container: sketchWidget,
-          visibleElements: {
-            createTools: {
-              point: false,
-              circle: false,
-              rectangle: false,
-              polygon: false,
-              polyline: false,
-              select: false,
-            },
-            creationMode: "single",
-            selectionTools: {
-              "lasso-selection": true,
-              "rectangle-selection": false,
-              "circle-selection": false,
-              "feature-selection": false,
-              "toggle-selection": false,
-              "clear-selection": false,
-              "undo-selection": false,
-              "selection-clear": false,
-            },
-            settingsMenu: false,
-            undoRedoMenu: false,
-            sketchPanel: false,
-          },
-          creationMode: "update",
-        });
-      });
+      // view.when(() => {
+      //   const sketch = new Sketch({
+      //     layer: searchGraphicsLayers,
+      //     view: view,
+      //     container: sketchWidget,
+      //     visibleElements: {
+      //       createTools: {
+      //         point: false,
+      //         circle: false,
+      //         rectangle: false,
+      //         polygon: false,
+      //         polyline: false,
+      //         select: false,
+      //       },
+      //       creationMode: "single",
+      //       selectionTools: {
+      //         "lasso-selection": true,
+      //         "rectangle-selection": false,
+      //         "circle-selection": false,
+      //         "feature-selection": false,
+      //         "toggle-selection": false,
+      //         "clear-selection": false,
+      //         "undo-selection": false,
+      //         "selection-clear": false,
+      //       },
+      //       settingsMenu: false,
+      //       undoRedoMenu: false,
+      //       sketchPanel: false,
+      //     },
+      //     creationMode: "update",
+      //   });
+      // });
 
-      const sketchGraphicsLayer = new GraphicsLayer();
-      view.map.add(sketchGraphicsLayer);
+      // const sketchGraphicsLayer = new GraphicsLayer();
+      // view.map.add(sketchGraphicsLayer);
 
-      const sketchDiv = document.getElementById("sketchDiv");
+      // const sketchDiv = document.getElementById("sketchDiv");
 
-      view.when(() => {
-        const sketch = new Sketch({
-          layer: sketchGraphicsLayer,
+      // view.when(() => {
+      //   const sketch = new Sketch({
+      //     layer: sketchGraphicsLayer,
 
-          visibleElements: {
-            // createTools: {
-            //   point: false,
-            //   circle: false,
-            //   rectangle: false,
-            //   polygon: false,
-            //   polyline: false,
-            //   select: false,
-            // },
-            // creationMode: "single",
-            selectionTools: {
-              "lasso-selection": false,
-              "rectangle-selection": false,
-            },
-            settingsMenu: true,
-            undoRedoMenu: true,
-            sketchPanel: true,
-          },
-          creationMode: "update",
-        });
+      //     visibleElements: {
+      //       // createTools: {
+      //       //   point: false,
+      //       //   circle: false,
+      //       //   rectangle: false,
+      //       //   polygon: false,
+      //       //   polyline: false,
+      //       //   select: false,
+      //       // },
+      //       // creationMode: "single",
+      //       selectionTools: {
+      //         "lasso-selection": false,
+      //         "rectangle-selection": false,
+      //       },
+      //       settingsMenu: true,
+      //       undoRedoMenu: true,
+      //       sketchPanel: true,
+      //     },
+      //     creationMode: "update",
+      //   });
 
-        const sketchExpand = new Expand({
-          expandIcon: "pencil-tip", // see https://developers.arcgis.com/calcite-design-system/icons/
-          // expandTooltip: "Expand LayerList", // optional, defaults to "Expand" for English locale
-          view: view,
-          content: sketch,
-        });
-        view.ui.add(sketchExpand, "bottom-right");
+      // const sketchExpand = new Expand({
+      //   expandIcon: "pencil-tip", // see https://developers.arcgis.com/calcite-design-system/icons/
+      //   // expandTooltip: "Expand LayerList", // optional, defaults to "Expand" for English locale
+      //   view: view,
+      //   content: sketch,
+      // });
+      // view.ui.add(sketchExpand, "top-right");
 
-        // view.ui.add(sketchDiv, "top-right");
-      });
+      // view.ui.add(sketchDiv, "top-right");
+      // });
 
       let runQuerySearchTerm;
       let clickedToggle;
@@ -727,6 +753,12 @@ require([
         }
       }
 
+      // // Check if the key exists in sessionStorage
+      // if (sessionStorage.getItem(key) === null) {
+      //   // If the key doesn't exist, set it to "none"
+      //   sessionStorage.setItem(key, configVars.isCondosLayer);
+      // }
+
       let noCondosLayer = new FeatureLayer({
         url: `${configVars.noCondoLayer}`,
         visible: false,
@@ -783,6 +815,46 @@ require([
       noCondosTable.load().then(() => {
         webmap.tables.add(noCondosTable);
       });
+
+      view.when(function () {
+        // Assuming webmap is already defined
+        // Find the specific layer by its id or name
+        var specificLayer = webmap.layers.find(
+          (layer) => layer.title === `${configVars.parcelTitle}`
+        );
+
+        // Check if the specific layer was found
+        // if (specificLayer) {
+        reactiveUtils.watch(
+          () => specificLayer.visible,
+          () => {
+            let isVisible = specificLayer.visible;
+            updateLayerUI(specificLayer.id, isVisible);
+          }
+        );
+        // Watch for visibility changes on the specific layer
+        // reactiveUtils.watch(specificLayer, "visible", function (isVisible) {
+        //   // Update UI based on the layer's visibility
+        //   updateLayerUI(specificLayer.id, isVisible);
+        // });
+        // } else {
+        //   console.error("Layer not found.");
+        // }
+      });
+
+      function updateLayerUI(layerId, isVisible) {
+        // Find the corresponding UI element in the pick list
+        let actionElement = $(
+          `calcite-pick-list-item[value="${layerId}"] calcite-action`
+        );
+
+        // Toggle the icon based on visibility
+        if (isVisible) {
+          actionElement.attr("icon", "check-square"); // Assuming you use 'check' icon for visible
+        } else {
+          actionElement.attr("icon", "square"); // Use an appropriate icon for non-visible
+        }
+      }
 
       // Updated function to add a layer to the pick list with click event handling
       function addLayerToPickList(layer, container) {
@@ -1178,6 +1250,7 @@ require([
         $("#total-results").hide();
         $("#featureWid").hide();
         $("#exportButtons").hide();
+        $("#layerListDiv").hide();
         $("#dropdown").show();
         $("#WelcomeBox").show();
         $("#select-button").attr("title", "Add to Selection Enabled");
@@ -1204,7 +1277,56 @@ require([
 
       $(document).ready(function () {
         // Add click event listener to the dynamically generated buttons with class 'justZoom'
-        $(document).on("click", ".justZoom, .justZoomBtn", function (event) {
+        $(document).on("click", ".justRemove", function (event) {
+          event.stopPropagation();
+          event.preventDefault();
+
+          let targetElement = event.target.closest("li");
+          let itemId = targetElement.getAttribute("data-id");
+          let objectID = targetElement.getAttribute("object-id");
+
+          console.log(itemId);
+          console.log(objectID);
+
+          if (sessionStorage.getItem(key) === "no") {
+            // If the key doesn't exist, set it to "none"
+            let whereClause = `OBJECTID = ${objectID}`;
+            // let whereClause = `GIS_LINK = '${matchingObject[0].GIS_LINK}'`;
+            let query = noCondosLayer.createQuery();
+            query.where = whereClause;
+            query.returnGeometry = true;
+            query.returnHiddenFields = true; // Adjust based on your needs
+            query.outFields = ["*"];
+
+            noCondosLayer.queryFeatures(query).then((response) => {
+              let feature = response;
+              let geometry = feature.features[0].geometry;
+
+              // Get the extent of the geometry
+              const geometryExtent = geometry.extent;
+
+              // Calculate the center of the geometry
+              const center = geometryExtent.center;
+
+              // Calculate a new extent with a slightly zoomed-out level
+              const zoomOutFactor = 3.0; // Adjust as needed
+              const newExtent = geometryExtent.expand(zoomOutFactor);
+
+              // Set the view to the new extent
+              view.goTo({
+                target: center, // Center the view on the center of the geometry
+                extent: newExtent, // Set the extent to the new adjusted extent
+              });
+            });
+          } else {
+            // You can perform any actions you want here, such as zooming to a location
+          }
+        });
+      });
+
+      $(document).ready(function () {
+        // Add click event listener to the dynamically generated buttons with class 'justZoom'
+        $(document).on("click", ".justZoom", function (event) {
           event.stopPropagation();
           event.preventDefault();
 
@@ -1360,6 +1482,7 @@ require([
           let locationOwner = feature.owner;
           let locationMBL = feature.MBL;
           let locationGeom = feature.geometry;
+          let propertyType = feature.Parcel_Type;
 
           const imageUrl = `${configVars.imageUrl}${locationUniqueId}.jpg`;
 
@@ -1386,11 +1509,11 @@ require([
           }
 
           if (!locationCoOwner && locationGeom) {
-            listItemHTML = ` <div class="listText"> ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner}</div> <div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s"/>Zoom</button></div>`;
+            listItemHTML = ` <div class="listText">${locationUniqueId} MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s"/>Zoom</button><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
           } else if (!locationGeom && displayNoGeometry) {
-            listItemHTML = ` <div class="listText"> ${locationVal} <br>  ${locationUniqueId}  ${locationMBL} <br> ${locationOwner}</div>`;
+            listItemHTML = ` <div class="listText">${locationUniqueId} MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
           } else {
-            listItemHTML = `<div class="listText"> ${locationVal} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner} & ${locationCoOwner}</div> <div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s" />Zoom</button></div>`;
+            listItemHTML = ` <div class="listText">${locationUniqueId} MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s"/>Zoom</button><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
           }
 
           // Append the new list item to the list
@@ -1543,7 +1666,9 @@ require([
               let Land_Type_Rate = feature.attributes["Land_Type_Rate"];
               let Functional_Obs = feature.attributes["Functional_Obs"];
               let External_Obs = feature.attributes["External_Obs"];
-              let Sale_Date = feature.attributes["Sale_Date"];
+              let orig_date = feature.attributes["Sale_Date"];
+              // Assuming this is your timestamp
+              let Sale_Date = formatDate(orig_date);
               let Sale_Price = feature.attributes["Sale_Price"];
               let Vol_Page = feature.attributes["Vol_Page"];
               let Assessed_Total = feature.attributes["Assessed_Total"];
@@ -2712,13 +2837,14 @@ require([
             let Mail_State = feature.Mail_State;
             let Mailing_Zip = feature.Mailing_Zip;
             let Location = feature.location;
+            let uniqueid = feature.uniqueId;
 
             const listItem = document.createElement("li");
             listItem.classList.add("export-search-list");
 
             let listItemHTML;
 
-            listItemHTML = ` ${owner} ${coOwner} <br> ${mailingAddress} ${mailingAddress2} <br> ${Mailing_City}, ${Mail_State} ${Mailing_Zip} <br> ${Location}`;
+            listItemHTML = ` ${owner} ${coOwner} <br> UniqueID: ${uniqueid} <br> ${mailingAddress} <br> ${Mailing_City}, ${Mail_State} ${Mailing_Zip}`;
 
             listItem.innerHTML += listItemHTML;
             listItem.setAttribute("object-id", objectID);
@@ -2848,7 +2974,47 @@ require([
       $(document).ready(function () {
         $("#exportResults").on("click", function (e) {
           e.stopPropagation();
+
+          const printContainer = document.createElement("div");
+
+          // Optionally, make this container invisible
+          printContainer.style.visibility = "hidden";
+          document.body.appendChild(printContainer);
+
+          const resultsListGroup = document.createElement("ul");
+
+          uniqueArray.forEach(function (feature) {
+            let objectID = feature.objectid;
+            let owner = feature.owner;
+            let coOwner = feature.coOwner;
+            let mailingAddress = feature.mailingAddress;
+            let mailingAddress2 = feature.mailingAddress2;
+            let Mailing_City = feature.Mailing_City;
+            let Mail_State = feature.Mail_State;
+            let Mailing_Zip = feature.Mailing_Zip;
+            let Location = feature.location;
+            let uniqueid = feature.uniqueId;
+
+            const listItem = document.createElement("li");
+            listItem.classList.add("abutters-group-list");
+
+            let listItemHTML;
+
+            listItemHTML = ` ${owner} ${coOwner} <br> UniqueID: ${uniqueid} <br> ${mailingAddress} <br> ${Mailing_City}, ${Mail_State} ${Mailing_Zip}`;
+
+            listItem.innerHTML += listItemHTML;
+            listItem.setAttribute("object-id", objectID);
+
+            resultsListGroup.appendChild(listItem);
+          });
+
+          // Append the list to the print container
+          printContainer.appendChild(resultsListGroup);
+
           ExportDetails("details");
+          document.body.removeChild(printContainer);
+          // e.stopPropagation();
+          // ExportDetails("details");
         });
       });
 
@@ -2981,7 +3147,7 @@ require([
         if (type === "search") {
           listItems = document.querySelectorAll(".export-search-list");
         } else {
-          listItems = document.querySelectorAll(".abutters-group-item");
+          listItems = document.querySelectorAll(".abutters-group-list");
         }
 
         const originalContents = [];
@@ -4053,7 +4219,9 @@ require([
                     let Land_Type_Rate = feature.attributes["Land_Type_Rate"];
                     let Functional_Obs = feature.attributes["Functional_Obs"];
                     let External_Obs = feature.attributes["External_Obs"];
-                    let Sale_Date = feature.attributes["Sale_Date"];
+                    let orig_date = feature.attributes["Sale_Date"];
+                    // Assuming this is your timestamp
+                    let Sale_Date = formatDate(orig_date);
                     let Sale_Price = feature.attributes["Sale_Price"];
                     let Vol_Page = feature.attributes["Vol_Page"];
                     let Assessed_Total = feature.attributes["Assessed_Total"];
