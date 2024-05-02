@@ -66,14 +66,13 @@ main {
 .custom-navbar {
   position: absolute;
   top: 0;
-
   left: 100px;
-  width: 400px;
   z-index: 1000;
-  min-width: 400px;
-  /* padding-left: 25px; */
-  border-radius: 3px 3px 3px 3px;
+  min-width: 380px;
+  border-radius: 15px 15px 15px 15px;
   overflow-y: visible;
+  padding-right: 0px;
+  padding-left: 20px;
   /* This ensures the navbar is always on top */
 }
 
@@ -793,16 +792,22 @@ img {
 }
 
 .justZoomBtn {
+  display: flex;
+  flex-direction: column;
   position: absolute;
-  right: 0;
+  right: 0; /* Stick to the right side */
+  top: 50%;
+  transform: translateY(-50%); /* Optional: adds space between the buttons */
 }
 
-.justZoom {
+.justZoom,
+.justRemove {
   background-color: transparent !important;
   border-color: transparent !important;
 }
 
-.justZoom:hover {
+.justZoom:hover,
+.justRemove:hover {
   background-color: paleturquoise;
   border-color: transparent !important;
 }
