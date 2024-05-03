@@ -340,7 +340,7 @@ ul {
 .list-group-item {
   background-color: var(--background-color) !important;
   outline-color: white;
-  font-size: 9px;
+  font-size: 10px;
   color: white;
   z-index: 1000;
   right: 0;
@@ -529,6 +529,18 @@ img {
 .esri-bookmarks__item {
   border-color: #e0e0e0; /* Lighter borders for each item */
 }
+
+.esri-basemap-layer-list__item {
+  font-size: 14px;
+}
+
+/* .esri-legend__layer-row {
+  height: 20px !important;
+}
+
+.esri-legend__layer-cell {
+  max-height: 40px !important;
+} */
 
 .slider-div {
   display: inline-block;
