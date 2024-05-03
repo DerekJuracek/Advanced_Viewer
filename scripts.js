@@ -1276,7 +1276,7 @@ require([
       }
 
       $(document).ready(function () {
-        // Add click event listener to the dynamically generated buttons with class 'justZoom'
+        // Add click event listener to the dynamically generated buttons with class 'justRemove'
         $(document).on("click", ".justRemove", function (event) {
           event.stopPropagation();
           event.preventDefault();
@@ -1285,41 +1285,35 @@ require([
           let itemId = targetElement.getAttribute("data-id");
           let objectID = targetElement.getAttribute("object-id");
 
-          console.log(itemId);
-          console.log(objectID);
+          let capturedEvent = event;
+          let ClickEvent = true;
 
           if (sessionStorage.getItem(key) === "no") {
-            // If the key doesn't exist, set it to "none"
-            let whereClause = `OBJECTID = ${objectID}`;
-            // let whereClause = `GIS_LINK = '${matchingObject[0].GIS_LINK}'`;
-            let query = noCondosLayer.createQuery();
-            query.where = whereClause;
+            let query = CondosLayer.createQuery();
+            query.where = `OBJECTID = ${objectID}`;
             query.returnGeometry = true;
-            query.returnHiddenFields = true; // Adjust based on your needs
             query.outFields = ["*"];
 
-            noCondosLayer.queryFeatures(query).then((response) => {
-              let feature = response;
-              let geometry = feature.features[0].geometry;
-
-              // Get the extent of the geometry
-              const geometryExtent = geometry.extent;
-
-              // Calculate the center of the geometry
-              const center = geometryExtent.center;
-
-              // Calculate a new extent with a slightly zoomed-out level
-              const zoomOutFactor = 3.0; // Adjust as needed
-              const newExtent = geometryExtent.expand(zoomOutFactor);
-
-              // Set the view to the new extent
-              view.goTo({
-                target: center, // Center the view on the center of the geometry
-                extent: newExtent, // Set the extent to the new adjusted extent
-              });
+            noCondosLayer.queryFeatures(query).then(function (response) {
+              totalResults = response.features;
+              console.log(totalResults);
+              processFeatures(totalResults, "", capturedEvent);
+              addPolygons(response, view.graphics, ClickEvent);
             });
           } else {
-            // You can perform any actions you want here, such as zooming to a location
+            let query2 = CondosLayer.createQuery();
+            query2.where = `OBJECTID = ${objectID}`;
+            query2.returnGeometry = true;
+            query2.outFields = ["*"];
+
+            CondosLayer.queryFeatures(query2).then(function (response) {
+              totalResults = response.features;
+              // gets added to firstList in processFeatures
+              // so when you splice it, it will be right back every click
+              // logic needs to be different
+              processFeatures(totalResults, "", capturedEvent);
+              addPolygons(response, view.graphics, ClickEvent);
+            });
           }
         });
       });
@@ -1340,7 +1334,6 @@ require([
           if (sessionStorage.getItem(key) === "no") {
             // If the key doesn't exist, set it to "none"
             let whereClause = `OBJECTID = ${objectID}`;
-            // let whereClause = `GIS_LINK = '${matchingObject[0].GIS_LINK}'`;
             let query = noCondosLayer.createQuery();
             query.where = whereClause;
             query.returnGeometry = true;
@@ -1511,7 +1504,7 @@ require([
           if (!locationCoOwner && locationGeom) {
             listItemHTML = ` <div class="listText">${locationUniqueId} MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s"/>Zoom</button><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
           } else if (!locationGeom && displayNoGeometry) {
-            listItemHTML = ` <div class="listText">${locationUniqueId} MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
+            listItemHTML = ` <div class="listText">${locationUniqueId} MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
           } else {
             listItemHTML = ` <div class="listText">${locationUniqueId} MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s"/>Zoom</button><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
           }
