@@ -507,10 +507,7 @@ require([
           if (zoom) {
             if (zoom !== oldZoom) {
               oldZoom = zoom;
-
-              console.log(`old zoom is: ${oldZoom} and new ${zoom}`);
-              // currScaleLabel.innerHTML =
-              //   `<span class="title">Current Scale</span><b>` + (Math.round(scale * 100) / 100).toFixed(4) + `</b>`;
+              // console.log(`old zoom is: ${oldZoom} and new ${zoom}`);
             }
 
             if (!noCondosLayer.visible && !CondosLayer.visible) {
@@ -541,23 +538,8 @@ require([
                   $("#select-button").addClass("btn-warning");
                   select = true;
                 }
-
-                // if (sessionStorage.getItem(key) === "no") {
-                //   noCondosLayer.visible = true;
-                // } else {
-                //   CondosLayer.visible = true;
-                // }
-                // $("#lasso").removeClass("btn-warning");
-                // $("#select-button").addClass("btn-warning");
-                // select = true;
               }
             }
-            // if (extent !== oldExtent) {
-            //   console.log(
-            //     `old extent is: ${oldExtent} and new extent is: ${extent}`
-            //   );
-
-            // }
           } else if (wasStationary) {
             oldExtent = extent;
             // configVars.homeExtent = extent;
@@ -1251,6 +1233,8 @@ require([
         $("#featureWid").hide();
         $("#exportButtons").hide();
         $("#layerListDiv").hide();
+        $("#detailBox").hide();
+        $("#filterDiv").hide();
         $("#dropdown").show();
         $("#WelcomeBox").show();
         $("#select-button").attr("title", "Add to Selection Enabled");
@@ -1502,11 +1486,11 @@ require([
           }
 
           if (!locationCoOwner && locationGeom) {
-            listItemHTML = ` <div class="listText">${locationUniqueId} MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s"/>Zoom</button><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
+            listItemHTML = ` <div class="listText">UID: ${locationUniqueId}  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s"/>Zoom</button><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
           } else if (!locationGeom && displayNoGeometry) {
-            listItemHTML = ` <div class="listText">${locationUniqueId} MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
+            listItemHTML = ` <div class="listText">UID: ${locationUniqueId}  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
           } else {
-            listItemHTML = ` <div class="listText">${locationUniqueId} MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s"/>Zoom</button><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
+            listItemHTML = ` <div class="listText">UID: ${locationUniqueId}  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s"/>Zoom</button><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
           }
 
           // Append the new list item to the list
@@ -2311,19 +2295,25 @@ require([
           runQuerySearchTerm = e.target.value.toUpperCase();
         });
 
-      function queryRelatedRecords(searchTerm) {
+      function queryRelatedRecords(searchTerm, urlSearch) {
+        if (sessionStorage.getItem(key) === "no") {
+          noCondosLayer.visible = true;
+        } else {
+          CondosLayer.visible = true;
+        }
+
         $(".spinner-container").show();
         const tableSearch = true;
         // console.log(firstList);
         let whereClause = `
-    Street_Name LIKE '%${searchTerm}%' OR 
-    MBL LIKE '%${searchTerm}%' OR 
-    Location LIKE '%${searchTerm}%' OR 
-    Co_Owner LIKE '%${searchTerm}%' OR 
-    Uniqueid LIKE '%${searchTerm}%' OR 
-    Owner LIKE '%${searchTerm}%' OR 
-    GIS_LINK LIKE '%${searchTerm}%'
-`;
+          Street_Name LIKE '%${searchTerm}%' OR 
+          MBL LIKE '%${searchTerm}%' OR 
+          Location LIKE '%${searchTerm}%' OR 
+          Co_Owner LIKE '%${searchTerm}%' OR 
+          Uniqueid LIKE '%${searchTerm}%' OR 
+          Owner LIKE '%${searchTerm}%' OR 
+          GIS_LINK LIKE '%${searchTerm}%'
+      `;
 
         let GISLINK;
 
@@ -2337,14 +2327,21 @@ require([
         query2.returnGeometry = true; // Adjust based on your needs
         query2.outFields = ["*"];
 
+        let triggerUrl;
+
         if (sessionStorage.getItem(key) === "no") {
           noCondosLayer.queryFeatures(query).then(function (result) {
+            triggerUrl = result.features;
             // console.log(`no condos result: ${result.features}`);
             // view.goTo(result.features);
             if (result.features.length >= 1) {
+              triggerUrl = result.features;
               noCondosParcelGeom = result.features;
               addPolygons(result, view.graphics);
               processFeatures(result.features);
+              if (urlSearch) {
+                triggerListGroup(triggerUrl, searchTerm);
+              }
 
               if (result.features.length == 1) {
                 view.goTo({
@@ -2367,6 +2364,9 @@ require([
               noCondosTable.queryFeatures(firstQuery).then(function (result) {
                 addPolygons(result.features, "", "", tableSearch);
                 processFeatures();
+                if (urlSearch) {
+                  triggerListGroup(triggerUrl, searchTerm);
+                }
               });
 
               // addPolygons(firstList, view.graphics);
@@ -2402,6 +2402,9 @@ require([
                         noCondosParcelGeom = result.features;
                         addPolygons(result, view.graphics);
                         processFeatures(result.features);
+                        if (urlSearch) {
+                          triggerListGroup(triggerUrl, searchTerm);
+                        }
                       });
                   });
               }
@@ -2409,6 +2412,7 @@ require([
           });
         } else {
           CondosLayer.queryFeatures(query2).then(function (result) {
+            triggerUrl = result.features;
             if (result.features) {
               // console.log(`condos result: ${result}`);
               if (result.features.length > 2) {
@@ -2421,6 +2425,9 @@ require([
               }
               addPolygons(result, view.graphics);
               processFeatures(result.features);
+              if (urlSearch) {
+                triggerListGroup(triggerUrl, searchTerm);
+              }
             }
           });
         }
@@ -4125,11 +4132,11 @@ require([
         firstList = [];
 
         // Check if the key exists in sessionStorage
-        if (sessionStorage.getItem(key) === "no") {
-          noCondosLayer.visible = true;
-        } else {
-          CondosLayer.visible = true;
-        }
+        // if (sessionStorage.getItem(key) === "no") {
+        //   noCondosLayer.visible = true;
+        // } else {
+        //   CondosLayer.visible = true;
+        // }
 
         // noCondosLayer.visible = true;
         // CondosLayer.visible = true;
@@ -4142,7 +4149,14 @@ require([
           runQuerySearchTerm = e;
         }
 
+        // let searchTerm;
         let searchTerm = runQuerySearchTerm;
+
+        // if (searchTerm == undefined && runQuerySearchTerm) {
+        //   searchTerm = runQuerySearchTerm;
+        // } else {
+        //   searchTerm = e;
+        // }
 
         if (searchTerm.length < 3 || !searchTerm) {
           clearContents();
@@ -4290,6 +4304,97 @@ require([
             });
         }
       };
+
+      function triggerListGroup(results, searchTerm) {
+        console.log("simulate trigger details click");
+        let items = results;
+
+        let parcel = items.filter(
+          (item) => item.attributes.Uniqueid === searchTerm
+        );
+        console.log(parcel);
+
+        let itemId = parcel[0].attributes.Uniqueid;
+        let objectID = parcel[0].attributes.OBJECTID;
+        // buildZoomToFeature(objectID, polygonGraphics, itemId);
+        zoomToFeature(objectID, polygonGraphics, itemId);
+
+        $("#details-spinner").show();
+        $("#WelcomeBox").hide();
+        $("#featureWid").hide();
+        $("#result-btns").hide();
+        $("#total-results").show();
+        $("#total-results").hide();
+        $("#abutters-content").hide();
+        $("#details-btns").show();
+        $("#detailBox").show();
+        $("#backButton").show();
+        $("#detailsButton").hide();
+        $("#detail-content").empty();
+        $("#selected-feature").empty();
+        $("#exportButtons").hide();
+        $("#exportSearch").hide();
+        $("#exportResults").hide();
+        $("#csvExportResults").hide();
+        $("#csvExportSearch").hide();
+        $("#results-div").css("height", "150px");
+        $("#backButton-div").css("padding-top", "0px");
+        document.getElementById("total-results").style.display = "none";
+
+        console.log(results);
+
+        // let targetElement = event.target.closest("li");
+
+        // // If it's not an li, exit the handler
+        // if (!targetElement) return;
+
+        // // Now you can handle the click event as you would in the individual event listener
+        // let itemId = targetElement.getAttribute("data-id");
+        // let objectID = targetElement.getAttribute("object-id");
+        // // buildZoomToFeature(objectID, polygonGraphics, itemId);
+        // zoomToFeature(objectID, polygonGraphics, itemId);
+        buildDetailsPanel(objectID, itemId);
+        // totalResults = response.features;
+        // let objID = response.features[0].attributes.OBJECTID;
+        // let geom = response.features[0].geometry;
+        // let item = response.features[0];
+        // console.log(totalResults);
+
+        // zoomToDetail(objID, geom, item);
+        // clickDetailsPanel(totalResults);
+      }
+
+      // Helper function to parse URL query parameters
+      function getQueryParams() {
+        const queryParams = {};
+        const queryString = window.location.search.substring(1);
+        const pairs = queryString.split("&");
+
+        for (let i = 0; i < pairs.length; i++) {
+          const pair = pairs[i].split("=");
+          if (pair[0] && pair[1]) {
+            // Ensure the key and value exist
+            queryParams[decodeURIComponent(pair[0])] = decodeURIComponent(
+              pair[1].replace(/\+/g, " ")
+            );
+          }
+        }
+        return queryParams;
+      }
+
+      // document.addEventListener("DOMContentLoaded", async () => {
+      const params = getQueryParams();
+      const uniqueId = params.uniqueid; // Ensure this key matches your URL parameter
+
+      if (uniqueId) {
+        // Assuming the layer name and field name are known and static
+        const layerName = "Parcel Boundaries";
+        const fieldName = "UniqueId";
+        let urlSearch = true;
+
+        queryRelatedRecords(uniqueId, urlSearch);
+      }
+      // });
 
       document
         .getElementById("searchInput")
