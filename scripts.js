@@ -1201,6 +1201,7 @@ require([
         // $("#select-button").removeClass("btn-warning");
         $("#searchInput ul").remove();
         $("#searchInput").val = "";
+        $("#select-button").prop("disabled", false);
         // $("#side-Exp2").addClass("disabled");
 
         // Get a reference to the search input field
@@ -1504,10 +1505,10 @@ require([
 
         searchResults = uniqueArray.length;
 
-        $(document).ready(function () {
-          $("#total-results").show();
-          $("#total-results").html(searchResults + " results returned");
-        });
+        // $(document).ready(function () {
+        $("#total-results").show();
+        $("#total-results").html(searchResults + " results returned");
+        // });
 
         // createExportList();
 
@@ -4323,8 +4324,8 @@ require([
         $("#WelcomeBox").hide();
         $("#featureWid").hide();
         $("#result-btns").hide();
-        $("#total-results").show();
-        $("#total-results").hide();
+
+        // $("div#total-results").hide();
         $("#abutters-content").hide();
         $("#details-btns").show();
         $("#detailBox").show();
@@ -4354,6 +4355,7 @@ require([
         // // buildZoomToFeature(objectID, polygonGraphics, itemId);
         // zoomToFeature(objectID, polygonGraphics, itemId);
         buildDetailsPanel(objectID, itemId);
+        $("#total-results").hide();
         // totalResults = response.features;
         // let objID = response.features[0].attributes.OBJECTID;
         // let geom = response.features[0].geometry;
