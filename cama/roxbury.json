@@ -3,6 +3,7 @@
   "image": "https://publicweb-gis.s3.amazonaws.com/Images/MunicipalSeals/Roxbury_CT.png",
   "title": "Town of Roxbury, CT",
   "tabTitle": "Roxbury GIS Parcel Viewer",
+  "parcelLayerRestTitle": "CT Roxbury Adv Viewer Parcels - Parcel Boundaries",
   "cssHeaderBackground": "#246d86",
   "cssViewBackground": "#9dbac7",
   "cssLayerFilterColor": "#9dbac7",
