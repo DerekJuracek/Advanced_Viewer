@@ -81,6 +81,7 @@ require([
       configVars.tabTitle = config.tabTitle;
       configVars.basemapTitle = config.basemapTitle;
       configVars.parcelRenderer = config.parcelRenderer;
+      // configVars.parcelLayerTitle = config.parcelLayerRestTitle;
 
       document.getElementById("AccessorName").innerHTML = config.accessorName;
       // configVars.homeExtent = config.homeExtent;
@@ -239,12 +240,13 @@ require([
       });
 
       view.when(() => {
-        // Filter out layers belonging to the "hidden group"
+        // Filter out layers belonging to the "hidden group" and layers with a specific title "Do Not Show"
         const visibleLayers = webmap.layers.items.filter((layer) => {
           return !(
-            layer.type === "group" &&
-            layer.title &&
-            layer.title.toLowerCase() === "hidden group"
+            (layer.type === "group" &&
+              layer.title &&
+              layer.title.toLowerCase() === "hidden group") ||
+            (layer.title && layer.title === `${configVars.parcelTitle}`)
           );
         });
 
@@ -253,12 +255,32 @@ require([
           view: view,
           container: $("#LegendDiv")[0],
           layerInfos: visibleLayers.map((layer) => {
-            return {
-              layer: layer,
-            };
+            return { layer: layer };
           }),
         });
       });
+
+      // view.when(() => {
+      //   // Filter out layers belonging to the "hidden group"
+      //   const visibleLayers = webmap.layers.items.filter((layer) => {
+      //     return !(
+      //       layer.type === "group" &&
+      //       layer.title &&
+      //       layer.title.toLowerCase() === "hidden group"
+      //     );
+      //   });
+
+      //   // Create legend with filtered layers
+      //   const legend = new Legend({
+      //     view: view,
+      //     container: $("#LegendDiv")[0],
+      //     layerInfos: visibleLayers.map((layer) => {
+      //       return {
+      //         layer: layer,
+      //       };
+      //     }),
+      //   });
+      // });
 
       view.when(() => {
         const basemaps = new BasemapLayerList({
@@ -498,6 +520,8 @@ require([
       let detailsHandleUsed;
       let exportCsv;
       let queryValues = [];
+      let zoomToItemId;
+      let zoomToObjectID;
 
       reactiveUtils.watch(
         () => [view.zoom, view.extent, view.scale],
@@ -1213,6 +1237,7 @@ require([
         searchTerm = "";
         firstList = [];
         secondList = [];
+        zoomToObjectID = "";
 
         $("#result-btns").hide();
         $("#details-btns").hide();
@@ -3505,6 +3530,12 @@ require([
             : features.Prior_Assessment_Year;
         let map_pdf = features.Map === undefined ? "" : features.Map;
 
+        let objectID2 =
+          features.objectid === undefined ? "" : features.objectid;
+
+        zoomToItemId = locationUniqueId;
+        zoomToObjectID = objectID2;
+
         const imageUrl = `${configVars.imageUrl}${locationUniqueId}.jpg`;
         // console.log(matchedObject);
 
@@ -3565,6 +3596,82 @@ require([
         $("#details-spinner").hide();
         detailsDiv.appendChild(details);
       }
+
+      $(document).ready(function () {
+        // Add click event listener to the dynamically generated buttons with class 'justZoom'
+        $(document).on("click", ".abutters-zoom", function (event) {
+          event.stopPropagation();
+          event.preventDefault();
+
+          // let targetElement = event.target.closest("li");
+          // let zoomToItemId = locationUniqueId;
+          // let zoomToObjectID = objectID2;
+
+          // console.log(itemId);
+          // console.log(objectID);
+
+          if (sessionStorage.getItem(key) === "no") {
+            // If the key doesn't exist, set it to "none"
+            let whereClause = `OBJECTID = ${zoomToObjectID}`;
+            let query = noCondosLayer.createQuery();
+            query.where = whereClause;
+            query.returnGeometry = true;
+            query.returnHiddenFields = true; // Adjust based on your needs
+            query.outFields = ["*"];
+
+            noCondosLayer.queryFeatures(query).then((response) => {
+              let feature = response;
+              let geometry = feature.features[0].geometry;
+
+              // Get the extent of the geometry
+              const geometryExtent = geometry.extent;
+
+              // Calculate the center of the geometry
+              const center = geometryExtent.center;
+
+              // Calculate a new extent with a slightly zoomed-out level
+              const zoomOutFactor = 3.0; // Adjust as needed
+              const newExtent = geometryExtent.expand(zoomOutFactor);
+
+              // Set the view to the new extent
+              view.goTo({
+                target: center, // Center the view on the center of the geometry
+                extent: newExtent, // Set the extent to the new adjusted extent
+              });
+            });
+          } else {
+            let whereClause = `OBJECTID = ${zoomToObjectID}`;
+            // let whereClause = `GIS_LINK = '${matchingObject[0].GIS_LINK}'`;
+            let query = CondosLayer.createQuery();
+            query.where = whereClause;
+            query.returnGeometry = true;
+            query.returnHiddenFields = true; // Adjust based on your needs
+            query.outFields = ["*"];
+
+            CondosLayer.queryFeatures(query).then((response) => {
+              let feature = response;
+              let geometry = feature.features[0].geometry;
+
+              // Get the extent of the geometry
+              const geometryExtent = geometry.extent;
+
+              // Calculate the center of the geometry
+              const center = geometryExtent.center;
+
+              // Calculate a new extent with a slightly zoomed-out level
+              const zoomOutFactor = 3.0; // Adjust as needed
+              const newExtent = geometryExtent.expand(zoomOutFactor);
+
+              // Set the view to the new extent
+              view.goTo({
+                target: center, // Center the view on the center of the geometry
+                extent: newExtent, // Set the extent to the new adjusted extent
+              });
+            });
+            // You can perform any actions you want here, such as zooming to a location
+          }
+        });
+      });
 
       function buildDetailsPanel(objectId, itemId) {
         $("#select-button").prop("disabled", true);
@@ -3685,6 +3792,11 @@ require([
             : matchedObject.Prior_Assessment_Year;
 
         let map_pdf = matchedObject.Map === undefined ? "" : matchedObject.Map;
+        let objectID2 =
+          matchedObject.objectid === undefined ? "" : matchedObject.objectid;
+
+        zoomToItemId = locationUniqueId;
+        zoomToObjectID = objectID2;
 
         console.log("map pdf is:", map_pdf);
         console.log("tax map is:", configVars.taxMap_Url);
@@ -3744,6 +3856,82 @@ require([
 
         $("#details-spinner").hide();
         detailsDiv.appendChild(details);
+
+        // $(document).ready(function () {
+        //   // Add click event listener to the dynamically generated buttons with class 'justZoom'
+        //   $(document).on("click", ".abutters-zoom", function (event) {
+        //     event.stopPropagation();
+        //     event.preventDefault();
+
+        //     // let targetElement = event.target.closest("li");
+        //     let itemId = locationUniqueId;
+        //     let objectID = objectID2;
+
+        //     console.log(itemId);
+        //     console.log(objectID);
+
+        //     if (sessionStorage.getItem(key) === "no") {
+        //       // If the key doesn't exist, set it to "none"
+        //       let whereClause = `OBJECTID = ${objectID}`;
+        //       let query = noCondosLayer.createQuery();
+        //       query.where = whereClause;
+        //       query.returnGeometry = true;
+        //       query.returnHiddenFields = true; // Adjust based on your needs
+        //       query.outFields = ["*"];
+
+        //       noCondosLayer.queryFeatures(query).then((response) => {
+        //         let feature = response;
+        //         let geometry = feature.features[0].geometry;
+
+        //         // Get the extent of the geometry
+        //         const geometryExtent = geometry.extent;
+
+        //         // Calculate the center of the geometry
+        //         const center = geometryExtent.center;
+
+        //         // Calculate a new extent with a slightly zoomed-out level
+        //         const zoomOutFactor = 3.0; // Adjust as needed
+        //         const newExtent = geometryExtent.expand(zoomOutFactor);
+
+        //         // Set the view to the new extent
+        //         view.goTo({
+        //           target: center, // Center the view on the center of the geometry
+        //           extent: newExtent, // Set the extent to the new adjusted extent
+        //         });
+        //       });
+        //     } else {
+        //       let whereClause = `OBJECTID = ${objectID}`;
+        //       // let whereClause = `GIS_LINK = '${matchingObject[0].GIS_LINK}'`;
+        //       let query = CondosLayer.createQuery();
+        //       query.where = whereClause;
+        //       query.returnGeometry = true;
+        //       query.returnHiddenFields = true; // Adjust based on your needs
+        //       query.outFields = ["*"];
+
+        //       CondosLayer.queryFeatures(query).then((response) => {
+        //         let feature = response;
+        //         let geometry = feature.features[0].geometry;
+
+        //         // Get the extent of the geometry
+        //         const geometryExtent = geometry.extent;
+
+        //         // Calculate the center of the geometry
+        //         const center = geometryExtent.center;
+
+        //         // Calculate a new extent with a slightly zoomed-out level
+        //         const zoomOutFactor = 3.0; // Adjust as needed
+        //         const newExtent = geometryExtent.expand(zoomOutFactor);
+
+        //         // Set the view to the new extent
+        //         view.goTo({
+        //           target: center, // Center the view on the center of the geometry
+        //           extent: newExtent, // Set the extent to the new adjusted extent
+        //         });
+        //       });
+        //       // You can perform any actions you want here, such as zooming to a location
+        //     }
+        //   });
+        // });
       }
 
       function zoomToDetail(objectid, geom, item) {
