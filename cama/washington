@@ -7,7 +7,7 @@
   "cssViewBackground": "#9dbac7",
   "cssLayerFilterColor": "#9dbac7",
   "cssLayerFilterTextColor": "#474747",
-  "basemapTitle": "CT Washington Basemap",
+  "basemapTitle": "Washington Basemap",
   "parcelRenderer": "#05FCCF",
   "condos": "yes",
   "imageUrl": "https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/",
@@ -23,7 +23,7 @@
   "masterTable": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels/FeatureServer/0",
   "condoLayer": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels/FeatureServer/1",
   "nocondoLayer": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels/FeatureServer/1",
-  "parcelServiceTitle": "CT Washington Adv Viewer Parcels - Parcel Boundaries",
+  "parcelServiceTitle": "Parcel Boundaries",
   "zoom": "12.5",
   "parcelZoom": 17,
   "layers": [

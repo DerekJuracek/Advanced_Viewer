@@ -534,13 +534,9 @@ img {
   font-size: 14px;
 }
 
-/* .esri-legend__layer-row {
-  height: 20px !important;
+.esri-view .esri-view-surface--touch-none:focus::after {
+  outline: none !important;
 }
-
-.esri-legend__layer-cell {
-  max-height: 40px !important;
-} */
 
 .slider-div {
   display: inline-block;
