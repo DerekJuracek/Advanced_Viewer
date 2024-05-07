@@ -769,8 +769,8 @@ require([
         url: `${configVars.noCondoLayer}`,
         visible: false,
         popupEnabled: true,
-
-        defaultPopupTemplateEnabled: true,
+        title: "Parcel Boundaries",
+        id: "noCondoLayer",
       });
 
       // noCondosLayer.renderer = {
@@ -789,6 +789,8 @@ require([
         url: `${configVars.condoLayer}`,
         visible: false,
         popupEnabled: true,
+        title: "Parcel Boundaries",
+        id: "condoLayer",
       });
 
       // CondosLayer.renderer = {
@@ -823,10 +825,18 @@ require([
       });
 
       view.when(function () {
+        let watchLayer;
+        // Assuming the icon is initially set to "plus" for all items
+        if (sessionStorage.getItem(key) === "yes") {
+          watchLayer = "condoLayer";
+        } else {
+          watchLayer = "noCondoLayer";
+        }
+
         // Assuming webmap is already defined
         // Find the specific layer by its id or name
         var specificLayer = webmap.layers.find(
-          (layer) => layer.title === `${configVars.parcelTitle}`
+          (layer) => layer.id === watchLayer
         );
 
         // Check if the specific layer was found
@@ -864,14 +874,21 @@ require([
 
       // Updated function to add a layer to the pick list with click event handling
       function addLayerToPickList(layer, container) {
+        let turnLayerOff;
         // Assuming the icon is initially set to "plus" for all items
+        if (sessionStorage.getItem(key) === "yes") {
+          turnLayerOff = "noCondoLayer";
+        } else {
+          turnLayerOff = "condoLayer";
+        }
 
         if (
           layer.type === "graphics" ||
           layer.title == "Tax Map Annotation" ||
           layer.title == "Road Centerline" ||
           layer.title == null ||
-          layer.title == ""
+          layer.title == "" ||
+          layer.id == turnLayerOff
         ) {
           return;
         } else {
@@ -1063,16 +1080,13 @@ require([
         query3.outFields = ["Parcel_Type"];
 
         CondosLayer.queryFeatures(query3).then(function (response) {
-          console.log(response);
+          // console.log(response);
 
           var features = response.features;
           var comboBox = $("#propertyFilter");
 
-          // let streetFilteEle = $("#streetFilter");
           features.forEach(function (feature) {
             var name = feature.attributes.Parcel_Type; // Assuming 'Name' is the field you want to display
-            // var id = feature.attributes.OBJECTID; // Assuming 'Id' is the value you want to use
-
             var newItem;
             if (name == "" || null || undefined) {
               return;
@@ -1099,16 +1113,11 @@ require([
         query4.outFields = ["Building_Type"];
 
         CondosLayer.queryFeatures(query4).then(function (response) {
-          console.log(response);
-
           var features = response.features;
           var comboBox = $("#buildingFilter");
 
-          // let streetFilteEle = $("#streetFilter");
           features.forEach(function (feature) {
             var name = feature.attributes.Building_Type; // Assuming 'Name' is the field you want to display
-            // var id = feature.attributes.OBJECTID; // Assuming 'Id' is the value you want to use
-
             // Create a new Calcite ComboBox item
             var newItem;
             if (name == "" || null || undefined) {
@@ -1141,11 +1150,8 @@ require([
           var features = response.features;
           var comboBox = $("#buildingUseFilter");
 
-          // let streetFilteEle = $("#streetFilter");
           features.forEach(function (feature) {
             var name = feature.attributes.Building_Use_Code; // Assuming 'Name' is the field you want to display
-            // var id = feature.attributes.OBJECTID; // Assuming 'Id' is the value you want to use
-
             var newItem;
             if (name == "" || null || undefined) {
               return;
@@ -1204,9 +1210,6 @@ require([
 
       generateFilters();
 
-      // totalResults = response.features;
-      // addResultGraphics(totalResults);
-
       function clearContents(e, string) {
         // console.log(e.target.value);
         if (sessionStorage.getItem(key) === "no") {
@@ -1221,8 +1224,7 @@ require([
             console.error("Failed to remove DetailsHandle", error);
           }
         }
-        // $("#lasso").removeClass("btn-warning");
-        // $("#select-button").removeClass("btn-warning");
+
         $("#searchInput ul").remove();
         $("#searchInput").val = "";
         $("#select-button").prop("disabled", false);
