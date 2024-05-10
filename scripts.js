@@ -238,6 +238,9 @@ require([
         const print = new Print({
           view: view,
           container: $("#PrintDiv")[0],
+          templateOptions: {
+            scaleEnabled: true,
+          },
         });
       });
 
