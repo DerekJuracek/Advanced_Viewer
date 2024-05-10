@@ -21,6 +21,7 @@ require([
   "esri/widgets/Print",
   "esri/widgets/Legend",
   "esri/widgets/Expand",
+  "esri/widgets/ScaleBar",
 ], function (
   WebMap,
   MapView,
@@ -43,7 +44,8 @@ require([
   Bookmarks,
   Print,
   Legend,
-  Expand
+  Expand,
+  ScaleBar
 ) {
   const urlParams = new URLSearchParams(window.location.search);
   const configUrl = urlParams.get("viewer") || "cama/washington.json";
@@ -307,6 +309,16 @@ require([
           }
         });
 
+        let scaleBar = new ScaleBar({
+          view: view,
+          style: "ruler",
+          unit: "imperial",
+        });
+        // Add widget to the bottom left corner of the view
+        view.ui.add(scaleBar, {
+          position: "bottom-right",
+        });
+
         if (sessionStorage.getItem(key) === "yes") {
           originalRenderer = CondosLayer.renderer;
         } else {
@@ -522,6 +534,7 @@ require([
       let queryValues = [];
       let zoomToItemId;
       let zoomToObjectID;
+      let overRide;
 
       reactiveUtils.watch(
         () => [view.zoom, view.extent, view.scale],
@@ -997,6 +1010,10 @@ require([
         processLayers(layers, pickListContainer);
       });
 
+      function overRideSelect(bool) {
+        overRide = bool;
+      }
+
       function generateFilters() {
         let query = noCondosLayer.createQuery();
         query.where = `1=1 AND Street_Name IS NOT NULL`;
@@ -1211,6 +1228,9 @@ require([
       generateFilters();
 
       function clearContents(e, string) {
+        const currentUrl = window.location.href;
+        const newUrl = removeQueryParam("uniqueid", currentUrl);
+        window.history.pushState({ path: newUrl }, "", newUrl);
         // console.log(e.target.value);
         if (sessionStorage.getItem(key) === "no") {
           noCondosLayer.visible = true;
@@ -1224,6 +1244,26 @@ require([
             console.error("Failed to remove DetailsHandle", error);
           }
         }
+
+        if (clickHandle) {
+          try {
+            clickHandle.remove();
+          } catch (error) {
+            console.error("Failed to remove DetailsHandle", error);
+          }
+        }
+
+        if (select) {
+          overRideSelect(true);
+        } else {
+          overRideSelect(false);
+        }
+
+        // clickHandle = view.on("click", handleClick);
+        // $("#lasso").removeClass("btn-warning");
+        $("#select-button").removeClass("btn-warning");
+        // select = false;
+        // lasso = false;
 
         $("#searchInput ul").remove();
         $("#searchInput").val = "";
@@ -2146,7 +2186,12 @@ require([
 
       $("#select-button").on("click", function (e) {
         sketch.cancel();
-        select = !select;
+        if (overRide) {
+          select = true;
+        } else {
+          select = !select;
+        }
+
         if (!select) {
           clearContents();
         }
@@ -3463,6 +3508,11 @@ require([
         detailsHandleUsed = "detailClick";
         $("#detail-content").empty();
         $("#selected-feature").empty();
+        function formatNumber(value) {
+          if (value === undefined) return "";
+          return new Intl.NumberFormat("en-US").format(value);
+        }
+
         let features = item[0].attributes;
         // console.log(features);
         let Location = features.Location === undefined ? "" : features.Location;
@@ -3507,25 +3557,32 @@ require([
           features.Functional_Obs === undefined ? "" : features.Functional_Obs;
         let External_Obs =
           features.External_Obs === undefined ? "" : features.External_Obs;
+        let orig_date = features.Sale_Date;
         let Sale_Date =
-          features.Sale_Date === undefined ? "" : features.Sale_Date;
+          features.Sale_Date === undefined ? "" : formatDate(orig_date);
         let Sale_Price =
-          features.Sale_Price === undefined ? "" : features.Sale_Price;
+          features.Sale_Price === undefined
+            ? ""
+            : formatNumber(features.Assessed_Total);
         let Vol_Page = features.Vol_Page === undefined ? "" : features.Vol_Page;
+        // Usage example with your existing code
         let Assessed_Total =
-          features.Assessed_Total === undefined ? "" : features.Assessed_Total;
+          features.Assessed_Total === undefined
+            ? ""
+            : formatNumber(features.Assessed_Total);
         let Appraised_Total =
           features.Appraised_Total === undefined
             ? ""
-            : features.Appraised_Total;
+            : formatNumber(features.Appraised_Total);
         let Prior_Appraised_Total =
           features.Prior_Appraised_Total === undefined
             ? ""
-            : features.Prior_Appraised_Total;
+            : formatNumber(features.Prior_Appraised_Total);
         let Prior_Assessed_Total =
           features.Prior_Assessed_Total === undefined
             ? ""
-            : features.Prior_Assessed_Total;
+            : formatNumber(features.Prior_Assessed_Total);
+
         let Prior_Assessment_Year =
           features.Prior_Assessment_Year === undefined
             ? ""
@@ -3575,15 +3632,15 @@ require([
         <p>
         <span style="font-family:Tahoma;font-size:12px;"><strong>Latest Qualified Sale:</strong></span> <br>
         <span style="font-family:Tahoma;font-size:12px;">Sold on: <strong>${Sale_Date}</strong></span> <br>
-        <span style="font-family:Tahoma;font-size:12px;">Sale Price: <strong>${Sale_Price}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">Sale Price: <strong>$${Sale_Price}</strong></span> <br>
         <span style="font-family:Tahoma;font-size:12px;">Volume/Page: <strong>${Vol_Page}</strong></span><br>
 
         </p>
         <p>
         <span style="font-family:Tahoma;font-size:12px;"><strong>Valuations:</strong></span><br>
         <span style="font-family:Tahoma;font-size:12px;">GL Year: <strong>${Prior_Assessment_Year}</strong></span> <br>
-        <span style="font-family:Tahoma;font-size:12px;">Assessment: <strong>${Prior_Assessed_Total}</strong></span> <br>
-        <span style="font-family:Tahoma;font-size:12px;">Appraised: <strong>${Prior_Appraised_Total}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">Assessment: <strong>$${Prior_Assessed_Total}</strong></span> <br>
+        <span style="font-family:Tahoma;font-size:12px;">Appraised: <strong>$${Prior_Appraised_Total}</strong></span> <br>
         <span style="font-family:Tahoma;font-size:12px;"></span>
         </p>
         <p>   
@@ -3679,6 +3736,11 @@ require([
         $("#select-button").prop("disabled", true);
         $("#select-button").removeClass("btn-warning");
 
+        function formatNumber(value) {
+          if (value === undefined) return "";
+          return new Intl.NumberFormat("en-US").format(value);
+        }
+
         if (clickHandle) {
           clickHandle.remove();
         }
@@ -3765,29 +3827,32 @@ require([
             : matchedObject.External_Obs;
         let Sale_Date =
           matchedObject.Sale_Date === undefined ? "" : matchedObject.Sale_Date;
+
         let Sale_Price =
           matchedObject.Sale_Price === undefined
             ? ""
-            : matchedObject.Sale_Price;
+            : formatNumber(matchedObject.Sale_Price);
         let Vol_Page =
           matchedObject.Vol_Page === undefined ? "" : matchedObject.Vol_Page;
         let Assessed_Total =
           matchedObject.Assessed_Total === undefined
             ? ""
-            : matchedObject.Assessed_Total;
+            : formatNumber(matchedObject.Assessed_Total);
         let Appraised_Total =
           matchedObject.Appraised_Total === undefined
             ? ""
-            : matchedObject.Appraised_Total;
+            : formatNumber(matchedObject.Appraised_Total);
 
         let Prior_Appraised_Total =
           matchedObject.Prior_Appraised_Total === undefined
             ? ""
-            : matchedObject.Prior_Appraised_Total;
+            : formatNumber(matchedObject.Prior_Appraised_Total);
+
         let Prior_Assessed_Total =
           matchedObject.Prior_Assessed_Total === undefined
             ? ""
-            : matchedObject.Prior_Assessed_Total;
+            : formatNumber(matchedObject.Prior_Appraised_Total);
+
         let Prior_Assessment_Year =
           matchedObject.Prior_Assessment_Year === undefined
             ? ""
@@ -3835,15 +3900,15 @@ require([
     <p>
     <span style="font-family:Tahoma;font-size:12px;"><strong>Latest Qualified Sale:</strong></span> <br>
     <span style="font-family:Tahoma;font-size:12px;">Sold on: <strong>${Sale_Date}</strong></span> <br>
-    <span style="font-family:Tahoma;font-size:12px;">Sale Price: <strong>${Sale_Price}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">Sale Price: <strong>$${Sale_Price}</strong></span> <br>
     <span style="font-family:Tahoma;font-size:12px;">Volume/Page: <strong>${Vol_Page}</strong></span><br>
 
     </p>
     <p>
     <span style="font-family:Tahoma;font-size:12px;"><strong>Valuations:</strong></span><br>
     <span style="font-family:Tahoma;font-size:12px;">GL Year: <strong>${Prior_Assessment_Year}</strong></span> <br>
-    <span style="font-family:Tahoma;font-size:12px;">Assessment: <strong>${Prior_Assessed_Total}</strong></span> <br>
-    <span style="font-family:Tahoma;font-size:12px;">Appraised: <strong>${Prior_Appraised_Total}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">Assessment: <strong>$${Prior_Assessed_Total}</strong></span> <br>
+    <span style="font-family:Tahoma;font-size:12px;">Appraised: <strong>$${Prior_Appraised_Total}</strong></span> <br>
     <span style="font-family:Tahoma;font-size:12px;"></span>
     </p>
     <p>
@@ -4556,6 +4621,26 @@ require([
         // clickDetailsPanel(totalResults);
       }
 
+      // Helper function to parse and modify URL query parameters
+      function removeQueryParam(key, sourceURL) {
+        let rtn = sourceURL.split("?")[0],
+          param,
+          params_arr = [],
+          queryString =
+            sourceURL.indexOf("?") !== -1 ? sourceURL.split("?")[1] : "";
+        if (queryString !== "") {
+          params_arr = queryString.split("&");
+          for (let i = params_arr.length - 1; i >= 0; i -= 1) {
+            param = params_arr[i].split("=")[0];
+            if (param === key) {
+              params_arr.splice(i, 1);
+            }
+          }
+          rtn = rtn + "?" + params_arr.join("&");
+        }
+        return rtn;
+      }
+
       // Helper function to parse URL query parameters
       function getQueryParams() {
         const queryParams = {};
@@ -5259,7 +5344,7 @@ require([
           });
         }
 
-        function buildQueries() {
+        async function buildQueries() {
           let queryValues = []; // Initialize queryValues array here
           let queryFields = [
             "Appraised_Total",
@@ -5269,35 +5354,31 @@ require([
             "Sale_Price",
           ];
 
-          // Map each field to a query promise
-          let queryPromises = queryFields.map(function (field) {
+          for (let field of queryFields) {
             let query = CondosTable.createQuery();
             query.outStatistics = [
               {
                 statisticType: "max",
-                onStatisticField: field, // Use field directly
+                onStatisticField: field,
                 outStatisticFieldName: "maxValue",
               },
               {
                 statisticType: "min",
-                onStatisticField: field, // Use field directly
+                onStatisticField: field,
                 outStatisticFieldName: "minValue",
               },
             ];
 
-            // Return the promise of queryFeatures()
-            return CondosTable.queryFeatures(query).then(function (response) {
-              // Process response and create valPair
+            try {
+              let response = await CondosTable.queryFeatures(query);
               let valPair;
               if (field === "Sale_Date") {
                 let max = new Date(response.features[0].attributes.maxValue);
                 let min = new Date(response.features[0].attributes.minValue);
-                let maxYear = max.getFullYear();
-                let minYear = min.getFullYear();
                 valPair = {
                   [field]: {
-                    min: minYear,
-                    max: maxYear,
+                    min: min.getFullYear(),
+                    max: max.getFullYear(),
                   },
                 };
               } else {
@@ -5310,37 +5391,14 @@ require([
                   },
                 };
               }
-
-              // Push valPair into queryValues array
               queryValues.push(valPair);
-            });
-          });
-
-          // Wait for all promises to resolve
-          Promise.all(queryPromises).then(function () {
-            // All queries have completed, do something with queryValues
-            console.log(queryValues);
-            let vals = queryValues;
-
-            function throttleSliderVals() {
-              clearTimeout(debounceTimer2);
-              debounceTimer2 = setTimeout(() => {
-                changeSliderValues(vals);
-              }, 300);
+            } catch (error) {
+              console.error("Error querying features:", error);
             }
-            throttleSliderVals();
+          }
 
-            // changeSliderValues(vals);
-          });
+          changeSliderValues(queryValues);
         }
-
-        // function throttleQueryBuild() {
-        //   clearTimeout(debounceTimer2);
-        //   debounceTimer2 = setTimeout(() => {
-        //     buildQueries();
-        //   }, 700);
-        // }
-        // throttleQueryBuild();
 
         buildQueries();
 
@@ -5367,10 +5425,7 @@ require([
 
           $("#result-btns").hide();
           $("#details-btns").hide();
-          // $("#dropdown").toggleClass("expanded");
           $("#dropdown").hide();
-          // $("#results-div").css("left", "0px");
-          // $("#sidebar2").css("left", "-350px");
           $("#right-arrow-2").show();
           $("#left-arrow-2").hide();
           $("#abutters-content").hide();
@@ -5385,7 +5440,6 @@ require([
           $("#featureWid").hide();
           $("#exportButtons").hide();
           $("#dropdown").show();
-
           $("#WelcomeBox").hide();
           $("#select-button").attr("title", "Add to Selection Enabled");
 
