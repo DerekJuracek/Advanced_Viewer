@@ -4752,7 +4752,7 @@ require([
           query.where = whereClause;
           query.returnGeometry = false;
           query.outFields = [
-            "Street_Name",
+            "Street_name",
             "MBL",
             "Location",
             "Co_Owner",
@@ -4769,7 +4769,7 @@ require([
 
             response.features.forEach((feature) => {
               [
-                "Street_Name",
+                "Street_name",
                 "MBL",
                 "Location",
                 "Co_Owner",
