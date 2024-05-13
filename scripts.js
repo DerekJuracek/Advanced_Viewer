@@ -1919,8 +1919,6 @@ require([
             (g) => g.GIS_LINK === pointGisLink
           ).length;
 
-          // count = view.graphics.findIndex((g) => g.id === bufferGraphicId);
-
           count = view.graphics.some((g) => g.id === bufferGraphicId);
 
           if (count) {
@@ -1934,9 +1932,20 @@ require([
               (g) => g.id === bufferGraphicId
             );
 
-            // polygonGraphics.slice(graphicIndex, 1);
             polygonGraphics.splice(graphicIndex, 1);
-            // console.log(polygonGraphics);
+
+            if (polygonGraphics.length === 0) {
+              if (DetailsHandle) {
+                DetailsHandle.remove();
+              }
+              if (clickHandle) {
+                clickHandle.remove();
+              }
+              // NO HANDLE ADDED YET, USER CLICK ON SELECT BUTTON TO ADD
+              // NOT IN DETAILS PANE
+              // IN RESULTS PANE
+              // clickHandle = view.on("click", handleClick);
+            }
 
             // will zoom to extent of adding and deselecting
             // view.goTo(polygonGraphics);
