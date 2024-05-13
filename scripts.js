@@ -5085,6 +5085,13 @@ require([
               clearContents();
               addPolygons(response, view.graphics);
               processFeatures(response.features);
+              if (clickHandle) {
+                clickHandle.remove();
+              }
+              if (DetailsHandle) {
+                DetailsHandle.remove();
+              }
+              DetailsHandle = view.on("click", handleDetailsClick);
             });
           } else {
             let query = CondosLayer.createQuery();
@@ -5097,6 +5104,13 @@ require([
               clearContents();
               addPolygons(response, view.graphics);
               processFeatures(response.features);
+              if (clickHandle) {
+                clickHandle.remove();
+              }
+              if (DetailsHandle) {
+                DetailsHandle.remove();
+              }
+              DetailsHandle = view.on("click", handleDetailsClick);
             });
           }
 
