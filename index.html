@@ -162,7 +162,7 @@
               id="searchInput"
             />
             <button
-              class="btn btn-outline-info my-2 my-sm-0 btn-sm"
+              class="btn btn-outline-info my-2 my-sm-0 btn-sm btn-green"
               type="submit"
               id="searchButton"
             >
@@ -186,7 +186,7 @@
                 >
                   <path
                     d="M4.495 11.05C4.92271 10.0821 5.15873 9.0406 5.19 7.98295C5.191 7.95595 5.196 7.93095 5.197 7.90495L6.162 8.31495C6.10235 9.30615 5.88355 10.2813 5.514 11.203L4.495 11.05ZM18.582 5.92195L17.772 6.53195C18.2562 7.15126 18.682 7.81409 19.044 8.51195L20.044 8.20495C19.6339 7.39717 19.1441 6.63237 18.582 5.92195ZM14.358 3.79195C15.0911 4.11823 15.7718 4.55126 16.378 5.07695L17.203 4.45695C16.4347 3.76589 15.5558 3.20881 14.603 2.80895L14.358 3.79195ZM9.817 3.43695C10.3864 3.27987 10.9743 3.20015 11.565 3.19995C11.854 3.20289 12.1426 3.22393 12.429 3.26295L12.674 2.27795C12.3066 2.22616 11.936 2.2001 11.565 2.19995C10.8812 2.19932 10.2006 2.29218 9.542 2.47595L9.817 3.43695ZM5.873 18.574C5.07113 18.4797 4.3226 18.124 3.743 17.562L2.66 17.8C3.02801 18.2927 3.49333 18.7046 4.0271 19.0101C4.56088 19.3156 5.15172 19.5082 5.763 19.576L5.873 18.574ZM3.012 15.674C3.009 15.616 3 15.564 3 15.504C3 14.91 3.314 14.494 3.917 13.748C4.085 13.54 4.266 13.31 4.447 13.066L3.317 12.897C2.57549 13.5768 2.10725 14.5037 2 15.504C2 15.64 2.012 15.765 2.022 15.893L3.012 15.674ZM6.534 6.29995C6.82468 5.51903 7.3301 4.83613 7.992 4.32995L7.702 3.31395C6.75893 3.9464 6.03341 4.85382 5.624 5.91295L6.534 6.29995ZM21.618 13.322C21.464 12.2099 21.2 11.1159 20.83 10.056L19.856 10.355C20.0993 11.0441 20.2955 11.7491 20.443 12.465L21.618 13.322ZM18.757 17L20.946 21.515L18.052 22.971L15.786 18.35L13 22.17V9.50995L23.266 17H18.757ZM17.16 16H20.198L14 11.478V19.102L15.954 16.422L18.506 21.623L19.616 21.064L17.16 16ZM11 18.854C10.2073 18.5968 9.37936 18.4649 8.546 18.463C8.317 18.463 8.102 18.474 7.895 18.489L7.784 19.502C8.027 19.48 8.277 19.463 8.547 19.463C9.3848 19.4701 10.2149 19.6234 11 19.916V18.854Z"
-                    fill="black"
+                    fill="white"
                   />
                 </svg>
               </button>
@@ -209,7 +209,7 @@
                     fill-rule="evenodd"
                     clip-rule="evenodd"
                     d="M6 3V21L11 14H20L6 3ZM10.485 13L7 17.88V5.058L17.108 13H10.485Z"
-                    fill="black"
+                    fill="white"
                   />
                 </svg>
               </button>
@@ -218,7 +218,7 @@
               <button
                 type="button"
                 id="clear-btn1"
-                class="btn btn-light btn-sm clear-btn"
+                class="btn btn-light btn-sm clear-btn btn-info"
                 title="Reset"
                 style="
                   height: 31.81px !important;
@@ -230,7 +230,7 @@
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
                   height="16"
-                  fill="currentColor"
+                  fill="white"
                   class="bi bi-arrow-clockwise"
                   viewBox="0 0 16 16"
                 >
@@ -354,6 +354,25 @@
             aria-label="Toolbar with button groups"
             style="display: none"
           >
+          <button
+          type="button"
+          class="btn btn-info mr-3"
+          id="abutters-attributes"
+          title="Abutters list by GIS LINK"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            class="bi bi-envelope"
+            viewBox="0 0 16 16"
+          >
+            <path
+              d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"
+            />
+          </svg>
+        </button>
             <button
               type="button"
               class="btn btn-info mr-3"
@@ -381,6 +400,7 @@
           >
           <calcite-icon scale="s" icon="magnifying-glass-plus" />
           </button>
+          
           </div>
           <div id="group-backButtons">
             <div id="backButton-div">
@@ -443,7 +463,7 @@
             </div>
           </div>
           <div id="layerListDiv" style="display: none">
-            <h5 id="filter-title" style="text-align: center; color: white">
+            <h5 id="filter-title" style="text-align: center; color: white; background-color: rgba(145, 199, 61,1);">
               Layer List
             </h5>
             <div >
@@ -452,25 +472,25 @@
             </div>
           </div>
           <div id="filterDiv" style="display: none">
-            <h5 id="filter-title" style="text-align: center; color: white">
+            <h5 id="filter-title green-class" style="text-align: center; color: white; background-color: rgba(145, 199, 61,1);">
               Filters
             </h5>
             <div id="filterScrollableContainer">
               <!-- Dropdown 1 -->
               <div class="filterContainer">
-                <div class="filterLabel">Street Name is</div>
+                <div class="filterLabel green-class">Street Name is</div>
                 <calcite-combobox id="streetFilter" placeholder="All" scale="m">
                   <!-- dynamically populated -->
                 </calcite-combobox>
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Owner is</div>
+                <div class="filterLabel green-class">Owner is</div>
                 <calcite-combobox id="ownerFilter" placeholder="All" scale="m">
                   <!-- dynamically populated -->
                 </calcite-combobox>
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Appraised Value</div>
+                <div class="filterLabel green-class">Appraised Value</div>
                 <div class="filterInputDiv">
                   <div class="slider-div">
                     <calcite-input-text
@@ -508,7 +528,7 @@
               </div>
               <div class="filterContainer">
                 <!-- <div class="filterLabel">Assessed Value is</div> -->
-                <div class="filterLabel">Assessed Value</div>
+                <div class="filterLabel green-class">Assessed Value</div>
                 <calcite-label>
                   <div class="filterInputDiv">
                     <div class="slider-div">
@@ -549,7 +569,7 @@
                 </calcite-label>
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Property Type is</div>
+                <div class="filterLabel green-class">Property Type is</div>
                 <calcite-combobox
                   id="propertyFilter"
                   placeholder="All"
@@ -559,7 +579,7 @@
                 </calcite-combobox>
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Building Type is</div>
+                <div class="filterLabel green-class">Building Type is</div>
                 <calcite-combobox
                   id="buildingFilter"
                   placeholder="Select a Building Type"
@@ -569,7 +589,7 @@
                 </calcite-combobox>
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Building Use is</div>
+                <div class="filterLabel green-class">Building Use is</div>
                 <calcite-combobox
                   id="buildingUseFilter"
                   placeholder="All"
@@ -579,7 +599,7 @@
                 </calcite-combobox>
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Design Type is</div>
+                <div class="filterLabel green-class">Design Type is</div>
                 <calcite-combobox
                   id="designTypeFilter"
                   placeholder="Select a Design Type"
@@ -589,7 +609,7 @@
                 </calcite-combobox>
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Acres</div>
+                <div class="filterLabel green-class">Acres</div>
                 <calcite-label>
                   <div class="filterInputDiv">
                     <div class="slider-div">
@@ -630,7 +650,7 @@
                 </calcite-label>
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Sold On</div>
+                <div class="filterLabel green-class">Sold On</div>
                 <calcite-label>
                   <div class="filterInputDiv">
                     <div class="slider-div">
@@ -681,7 +701,7 @@
                 </calcite-combobox> -->
               </div>
               <div class="filterContainer">
-                <div class="filterLabel">Sale Price is</div>
+                <div class="filterLabel green-class">Sale Price is</div>
                 <calcite-label>
                   <div class="filterInputDiv">
                     <div class="slider-div">
@@ -790,11 +810,11 @@
           <div id="abutters-content" style="display: none">
             <div id="abutters-div">
               <div id="abutters-header" style="height: 200px">
-                <h6 class="abutters-title">Selected Feature</h6>
+                <h6 class="abutters-title green-class">Selected Feature</h6>
                 <div id="selected-feature"></div>
               </div>
               <div id="abutters-buffer" style="height: 200px">
-                <h6 class="abutters-title">Buffer</h6>
+                <h6 class="abutters-title green-class">Buffer</h6>
                 <div id="buffer-feature"></div>
                 <div
                   class="d-flex flex-row justify-content-center"
@@ -890,7 +910,7 @@
               </div>
 
               <div id="abutters-results" style="height: 200px">
-                <h6 class="abutters-title" id="abutters-title">
+                <h6 class="abutters-title green-class" id="abutters-title">
                   Abutting Parcels
                 </h6>
                 <div
@@ -1269,14 +1289,14 @@
             type="button"
             title="Measure distance between two or more points"
             size="l"
-            style="width: 40px; height: 35px"
+            style="width: 40px; height: 35px; color: white"
           ></button>
           <button
             class="action-button esri-icon-measure-area btn bg-info"
             id="areaButton"
             type="button"
             title="Measure area"
-            style="width: 40px; height: 35px"
+            style="width: 40px; height: 35px; color: white"
           ></button>
         </div>
         <!-- </div> -->

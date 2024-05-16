@@ -1,9 +1,128 @@
 :root {
   --info-color: #17a2b8; /* Light Blue = to bootstrap info blue */
   --secondary-color: #2ecc71; /* Green */
+  --third:rgba(145, 199, 61,1)
   --accent-color: #e74c3c; /* Red */
   --text-color: #333; /* Dark Grey */
-  --background-color: rgba(30, 30, 30, 0.8); /* White */
+  /* --background-color: rgba(180, 180, 180, 0.8); */
+  --background-color: rgba(30, 30, 30, 0.8); 
+}
+
+.btn-info {
+  background-color: rgba(127, 42, 145, 0.8) !important;
+  border-color: #ccc;
+}
+
+.btn-outline-info {
+  color: white;
+  border-color: white;
+  background-color: var(--third);
+}
+
+.btn-outline-info:hover {
+  color: white;
+  box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
+  border-color: rgba(145, 199, 61,1) !important;
+  background-color: var(--third);
+}
+
+.btn-outline-info:active {
+  color: white;
+  box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
+  border-color: rgba(145, 199, 61,1) !important;
+  background-color: var(--third);
+}
+
+.btn-green:active {
+  color: white !important;
+  border-color: var(--third) !important;
+  background-color: rgba(145, 199, 61,1) !important;
+  outline-color: var(--third);
+}
+
+.btn-warning {
+  border-color: white !important;
+  background-color: rgba(145, 199, 61,1) !important;
+  outline-color: white !important;
+}
+
+.btn-warning:focus {
+  box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
+  outline: none;
+}
+
+.bg-info {
+  background-color: rgba(127, 42, 145, 1) !important;
+}
+
+.bg-info:hover {
+  background-color: rgba(127, 42, 145, 1) !important;
+}
+
+/* .clear-btn:hover {
+  box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
+  border-color: transparent;
+} */
+
+#distanceButton, #areaButton {
+  border-color: white !important;
+  background-color: rgba(127, 42, 145, 1) !important; /* Background color on hover */
+}
+
+
+#distanceButton:hover, #areaButton:hover {
+  box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
+  border-color: transparent;
+  background-color: rgba(127, 42, 145, 1) !important; /* Background color on hover */
+}
+
+.btn-info:hover {
+  box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
+  background-color: rgba(127, 42, 145, 1) !important;
+  outline: none;
+  border-color: transparent;
+  /* border: none; */
+
+} 
+.action-button:hover {
+  box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
+  background-color: rgba(127, 42, 145, 1) !important;
+  outline: none;
+  border-color: none;
+
+}
+
+.btn-info:active {
+  box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
+  outline: none;
+} 
+
+.active {
+  box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
+  outline: none;
+}
+
+.bg-info:hover {
+  background-color: white !important;
+  border-color: white !important;
+  border: none;
+}
+
+.green-class {
+  background-color: rgba(145, 199, 61,1) !important;
+}
+
+.track__range {
+  position: absolute;
+  inset-block-start: 0px;
+  block-size: 0.125rem;
+  background-color: #ff5733; /* Custom color */
+  left: 0%;
+  right: 0%;
+}
+/* Using CSS variables */
+:root {
+  --bs-info: (127, 42, 145, 1) !important; /* Change to your desired color */
 }
 
 body {
@@ -35,10 +154,6 @@ main {
   color: white;
 }
 
-/* #topbar {
-  position: relative;
-  right: 251px;
-} */
 
 .col-10 {
   padding-left: 0px;
@@ -55,12 +170,11 @@ main {
 .navbar .container {
   display: block;
   padding-right: 0;
-  /* 'block' will make it a standard block-level element */
 }
 
 .navbar.bg-dark {
   background-color: var(--background-color) !important;
-  margin-top: 3px; /* 0.5 is 50% opacity */
+  margin-top: 3px; 
 }
 
 .custom-navbar {
@@ -76,9 +190,6 @@ main {
   /* This ensures the navbar is always on top */
 }
 
-#sketchDiv {
-  /* left: 30%; */
-}
 
 .col-md {
   padding-left: 0px;
@@ -648,7 +759,6 @@ img {
   height: 85%;
   /* justify-content: space-between; */
   color: white;
-
   text-align: center;
 }
 
@@ -681,9 +791,6 @@ img {
   margin-bottom: 10px; /* Adds some space between your filters */
 }
 
-/* .filterContainer {
-  padding-bottom: 10px;
-} */
 #filter-title {
   background-color: var(--info-color);
   height: 25px;
