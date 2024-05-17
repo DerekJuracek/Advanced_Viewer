@@ -2832,6 +2832,45 @@ require([
       });
 
       $(document).ready(function () {
+        $("#abutters-attributes").on("click", function (e) {
+          // clickHandle.remove();
+          if (DetailsHandle) {
+            DetailsHandle.remove();
+          }
+          if (clickHandle) {
+            clickHandle.remove();
+          }
+          $("#exportButtons").show();
+          $("#exportResults").show();
+          $("#exportButtons").show();
+          $("#exportSearch").hide();
+          $("#csvExportResults").show();
+          $("#csvExportSearch").hide();
+          $("#WelcomeBox").hide();
+          $("#detailBox").hide();
+          $("#featureWid").hide();
+          $("#result-btns").hide();
+          $("#total-results").hide();
+          $("#details-btns").hide();
+
+          $("#filterDiv").hide();
+          $("#layerListDiv").hide();
+          $("#abutters-content").show();
+          $("#selected-feature").empty();
+          $("#backButton").show();
+          $("#detailsButton").show();
+          $("#parcel-feature").empty();
+          $("#backButton-div").css("padding-top", "78px");
+          $("#abutters-title").html(`Abutting Parcels (0)`);
+
+          buildAbuttersPanel(e);
+          value.value = 100;
+
+          runAttBuffer("100");
+        });
+      });
+
+      $(document).ready(function () {
         $("#filterButton").on("click", function () {
           $("#WelcomeBox").hide();
           $("#exportResults").hide();
@@ -3148,7 +3187,7 @@ require([
         function bufferPush() {
           clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
-            runBuffer(currentVal);
+            runAttBuffer(currentVal);
           }, 200);
         }
 
@@ -3295,6 +3334,127 @@ require([
               }
             });
         }, 250);
+      }
+
+      function queryAttDetailsBuffer(geometry) {
+        const parcelQuery = {
+          spatialRelationship: "intersects", // Relationship operation to apply
+          geometry: geometry, // The sketch feature geometry
+          outFields: ["*"], // Attributes to return
+          returnGeometry: true,
+          units: queryUnits,
+        };
+        let bufferResults = [];
+
+        if (sessionStorage.getItem(key) === "no") {
+          noCondosLayer.queryFeatures(parcelQuery).then((results) => {
+            console.log(results);
+            const bufferRes = results.features;
+            bufferRes.forEach((parcel) => {
+              bufferResults.push(parcel.attributes.GIS_LINK);
+            });
+            console.log(bufferResults);
+            buildAndQueryTable(bufferResults);
+          });
+        } else {
+          CondosLayer.queryFeatures(parcelQuery).then((results2) => {
+            console.log(results2);
+            const bufferRes = results2.features;
+            bufferRes.forEach((parcel) => {
+              bufferResults.push(parcel.attributes.GIS_LINK);
+            });
+            buildAndQueryTable(bufferResults);
+
+            console.log(bufferResults);
+          });
+        }
+      }
+
+      function buildAndQueryTable(bufferResults) {
+        if (bufferResults.length > 0) {
+          const queryValues = bufferResults
+            .map((value) => `'${value}'`)
+            .join(" OR GIS_LINK = ");
+          const queryString = `GIS_LINK = ${queryValues}`;
+          console.log(queryString);
+
+          let query = noCondosTable.createQuery();
+          query.where = queryString;
+          query.returnGeometry = false;
+          query.returnHiddenFields = true; // Adjust based on your needs
+          query.outFields = ["*"];
+
+          noCondosTable.queryFeatures(query).then((response) => {
+            console.log(response);
+            buildPanel(response);
+          });
+
+          // Now use this query string to query the table service
+          // const tableQuery = {
+          //   where: queryString,
+          //   outFields: ["*"],
+          //   returnGeometry: true,
+          // };
+        } else {
+          console.log("No buffer results to query.");
+        }
+      }
+
+      function buildPanel(results) {
+        const abuttersDiv = document.getElementById("parcel-feature");
+        abuttersDiv.innerHTML = "";
+
+        const foundLocs = results.features;
+        console.log(foundLocs);
+        totalResults = foundLocs.length;
+        lastResults = totalResults;
+        console.log(lastResults);
+
+        exportResults = foundLocs;
+        // console.log(exportResults);
+
+        // let listItemHTML = "";
+
+        exportCsv = foundLocs;
+
+        // console.log(lastResults);
+        foundLocs.forEach(function (feature) {
+          let locationGISLINK = feature.attributes["GIS_LINK"];
+          let objectID = feature.attributes["OBJECTID"];
+          let owner = feature.attributes["Owner"];
+          let coOwner = feature.attributes["Co_Owner"];
+          let mailingAddress = feature.attributes["Mailing_Address_1"];
+          let mailingAddress2 = feature.attributes["Mailing_Address_2"];
+          let Mailing_City = feature.attributes["Mailing_City"];
+          let Mail_State = feature.attributes["Mail_State"];
+          let Mailing_Zip = feature.attributes["Mailing_Zip"];
+
+          const listGroup = document.createElement("ul");
+          listGroup.classList.add("row");
+          listGroup.classList.add("list-group");
+          listGroup.classList.add("abutters-list");
+
+          const listItem = document.createElement("li");
+          listItem.classList.add("abutters-group-item", "col-12");
+
+          let listItemHTML = "";
+
+          listItemHTML = ` ${owner} ${coOwner} <br> ${mailingAddress} ${mailingAddress2} <br> ${Mailing_City}, ${Mail_State} ${Mailing_Zip}`;
+
+          // Append the new list item to the list
+          listItem.innerHTML += listItemHTML;
+
+          listItem.setAttribute("data-id", locationGISLINK);
+          listItem.setAttribute("object-id", objectID);
+
+          listGroup.appendChild(listItem);
+          abuttersDiv.appendChild(listGroup);
+          $("#abutters-spinner").hide();
+          $("#abutters-title").html(`Abutting Parcels (${totalResults})`);
+        });
+        $("#results-div").css("height", "200px");
+        $("#exportResults").show();
+        $("#csvExportResults").show();
       }
 
       // THIS IS WHERE YOU WOULD MAKE UNITS A VARIABLE FOR USER SELECTION
@@ -3493,6 +3653,25 @@ require([
           target: newBufferGraphic,
           zoom: oldZoom,
         });
+      }
+
+      function runAttBuffer(value) {
+        $("#abutters-spinner").show();
+        // console.log(detailsGeometry);
+        let buffer = value;
+        let unit = queryUnits;
+        let bufferResults;
+
+        if (sessionStorage.getItem(key) == "no" && CondoBuffer == false) {
+          bufferResults = geometryEngine.buffer(targetExtent, buffer, unit);
+          // console.log(`no condos buffer run`);
+        } else {
+          bufferResults = geometryEngine.buffer(detailsGeometry, buffer, unit);
+          // console.log(`condos buffer run`);
+        }
+
+        addOrUpdateBufferGraphic(bufferResults);
+        queryAttDetailsBuffer(bufferResults);
       }
 
       function runBuffer(value) {
