@@ -1301,6 +1301,7 @@ require([
         $("#csvExportSearch").hide();
         $("#exportSearch").hide();
         $("#total-results").hide();
+        $("#ResultDiv").hide();
         $("#featureWid").hide();
         $("#exportButtons").hide();
         $("#layerListDiv").hide();
@@ -1449,6 +1450,96 @@ require([
         });
       });
 
+      function sortUniqueArray(criteria) {
+        uniqueArray.sort((a, b) => {
+          if (criteria === "owner") {
+            return a.owner.toLowerCase().localeCompare(b.owner.toLowerCase());
+          } else if (criteria === "location") {
+            return a.location
+              .toLowerCase()
+              .localeCompare(b.location.toLowerCase());
+          } else if (criteria === "Street_Name") {
+            return a.Street_name.toLowerCase().localeCompare(
+              b.Street_name.toLowerCase()
+            );
+          }
+        });
+
+        // After sorting, update the display
+        updateDisplay();
+      }
+
+      function updateDisplay() {
+        const featureWidDiv = document.getElementById("featureWid");
+        featureWidDiv.innerHTML = ""; // Clear the existing content
+        const listGroup = document.createElement("ul");
+        listGroup.classList.add("row", "list-group");
+
+        uniqueArray.forEach(function (feature) {
+          let objectID = feature.objectid;
+          let locationVal = feature.location;
+          let locationUniqueId =
+            feature.uniqueId === undefined
+              ? feature.GIS_LINK
+              : feature.uniqueId;
+          let locationGISLINK = feature.GIS_LINK;
+          let locationCoOwner = feature.coOwner;
+          let locationOwner = feature.owner;
+          let locationMBL = feature.MBL;
+          let locationGeom = feature.geometry;
+          let propertyType = feature.Parcel_Type;
+          let streetName = feature.Street_Name;
+          const imageUrl = `${configVars.imageUrl}${locationUniqueId}.jpg`;
+
+          const listItem = document.createElement("li");
+          const imageDiv = document.createElement("li");
+          imageDiv.innerHTML = `<img object-id="${objectID}" src="${imageUrl}" alt="Image of ${locationUniqueId}" >`;
+          listItem.classList.add("list-group-item", "col-9");
+          listItem.classList.add("search-list");
+          imageDiv.setAttribute("object-id", objectID);
+          imageDiv.setAttribute("data-id", locationGISLINK);
+          imageDiv.classList.add("image-div", "col-3");
+
+          let listItemHTML;
+          let displayNoGeometry = sessionStorage.getItem(key2) === "yes";
+
+          if (!locationCoOwner && locationGeom) {
+            listItemHTML = ` <div class="listText">UID: ${locationUniqueId} &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s"/>Zoom</button><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
+          } else if (!locationGeom && displayNoGeometry) {
+            listItemHTML = ` <div class="listText">UID: ${locationUniqueId} &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
+          } else {
+            listItemHTML = ` <div class="listText">UID: ${locationUniqueId} &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;MBL: ${locationMBL} <br> ${locationOwner} ${locationCoOwner} <br> ${locationVal} <br> Property Type: ${propertyType}</div><div class="justZoomBtn"><button type="button" class="btn btn-primary btn-sm justZoom" title="Zoom to Parcel"><calcite-icon icon="magnifying-glass-plus" scale="s"/>Zoom</button><button type="button" class="btn btn-primary btn-sm justRemove" title="Remove from Search List"><calcite-icon icon="minus-circle" scale="s"/>Remove</button></div>`;
+          }
+
+          listItem.innerHTML += listItemHTML;
+          listItem.setAttribute("object-id", objectID);
+          listItem.setAttribute("data-id", locationGISLINK);
+
+          listGroup.appendChild(imageDiv);
+          listGroup.appendChild(listItem);
+        });
+
+        featureWidDiv.appendChild(listGroup);
+      }
+
+      document
+        .getElementById("sortByOwner")
+        .addEventListener("click", function () {
+          sortUniqueArray("owner");
+        });
+
+      document
+        .getElementById("sortByLocation")
+        .addEventListener("click", function () {
+          sortUniqueArray("location");
+        });
+
+      // document
+      //   .getElementById("sortByStreet")
+      //   .addEventListener("click", function () {
+      //     sortUniqueArray("Street_Name");
+      //   });
+
       function buildResultsPanel(
         features,
         polygonGraphics,
@@ -1577,6 +1668,7 @@ require([
 
         // $(document).ready(function () {
         $("#total-results").show();
+        $("#ResultDiv").show();
         $("#total-results").html(searchResults + " results returned");
         // });
 
@@ -1659,6 +1751,7 @@ require([
           $("#featureWid").hide();
           $("#result-btns").hide();
           $("#total-results").hide();
+          $("#ResultDiv").hide();
           $("#abutters-content").hide();
           $("#details-btns").show();
           $("#detailBox").show();
@@ -2550,6 +2643,7 @@ require([
         $("#featureWid").hide();
         $("#result-btns").hide();
         $("#total-results").hide();
+        $("#ResultDiv").hide();
         $("#abutters-content").hide();
         $("#details-btns").show();
         $("#detailBox").show();
@@ -2665,6 +2759,8 @@ require([
             $("#featureWid").show();
             // $("#result-btns").show();
             $("#total-results").show();
+
+            $("#ResultDiv").show();
             $("#details-btns").hide();
             $("#detail-content").empty();
             $("#backButton").hide();
@@ -2684,6 +2780,7 @@ require([
             view.graphics.addMany(polygonGraphics);
           } else {
             $("#total-results").hide();
+            $("#ResultDiv").hide();
             $("#backButton").hide();
             $("#detailBox").hide();
             $("#filterDiv").hide();
@@ -2761,6 +2858,7 @@ require([
           $("#featureWid").hide();
           $("#result-btns").hide();
           $("#total-results").hide();
+          $("#ResultDiv").hide();
           $("#filterDiv").hide();
           $("#layerListDiv").hide();
           $("#details-btns").show();
@@ -2813,6 +2911,7 @@ require([
           $("#featureWid").hide();
           $("#result-btns").hide();
           $("#total-results").hide();
+          $("#ResultDiv").hide();
           $("#details-btns").hide();
 
           $("#filterDiv").hide();
@@ -2851,6 +2950,7 @@ require([
           $("#featureWid").hide();
           $("#result-btns").hide();
           $("#total-results").hide();
+          $("#ResultDiv").hide();
           $("#details-btns").hide();
 
           $("#filterDiv").hide();
@@ -2879,6 +2979,7 @@ require([
           $("#featureWid").hide();
           $("#result-btns").hide();
           $("#total-results").hide();
+          $("#ResultDiv").hide();
           $("#details-btns").hide();
           $("#exportSearch").hide();
           $("#csvExportSearch").hide();
@@ -2911,6 +3012,7 @@ require([
           $("#featureWid").hide();
           $("#result-btns").hide();
           $("#total-results").hide();
+          $("#ResultDiv").hide();
           $("#details-btns").hide();
           $("#exportSearch").hide();
           $("#csvExportResults").hide();
@@ -4787,6 +4889,7 @@ require([
         $("#results-div").css("height", "150px");
         $("#backButton-div").css("padding-top", "0px");
         document.getElementById("total-results").style.display = "none";
+        $("#ResultDiv").hide();
 
         console.log(results);
 
@@ -4802,6 +4905,7 @@ require([
         // zoomToFeature(objectID, polygonGraphics, itemId);
         buildDetailsPanel(objectID, itemId);
         $("#total-results").hide();
+        $("#ResultDiv").hide();
         // totalResults = response.features;
         // let objID = response.features[0].attributes.OBJECTID;
         // let geom = response.features[0].geometry;
@@ -5046,6 +5150,7 @@ require([
         $("#selected-feature").empty();
         $("#parcel-feature").empty();
         $("#total-results").show();
+        $("#ResultDiv").hide();
         $("#backButton").hide();
         $("#detailsButton").hide();
         $("#detailBox").hide();
@@ -5642,6 +5747,7 @@ require([
           $("#csvExportSearch").hide();
           $("#exportSearch").hide();
           $("#total-results").hide();
+          $("#ResultDiv").hide();
           $("#featureWid").hide();
           $("#exportButtons").hide();
           $("#dropdown").show();

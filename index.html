@@ -755,7 +755,23 @@
             
             </div>
           </div>
-          <div id="total-results" style="display: none"></div>
+
+          <div class="container" id="ResultDiv" style="display: none; padding-bottom: 5px; padding-top: 5px; padding-left: 0px; padding-right: 0px; ">
+            <div class="d-flex justify-content-between">
+              <div id="total-results" style="display: none"></div>
+              <div class="dropdown">
+                <button class="btn btn-info btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Sort By
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="z-index: 1001;">
+                  <button class="dropdown-item btn-sm" id="sortByOwner">Sort by Owner</button>
+                  <button class="dropdown-item btn-sm" id="sortByLocation">Sort by Location</button>
+                  <!-- <button class="dropdown-item btn-sm" id="sortByStreet">Sort by Street</button> -->
+                </div>
+              </div>
+            </div>
+          </div>
+        
           <div id="featureWid" style="display: none"></div>
           <div
             id="WelcomeBox"

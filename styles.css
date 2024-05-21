@@ -656,6 +656,32 @@ img {
   margin-right: 0px; /* Adjust margin as needed */
 }
 
+.track__range {
+  background-color: red !important;
+}
+
+.track__range {
+  position: absolute;
+  inset-block-start: 0px;
+  block-size: 0.125rem;
+  background-color: red;
+}
+
+calcite-slider::part(track__range) {
+  background-color: #4caf50; /* Custom color for the track range */
+}
+calcite-slider::part(track) {
+  background-color: #e0e0e0; /* Inactive track color */
+}
+calcite-slider::part(handle) {
+  background-color: #ff5722; /* Handle color */
+  border-color: #ff5722; /* Handle border color */
+}
+calcite-slider::part(tick) {
+  background-color: #9e9e9e; /* Tick color */
+}
+
+
 #group-container-right {
   width: 100%;
   height: 100%;
@@ -884,8 +910,12 @@ img {
   border-radius: 4px;
   /* padding-left: 50%; */
   color: white;
-  position: absolute;
+  /* position: absolute; */
   top: 78px;
+}
+
+#dropdownMenuButton {
+  z-index: 1001;
 }
 
 #result-btns {
@@ -936,3 +966,15 @@ img {
   display: flex; /* Use flexbox */
   justify-content: center;
 }
+
+.fixed-top-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: white; /* Match the background color of your page */
+  z-index: 1000; /* Ensure it stays on top of other elements */
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
