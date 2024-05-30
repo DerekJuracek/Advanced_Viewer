@@ -1255,7 +1255,7 @@ require([
         }
 
         // clickHandle = view.on("click", handleClick);
-        $("#lasso").removeClass("btn-warning");
+        //$("#lasso").removeClass("btn-warning");
         $("#select-button").removeClass("btn-warning");
         // select = false;
         // lasso = false;
