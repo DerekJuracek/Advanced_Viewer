@@ -172,7 +172,6 @@ require([
       });
       view.when(() => {
         configVars.homeExtent = view.extent;
-        console.log(configVars.homeExtent);
       });
       // console.log("extent is", extent);
 
@@ -582,7 +581,6 @@ require([
             }
           } else if (wasStationary) {
             oldExtent = extent;
-            // configVars.homeExtent = extent;
             oldScale = scale;
             oldZoom = zoom;
           }
@@ -1028,8 +1026,6 @@ require([
         query.outFields = ["Street_Name"];
 
         CondosLayer.queryFeatures(query).then(function (response) {
-          console.log(response);
-
           var features = response.features;
           var comboBox = $("#streetFilter");
 
@@ -1065,8 +1061,6 @@ require([
         query2.outFields = ["Owner"];
 
         CondosLayer.queryFeatures(query2).then(function (response) {
-          console.log(response);
-
           var features = response.features;
           var comboBox = $("#ownerFilter");
 
@@ -1167,8 +1161,6 @@ require([
         query5.outFields = ["Building_Use_Code"];
 
         CondosLayer.queryFeatures(query5).then(function (response) {
-          console.log(response);
-
           var features = response.features;
           var comboBox = $("#buildingUseFilter");
 
@@ -1200,8 +1192,6 @@ require([
         query6.outFields = ["Design_Type"];
 
         CondosLayer.queryFeatures(query6).then(function (response) {
-          console.log(response);
-
           var features = response.features;
           var comboBox = $("#designTypeFilter");
 
@@ -1265,7 +1255,7 @@ require([
         }
 
         // clickHandle = view.on("click", handleClick);
-        // $("#lasso").removeClass("btn-warning");
+        $("#lasso").removeClass("btn-warning");
         $("#select-button").removeClass("btn-warning");
         // select = false;
         // lasso = false;
@@ -1357,7 +1347,6 @@ require([
 
             noCondosLayer.queryFeatures(query).then(function (response) {
               totalResults = response.features;
-              console.log(totalResults);
               processFeatures(totalResults, "", capturedEvent);
               addPolygons(response, view.graphics, ClickEvent);
             });
@@ -1388,9 +1377,6 @@ require([
           let targetElement = event.target.closest("li");
           let itemId = targetElement.getAttribute("data-id");
           let objectID = targetElement.getAttribute("object-id");
-
-          console.log(itemId);
-          console.log(objectID);
 
           if (sessionStorage.getItem(key) === "no") {
             // If the key doesn't exist, set it to "none"
@@ -1675,6 +1661,10 @@ require([
         $("#total-results").show();
         $("#ResultDiv").show();
         $("#total-results").html(searchResults + " results returned");
+        // if (searchResults.length < 0) {
+        //   $("#select-button").removeClass("btn-warning");
+        // }
+
         // });
 
         // createExportList();
@@ -1728,7 +1718,6 @@ require([
           ) {
             return; // Exit the handler early if a button was clicked
           }
-          console.log(`list group clicked`);
           if (clickHandle) {
             clickHandle.remove();
           }
@@ -1771,6 +1760,7 @@ require([
           $("#csvExportSearch").hide();
           $("#results-div").css("height", "150px");
           $("#backButton-div").css("padding-top", "0px");
+          $(".center-container").hide();
 
           buildDetailsPanel(objectID, itemId);
         });
@@ -1995,7 +1985,6 @@ require([
           // really just concerned with click logic
 
           let array = [];
-          console.log(polygonGeometries.features[0].attributes.OBJECTID);
           bufferGraphicId = polygonGeometries.features[0].attributes.OBJECTID;
           pointGisLink = features[0].attributes.GIS_LINK;
 
@@ -2037,8 +2026,8 @@ require([
             polygonGraphics.splice(graphicIndex, 1);
 
             if (polygonGraphics.length === 0) {
-              if (DetailsHandle) {
-                DetailsHandle.remove();
+              if (!DetailsHandle) {
+                DetailsHandle.view.on("click", handleDetailsClick);
               }
               if (clickHandle) {
                 clickHandle.remove();
@@ -2046,14 +2035,13 @@ require([
               // NO HANDLE ADDED YET, USER CLICK ON SELECT BUTTON TO ADD
               // NOT IN DETAILS PANE
               // IN RESULTS PANE
-              // clickHandle = view.on("click", handleClick);
+              //clickHandle = view.on("click", handleClick);
             }
 
             // will zoom to extent of adding and deselecting
             // view.goTo(polygonGraphics);
           } else {
             // let id = polygonGraphics2[0].id;
-            console.log(polygonGraphics);
             graphicsLayer.addMany(polygonGraphics2);
             // if (polygonGraphics.length >= 1) {
             //   polygonGraphics = [...polygonGraphics, polygonGraphics2[0]];
@@ -2731,7 +2719,6 @@ require([
 
           noCondosLayer.queryFeatures(query).then(function (response) {
             totalResults = response.features;
-            console.log(totalResults);
             processFeatures(totalResults, "", event);
             addPolygons(response, view.graphics, isClickEvent);
           });
@@ -2746,8 +2733,6 @@ require([
 
           CondosLayer.queryFeatures(query2).then(function (response) {
             totalResults = response.features;
-            console.log(totalResults);
-
             // gets added to firstList in processFeatures
             // so when you splice it, it will be right back every click
             // logic needs to be different
@@ -2787,6 +2772,7 @@ require([
             $("#exportButtons").show();
             $("#exportSearch").show();
             $("#results-div").css("height", "200px");
+            $(".center-container").show();
 
             view.graphics.removeAll();
 
@@ -3011,8 +2997,9 @@ require([
           $("#results-div").css("height", "200px");
           $("#parcel-feature").empty();
           $("#backButton").show();
-          $("#backButton-div").css("padding-top", "78px");
+          $("#backButton-div").css("padding-top", "0px");
           $("#abutters-title").html(`Abutting Parcels (0)`);
+          $(".center-container").show();
         });
       });
 
@@ -3047,8 +3034,9 @@ require([
           $("#layerListDiv").show();
           // $("#detailsButton").show();
           $("#parcel-feature").empty();
-          $("#backButton-div").css("padding-top", "78px");
+          $("#backButton-div").css("padding-top", "0px");
           $("#abutters-title").html(`Abutting Parcels (0)`);
+          $(".center-container").show();
         });
       });
 
@@ -3436,7 +3424,6 @@ require([
         win.document.write(transformedContent);
         win.document.write("</body></html>");
         win.document.close();
-        console.log(win.document);
 
         setTimeout(() => {
           win.print();
@@ -3463,24 +3450,20 @@ require([
 
         if (sessionStorage.getItem(key) === "no") {
           noCondosLayer.queryFeatures(parcelQuery).then((results) => {
-            console.log(results);
             const bufferRes = results.features;
             bufferRes.forEach((parcel) => {
               bufferResults.push(parcel.attributes.GIS_LINK);
             });
-            console.log(bufferResults);
+
             buildAndQueryTable(bufferResults);
           });
         } else {
           CondosLayer.queryFeatures(parcelQuery).then((results2) => {
-            console.log(results2);
             const bufferRes = results2.features;
             bufferRes.forEach((parcel) => {
               bufferResults.push(parcel.attributes.GIS_LINK);
             });
             buildAndQueryTable(bufferResults);
-
-            console.log(bufferResults);
           });
         }
       }
@@ -3491,7 +3474,6 @@ require([
             .map((value) => `'${value}'`)
             .join(" OR GIS_LINK = ");
           const queryString = `GIS_LINK = ${queryValues}`;
-          console.log(queryString);
 
           let query = noCondosTable.createQuery();
           query.where = queryString;
@@ -3500,7 +3482,6 @@ require([
           query.outFields = ["*"];
 
           noCondosTable.queryFeatures(query).then((response) => {
-            console.log(response);
             buildPanel(response);
           });
 
@@ -3520,10 +3501,8 @@ require([
         abuttersDiv.innerHTML = "";
 
         const foundLocs = results.features;
-        console.log(foundLocs);
         totalResults = foundLocs.length;
         lastResults = totalResults;
-        console.log(lastResults);
 
         exportResults = foundLocs;
         // console.log(exportResults);
@@ -3616,10 +3595,8 @@ require([
             );
 
             lastResults = finalResults;
-            console.log(lastResults);
 
             exportResults = bothResults;
-            console.log(exportResults);
 
             let listItemHTML = "";
 
@@ -3913,9 +3890,6 @@ require([
         details.innerHTML = "";
         details.classList.add("details");
 
-        console.log("map pdf is:", map_pdf);
-        console.log("tax map is:", configVars.taxMap_Url);
-
         details.innerHTML = `
         <p>
         <span style="font-family:Tahoma;font-size:14px;"><strong>${Location}</strong></span> <br>
@@ -3959,7 +3933,7 @@ require([
         <a target="_blank" rel="noopener noreferrer" href=${configVars.tax_bill}&amp;uniqueId=${locationUniqueId}><span style="font-family:Tahoma;font-size:12px;"><strong>Tax Bills</strong></span></a><br>
         <a target="_blank" rel="noopener noreferrer" href=${configVars.pdf_demo}><span style="font-family:Tahoma;font-size:12px;"><strong>Demographics Profile</strong></span></a><br>
         <a target="_blank" rel="noopener noreferrer" href=${configVars.housingUrl}><span style="font-family:Tahoma;font-size:12px;"><strong>Housing Profile</strong></span></a><br>
-        <a target="_blank" rel="noopener noreferrer" href=https://www.google.com/maps/@${Lat},${Lon},3a,75y,90h,90t/data=!3m6!1e1!3m4!1s0x0:0x0!8m2!3d${Lat}!4d${Lon}><span style="font-family:Tahoma;font-size:12px;"><strong>View in Google Maps</strong></span></a><br>
+        <a target="_blank" rel="noopener noreferrer" href=https://www.google.com/maps/@${Lat},${Lon},17z/@${Lat},${Lon},17z/data=!5m1!1e2><span style="font-family:Tahoma;font-size:12px;"><strong>View in Google Maps</strong></span></a><br>
         <a target="_blank" rel="noopener noreferrer" href=https://www.bing.com/maps?cp=${Lat}~${Lon}&amp;lvl=19.0&amp;style=g&amp;v=2&amp;sV=1><span style="font-family:Tahoma;font-size:12px;"><strong>View in Bing Maps</strong></span></a><br>
               
         `;
@@ -4179,9 +4153,6 @@ require([
         zoomToItemId = locationUniqueId;
         zoomToObjectID = objectID2;
 
-        console.log("map pdf is:", map_pdf);
-        console.log("tax map is:", configVars.taxMap_Url);
-
         const imageUrl = `https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Washington_CT/${locationUniqueId}.jpg`;
         const detailsDiv = document.getElementById("detail-content");
         const details = document.createElement("div");
@@ -4232,7 +4203,7 @@ require([
     <a target="_blank" rel="noopener noreferrer" href=${configVars.tax_bill}&amp;uniqueId=${locationUniqueId}><span style="font-family:Tahoma;font-size:12px;"><strong>Tax Bills</strong></span></a><br>
     <a target="_blank" rel="noopener noreferrer" href=${configVars.pdf_demo}><span style="font-family:Tahoma;font-size:12px;"><strong>Demographics Profile</strong></span></a><br>
     <a target="_blank" rel="noopener noreferrer" href=${configVars.housingUrl}><span style="font-family:Tahoma;font-size:12px;"><strong>Housing Profile</strong></span></a><br>
-    <a target="_blank" rel="noopener noreferrer" href=https://www.google.com/maps/@${Lat},${Lon},3a,75y,90h,90t/data=!3m6!1e1!3m4!1s0x0:0x0!8m2!3d${Lat}!4d${Lon}><span style="font-family:Tahoma;font-size:12px;"><strong>View in Google Maps</strong></span></a><br>
+    <a target="_blank" rel="noopener noreferrer" href=https://www.google.com/maps/@${Lat},${Lon},17z/@${Lat},${Lon},17z/data=!5m1!1e2><span style="font-family:Tahoma;font-size:12px;"><strong>View in Google Maps</strong></span></a><br>
     <a target="_blank" rel="noopener noreferrer" href=https://www.bing.com/maps?cp=${Lat}~${Lon}&amp;lvl=19.0&amp;style=g&amp;v=2&amp;sV=1><span style="font-family:Tahoma;font-size:12px;"><strong>View in Bing Maps</strong></span></a><br>
           
     `;
@@ -4382,8 +4353,6 @@ require([
         noCondosLayer.queryFeatures(query).then((response) => {
           let feature = response;
           let geometry = feature.features[0].geometry;
-          console.log(response);
-          console.log(geometry);
 
           targetExtent = geometry;
 
@@ -4472,8 +4441,6 @@ require([
             noCondosLayer.queryFeatures(query).then((response) => {
               let feature = response;
               let geometry = feature.features[0].geometry;
-              console.log(response);
-              console.log(geometry);
 
               targetExtent = geometry;
 
@@ -4482,8 +4449,6 @@ require([
                 zoom: oldZoom,
               });
 
-              // view.goTo(geometry);
-              console.log(geometry);
               const fillSymbol = {
                 type: "simple-fill",
                 color: [0, 0, 0, 0.1],
@@ -4520,7 +4485,6 @@ require([
                 target: detailsGeometry,
                 zoom: oldZoom,
               });
-              console.log(detailsGeometry);
 
               const fillSymbol = {
                 type: "simple-fill",
@@ -4549,8 +4513,6 @@ require([
               noCondosLayer.queryFeatures(query).then((response) => {
                 let feature = response;
                 let geometry = feature.features[0].geometry;
-                console.log(response);
-                console.log(geometry);
 
                 targetExtent = geometry;
 
@@ -4559,8 +4521,6 @@ require([
                   zoom: oldZoom,
                 });
 
-                // view.goTo(geometry);
-                console.log(geometry);
                 const fillSymbol = {
                   type: "simple-fill",
                   color: [0, 0, 0, 0.1],
@@ -4608,7 +4568,6 @@ require([
         let locationMBL;
 
         if (detailsChanged.isChanged) {
-          console.log(e);
           locationMaillingAddress =
             detailsChanged.item.attributes.Mailing_Address_1;
           locationUniqueId = detailsChanged.item.attributes.Uniqueid;
@@ -4882,13 +4841,11 @@ require([
       };
 
       function triggerListGroup(results, searchTerm) {
-        console.log("simulate trigger details click");
         let items = results;
 
         let parcel = items.filter(
           (item) => item.attributes.Uniqueid === searchTerm
         );
-        console.log(parcel);
 
         let itemId = parcel[0].attributes.Uniqueid;
         let objectID = parcel[0].attributes.OBJECTID;
@@ -4913,12 +4870,11 @@ require([
         $("#exportResults").hide();
         $("#csvExportResults").hide();
         $("#csvExportSearch").hide();
+        $(".center-container").hide();
         $("#results-div").css("height", "150px");
         $("#backButton-div").css("padding-top", "0px");
         document.getElementById("total-results").style.display = "none";
         $("#ResultDiv").hide();
-
-        console.log(results);
 
         // let targetElement = event.target.closest("li");
 
@@ -5434,15 +5390,12 @@ require([
             });
           }
 
-          console.log(`Query: ${queryString}`);
-
           // Here, you can use this query string to fetch data from your feature service
         }
 
         $("#streetFilter").on("calciteComboboxChange", function (e) {
           // value = e.target.value;
           queryParameters.streetName = e.target.value;
-          console.log(queryParameters.streetName);
           let itemsList = $("#streetFilter");
           let selectedItems = itemsList[0].selectedItems;
           // selectedItems = [];
@@ -5462,7 +5415,6 @@ require([
 
         $("#ownerFilter").on("calciteComboboxChange", function (e) {
           queryParameters.owner = e.target.value;
-          console.log(queryParameters.owner);
         });
 
         $("#app-val-slider").on("calciteSliderChange", function (e) {
