@@ -13,42 +13,53 @@
   border-color: #ccc;
 }
 
+.btn-info:active, .btn-info:focus {
+  color: white;
+  box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
+  border-color: rgba(145, 199, 61,1) !important;
+  background-color: var(--third);
+}
+
 .btn-outline-info {
   color: white;
   border-color: white;
   background-color: var(--third);
 }
 
-.btn-outline-info:hover {
+.btn-outline-info:hover  {
   color: white;
   box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
   border-color: rgba(145, 199, 61,1) !important;
   background-color: var(--third);
 }
 
-.btn-outline-info:active {
+.btn-outline-info:active, .btn-outline-info:focus {
   color: white;
   box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
   border-color: rgba(145, 199, 61,1) !important;
   background-color: var(--third);
 }
 
-.btn-green:active {
+.btn-green:active, .btn-green:focus {
   color: white !important;
-  border-color: var(--third) !important;
-  background-color: rgba(145, 199, 61,1) !important;
+  border-color: rgba(145, 199, 61,1) !important;
+  background-color: transparent !important;
   outline-color: var(--third);
 }
 
 .btn-warning {
-  border-color: white !important;
+  border-color: rgba(145, 199, 61,1) !important;
+  box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
   background-color: rgba(145, 199, 61,1) !important;
-  outline-color: white !important;
+  outline-color: var(--third) !important;
 }
 
-.btn-warning:focus {
+.btn-warning:focus, .btn-warning:active {
   box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
-  outline: none;
+  border-color: rgba(145, 199, 61,1) !important;
+  background-color: rgba(145, 199, 61,1) !important;
+  outline-color: var(--third) !important;
+ 
 }
 
 .bg-info {
@@ -56,6 +67,10 @@
 }
 
 .bg-info:hover {
+  background-color: rgba(127, 42, 145, 1) !important;
+}
+
+.bg-info:active, .bg-info:focus  {
   background-color: rgba(127, 42, 145, 1) !important;
 }
 
@@ -94,12 +109,12 @@
 
 .btn-info:active {
   box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
-  outline: none;
+
 } 
 
 .active {
   box-shadow: 0 0 0 0.2rem rgba(145, 199, 61,1) !important;
-  outline: none;
+
 }
 
 .bg-info:hover {
@@ -977,4 +992,7 @@ calcite-slider::part(tick) {
   padding: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
+
+
+
 

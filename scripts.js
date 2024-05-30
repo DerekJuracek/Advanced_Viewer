@@ -875,29 +875,40 @@ require([
       });
 
       function updateLayerUI(layerId, isVisible) {
-        // Find the corresponding UI element in the pick list
         let actionElement = $(
           `calcite-pick-list-item[value="${layerId}"] calcite-action`
         );
+        actionElement.attr("icon", isVisible ? "check-square" : "square");
+      }
 
-        // Toggle the icon based on visibility
-        if (isVisible) {
-          actionElement.attr("icon", "check-square"); // Assuming you use 'check' icon for visible
+      function updateGroupIcon(groupElement) {
+        let allOn = true;
+        let allOff = true;
+
+        groupElement.find("calcite-pick-list-item").each(function () {
+          let actionElement = $(this).find("calcite-action");
+          let icon = actionElement.attr("icon");
+
+          if (icon === "check-square") {
+            allOff = false;
+          } else {
+            allOn = false;
+          }
+        });
+
+        let groupAction = groupElement.find("calcite-action.group-action");
+        if (allOn) {
+          groupAction.attr("icon", "check-square");
+        } else if (allOff) {
+          groupAction.attr("icon", "square");
         } else {
-          actionElement.attr("icon", "square"); // Use an appropriate icon for non-visible
+          groupAction.attr("icon", "square"); // Assuming a "minus-square" icon exists for partial state
         }
       }
 
-      // Updated function to add a layer to the pick list with click event handling
       function addLayerToPickList(layer, container) {
-        let turnLayerOff;
-        // Assuming the icon is initially set to "plus" for all items
-        if (sessionStorage.getItem(key) === "yes") {
-          turnLayerOff = "noCondoLayer";
-        } else {
-          turnLayerOff = "condoLayer";
-        }
-
+        let turnLayerOff =
+          sessionStorage.getItem(key) === "yes" ? "noCondoLayer" : "condoLayer";
         if (
           layer.type === "graphics" ||
           layer.title == "Tax Map Annotation" ||
@@ -907,109 +918,100 @@ require([
           layer.id == turnLayerOff
         ) {
           return;
-        } else {
-          var icon;
-
-          layer.visible ? (icon = "check-square") : (icon = "square");
-          // var icon = "square";
-
-          // Create the pick list item and action for each layer
-          var item =
-            $(`<calcite-pick-list-item scale="m" label="${layer.title}" value="${layer.id}" description="${layer.type}">
-      <calcite-action id="action-${layer.id}" slot="actions-end" icon="${icon}" text="${layer.title}"></calcite-action>
-    </calcite-pick-list-item>`);
-
-          // Append the item to the specified container
-          container.append(item);
-
-          // Add click event listener for the action
-          // $(`#action-${layer.id}`).on("click", function () {
-          //   // Toggle visibility
-          //   layer.visible = !layer.visible;
-
-          //   // Swap the icon based on the new visibility state
-          //   var newIcon = layer.visible ? "minus" : "plus";
-          //   $(this).attr("icon", newIcon);
-
-          // });
         }
+
+        let icon = layer.visible ? "check-square" : "square";
+        let item = $(`
+          <calcite-pick-list-item scale="m" label="${layer.title}" value="${layer.id}" description="${layer.type}">
+            <calcite-action id="action-${layer.id}" slot="actions-end" icon="${icon}" text="${layer.title}"></calcite-action>
+          </calcite-pick-list-item>
+        `);
+
+        container.append(item);
       }
 
       function processLayers(layers, container) {
         layers.forEach(function (layer) {
           if (layer.type === "group") {
-            // Check if the group layer is named "hidden group"
             if (layer.title && layer.title.toLowerCase() === "hidden group") {
-              // Skip processing this layer and its sublayers
               return;
             }
 
-            // For group layers, create a calcite-accordion-item
-            var groupTitle = layer.title || "Industry"; // Default title or layer title
-            var accordionItem = $(`
-              <calcite-accordion scale="m">
+            let groupTitle = layer.title || "Industry";
+            let accordionItem = $(`
+              <calcite-accordion heading="${groupTitle} scale="m">
+             
                 <calcite-accordion-item heading="${groupTitle}">
+                <calcite-action class="group-action" slot="actions-end" scale="m" icon="square"></calcite-action>
+                  
                 </calcite-accordion-item>
-              </calcite-accordion>`);
+              </calcite-accordion>
+            `);
 
-            // Recursively process sublayers, adding them as pick list items
-            processLayers(
-              layer.layers.items,
-              accordionItem.find("calcite-accordion-item")
-            );
+            let subContainer = accordionItem.find("calcite-accordion-item");
+            processLayers(layer.layers.items, subContainer);
 
-            // Append the accordion item to the main container
             container.append(accordionItem);
+
+            accordionItem
+              .find("calcite-action.group-action")
+              .on("click", function () {
+                let allOn = true;
+                subContainer.find("calcite-pick-list-item").each(function () {
+                  let actionElement = $(this).find("calcite-action");
+                  if (actionElement.attr("icon") === "square") {
+                    allOn = false;
+                    return false;
+                  }
+                });
+
+                let newState = !allOn;
+                subContainer.find("calcite-pick-list-item").each(function () {
+                  let layerId = $(this).attr("value");
+                  let actionElement = $(this).find("calcite-action");
+                  toggleLayerVisibility(layerId, actionElement, newState);
+                });
+
+                updateGroupIcon(subContainer);
+              });
           } else {
-            // For non-group layers, add them as pick list items
             addLayerToPickList(layer, container);
           }
         });
       }
 
-      function toggleLayerVisibility(layerId, actionElement) {
-        // Find the layer in the webmap
+      function toggleLayerVisibility(layerId, actionElement, state) {
         let layer = webmap.findLayerById(layerId);
-
         if (layer) {
-          // Toggle the layer's visibility
-          layer.visible = !layer.visible;
+          layer.visible = state !== undefined ? state : !layer.visible;
+          actionElement.attr("icon", layer.visible ? "check-square" : "square");
 
-          // If the layer is part of a group layer, you might need to toggle each sublayer
           if (layer.type === "group") {
             layer.layers.forEach((subLayer) => {
               subLayer.visible = layer.visible;
             });
           }
 
-          // Update the action icon based on the new visibility state
-          actionElement.attr("icon", layer.visible ? "check-square" : "square");
-
-          // Optionally, refresh the layer or the view if necessary
-          // view.refresh(); // Uncomment if needed
+          let groupElement = actionElement.closest("calcite-accordion-item");
+          if (groupElement.length) {
+            updateGroupIcon(groupElement);
+          }
         }
       }
 
-      $("#layerList").on("click", "calcite-action", function (event) {
-        // Prevent the default action
-        event.preventDefault();
+      $("#layerList").on(
+        "click",
+        "calcite-action:not(.group-action)",
+        function (event) {
+          event.preventDefault();
+          let layerId = $(this).closest("calcite-pick-list-item").attr("value");
+          toggleLayerVisibility(layerId, $(this));
+        }
+      );
 
-        // Get the layer ID stored in the value of the pick-list-item
-        let layerId = $(this).closest("calcite-pick-list-item").attr("value");
-
-        // Toggle the layer visibility and icon
-        toggleLayerVisibility(layerId, $(this));
-      });
-
-      // Assuming your webmap is loaded and the view is ready
       view.when(function () {
-        // Assuming you have a <calcite-pick-list> with an id="layerList"
         var pickListContainer = $("#layerList");
-
-        // Get the layers from the webmap, might be different based on your actual map setup
-        var layers = webmap.layers.items; // Assuming webmap is your WebMap instance
-
-        // Process each layer and add it to the pick list
+        var layers = webmap.layers.items;
         processLayers(layers, pickListContainer);
       });
 
@@ -1283,6 +1285,9 @@ require([
         firstList = [];
         secondList = [];
         zoomToObjectID = "";
+
+        $("#distanceButton").removeClass("active");
+        $("#areaButton").removeClass("active");
 
         $("#result-btns").hide();
         $("#details-btns").hide();
@@ -1825,6 +1830,8 @@ require([
               let Prior_Appraised_Total =
                 feature.attributes["Prior_Appraised_Total"];
               let Map = feature.attributes["Map"];
+              let Lat = feature.attributes["LAT"];
+              let Lon = feature.attributes["LON"];
 
               // if (Map_.length != 0) {
               //   let query = noCondosLayer.createQuery();
@@ -1883,7 +1890,9 @@ require([
                   Prior_Assessment_Year,
                   Prior_Assessed_Total,
                   Prior_Appraised_Total,
-                  Map
+                  Map,
+                  Lat,
+                  Lon
                 )
               );
             }
@@ -2407,7 +2416,9 @@ require([
           Prior_Assessment_Year,
           Prior_Assessed_Total,
           Prior_Appraised_Total,
-          Map
+          Map,
+          Lat,
+          Lon
         ) {
           this.objectid = objectid;
           this.location = location;
@@ -2444,6 +2455,8 @@ require([
           this.Prior_Assessed_Total = Prior_Assessed_Total;
           this.Prior_Appraised_Total = Prior_Appraised_Total;
           this.Map = Map;
+          this.LAT = Lat;
+          this.LON = Lon;
         }
       }
 
@@ -3885,6 +3898,9 @@ require([
         let objectID2 =
           features.objectid === undefined ? "" : features.objectid;
 
+        let Lat = features.Lat === undefined ? "" : features.Lat;
+        let Lon = features.Lon === undefined ? "" : features.Lon;
+
         zoomToItemId = locationUniqueId;
         zoomToObjectID = objectID2;
 
@@ -3943,6 +3959,8 @@ require([
         <a target="_blank" rel="noopener noreferrer" href=${configVars.tax_bill}&amp;uniqueId=${locationUniqueId}><span style="font-family:Tahoma;font-size:12px;"><strong>Tax Bills</strong></span></a><br>
         <a target="_blank" rel="noopener noreferrer" href=${configVars.pdf_demo}><span style="font-family:Tahoma;font-size:12px;"><strong>Demographics Profile</strong></span></a><br>
         <a target="_blank" rel="noopener noreferrer" href=${configVars.housingUrl}><span style="font-family:Tahoma;font-size:12px;"><strong>Housing Profile</strong></span></a><br>
+        <a target="_blank" rel="noopener noreferrer" href=https://www.google.com/maps/@${Lat},${Lon},3a,75y,90h,90t/data=!3m6!1e1!3m4!1s0x0:0x0!8m2!3d${Lat}!4d${Lon}><span style="font-family:Tahoma;font-size:12px;"><strong>View in Google Maps</strong></span></a><br>
+        <a target="_blank" rel="noopener noreferrer" href=https://www.bing.com/maps?cp=${Lat}~${Lon}&amp;lvl=19.0&amp;style=g&amp;v=2&amp;sV=1><span style="font-family:Tahoma;font-size:12px;"><strong>View in Bing Maps</strong></span></a><br>
               
         `;
         $("#details-spinner").hide();
@@ -4155,6 +4173,9 @@ require([
         let objectID2 =
           matchedObject.objectid === undefined ? "" : matchedObject.objectid;
 
+        let Lat = matchedObject.Lat === undefined ? "" : matchedObject.Lat;
+        let Lon = matchedObject.Lon === undefined ? "" : matchedObject.Lon;
+
         zoomToItemId = locationUniqueId;
         zoomToObjectID = objectID2;
 
@@ -4211,6 +4232,8 @@ require([
     <a target="_blank" rel="noopener noreferrer" href=${configVars.tax_bill}&amp;uniqueId=${locationUniqueId}><span style="font-family:Tahoma;font-size:12px;"><strong>Tax Bills</strong></span></a><br>
     <a target="_blank" rel="noopener noreferrer" href=${configVars.pdf_demo}><span style="font-family:Tahoma;font-size:12px;"><strong>Demographics Profile</strong></span></a><br>
     <a target="_blank" rel="noopener noreferrer" href=${configVars.housingUrl}><span style="font-family:Tahoma;font-size:12px;"><strong>Housing Profile</strong></span></a><br>
+    <a target="_blank" rel="noopener noreferrer" href=https://www.google.com/maps/@${Lat},${Lon},3a,75y,90h,90t/data=!3m6!1e1!3m4!1s0x0:0x0!8m2!3d${Lat}!4d${Lon}><span style="font-family:Tahoma;font-size:12px;"><strong>View in Google Maps</strong></span></a><br>
+    <a target="_blank" rel="noopener noreferrer" href=https://www.bing.com/maps?cp=${Lat}~${Lon}&amp;lvl=19.0&amp;style=g&amp;v=2&amp;sV=1><span style="font-family:Tahoma;font-size:12px;"><strong>View in Bing Maps</strong></span></a><br>
           
     `;
 
@@ -4793,6 +4816,8 @@ require([
                     let Prior_Appraised_Total =
                       feature.attributes["Prior_Appraised_Total"];
                     let Map = feature.attributes["Map"];
+                    let Lat = feature.attributes["Lat"];
+                    let Lon = feature.attributes["Lon"];
 
                     firstList.push(
                       new Parcel(
@@ -4830,7 +4855,9 @@ require([
                         Prior_Assessment_Year,
                         Prior_Assessed_Total,
                         Prior_Appraised_Total,
-                        Map
+                        Map,
+                        Lat,
+                        Lon
                       )
                     );
                   }
