@@ -272,12 +272,14 @@ ul {
   width: 150px;
 }
 
+
+
 #control-panel {
   display: block;
   /* position: relative; */
   /* top: 0; */
   z-index: 1000;
-  height: 125px;
+  height: 135px;
 }
 
 #dropdown {
@@ -991,6 +993,25 @@ calcite-slider::part(tick) {
   z-index: 1000; /* Ensure it stays on top of other elements */
   padding: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px; /* Adjust this as needed */
+}
+#terrano-logo {
+  display: flex;
+  align-items: center;
+  padding-top: 20px;
+}
+
+.content {
+  margin-top: 40px; /* Adjust this value based on the height of your header */
+  height: calc(100vh - 70px); /* Adjust this value based on the height of your header */
+  overflow-y: auto;
+
 }
 
 

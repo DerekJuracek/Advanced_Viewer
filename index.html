@@ -277,6 +277,11 @@
     <div class="container">
       <div id="sidebar2" class="bg-dark sidebar2" style="left: 0px">
         <div id="control-panel">
+          <div class="center-container">
+            <div id="terrano-logo">
+                <img src="Terreno_320x100.png" alt="Terrano Logo">
+            </div>
+          </div>
           <div
             class="btn-toolbar align-items-center"
             role="toolbar"
@@ -454,8 +459,7 @@
         <div
           class="container"
           id="dropdown"
-          style="padding-bottom: 20px"
-      
+          style="padding-bottom: 20px;"
         >
           <div class="spinner-container" style="display: none">
             <div class="spinner-border text-light" role="status">
@@ -562,10 +566,6 @@
                     min-label="Highest Price"
                     style="color: white; width: 90%; padding-left: 20px"
                   ></calcite-slider>
-                  <!-- <calcite-notice open icon kind="info" width="full" scale="s"> -->
-                  <!-- <div slot="title">Temperature Monitor Information</div>
-                      <div slot="message">Readings outside this range will be recorded, but ignored during analysis.</div> -->
-                  <!-- </calcite-notice> -->
                 </calcite-label>
               </div>
               <div class="filterContainer">
@@ -643,10 +643,6 @@
                     min-label="Acres"
                     style="width: 90%; padding-left: 20px"
                   ></calcite-slider>
-                  <!-- <calcite-notice open icon kind="info" width="full" scale="s"> -->
-                  <!-- <div slot="title">Temperature Monitor Information</div>
-                      <div slot="message">Readings outside this range will be recorded, but ignored during analysis.</div> -->
-                  <!-- </calcite-notice> -->
                 </calcite-label>
               </div>
               <div class="filterContainer">
@@ -684,21 +680,7 @@
                     min-label="Date"
                     style="width: 90%; padding-left: 20px"
                   ></calcite-slider>
-                  <!-- <calcite-notice open icon kind="info" width="full" scale="s"> -->
-                  <!-- <div slot="title">Temperature Monitor Information</div>
-                      <div slot="message">Readings outside this range will be recorded, but ignored during analysis.</div> -->
-                  <!-- </calcite-notice> -->
                 </calcite-label>
-                <!-- <calcite-combobox id="soldFilter" placeholder="All" scale="m">
-                  <calcite-combobox-item
-                    value="Natural Resources"
-                    text-label="Natural Resources"
-                  ></calcite-combobox-item>
-                  <calcite-combobox-item
-                    value="Agriculture"
-                    text-label="Agriculture"
-                  ></calcite-combobox-item>
-                </calcite-combobox> -->
               </div>
               <div class="filterContainer">
                 <div class="filterLabel green-class">Sale Price is</div>
@@ -735,28 +717,20 @@
                     min-label="Highest Price"
                     style="color: white; width: 90%; padding-left: 20px"
                   ></calcite-slider>
-                  <!-- <calcite-notice open icon kind="info" width="full" scale="s"> -->
-                  <!-- <div slot="title">Temperature Monitor Information</div> -->
-                  <!-- <div slot="message">
-                      Readings outside this range will be recorded, but ignored
-                      during analysis.
-                    </div> -->
-                  <!-- </calcite-notice> -->
                 </calcite-label>
               </div>
             </div>
             <div style="padding-top: 10px">
-              <button type="button" id="clearFilter" class="btn btn-info">
+              <button type="button" id="clearFilter" class="btn btn-info btn-sm">
                 Reset Filters
                 </button>
-              <button type="button" id="submitFilter" class="btn btn-info">
+              <button type="button" id="submitFilter" class="btn btn-info btn-sm">
                 Submit
               </button>
-            
             </div>
           </div>
 
-          <div class="container" id="ResultDiv" style="display: none; padding-bottom: 5px; padding-top: 5px; padding-left: 0px; padding-right: 0px; ">
+          <div class="container" id="ResultDiv" style="display: none; padding-bottom: 15px; padding-top: 5px; padding-left: 0px; padding-right: 30px; position: absolute; z-index: 1001;">
             <div class="d-flex justify-content-between">
               <div id="total-results" style="display: none"></div>
               <div class="dropdown">
@@ -766,13 +740,12 @@
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="z-index: 1001;">
                   <button class="dropdown-item btn-sm" id="sortByOwner">Sort by Owner</button>
                   <button class="dropdown-item btn-sm" id="sortByLocation">Sort by Location</button>
-                  <!-- <button class="dropdown-item btn-sm" id="sortByStreet">Sort by Street</button> -->
                 </div>
               </div>
             </div>
           </div>
         
-          <div id="featureWid" style="display: none"></div>
+          <div id="featureWid" class="content" style="display: none;"></div>
           <div
             id="WelcomeBox"
             style="color: white; text-align: center; font-size: 14px"
