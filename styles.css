@@ -6,7 +6,10 @@
   --text-color: #333; /* Dark Grey */
   /* --background-color: rgba(180, 180, 180, 0.8); */
   --background-color: rgba(30, 30, 30, 0.8); 
+
 }
+
+
 
 .btn-info {
   background-color: rgba(127, 42, 145, 0.8) !important;
@@ -270,6 +273,14 @@ ul {
 
 #searchInput {
   width: 150px;
+}
+
+/* #searchInput:active {
+  background-color: #ff5722;
+} */
+
+.custom-example-theme {
+  --calcite-color-brand: #c20044 !important;
 }
 
 
@@ -957,9 +968,9 @@ calcite-slider::part(tick) {
   display: flex;
   flex-direction: column;
   position: absolute;
-  right: 0; /* Stick to the right side */
+  right: 0;
   top: 50%;
-  transform: translateY(-50%); /* Optional: adds space between the buttons */
+  transform: translateY(-50%); 
 }
 
 .justZoom,
@@ -979,8 +990,8 @@ calcite-slider::part(tick) {
 }
 
 #welcomeImage {
-  text-align: center; /* Align the content (image) horizontally */
-  display: flex; /* Use flexbox */
+  text-align: center;
+  display: flex; 
   justify-content: center;
 }
 
@@ -989,8 +1000,8 @@ calcite-slider::part(tick) {
   top: 0;
   left: 0;
   width: 100%;
-  background-color: white; /* Match the background color of your page */
-  z-index: 1000; /* Ensure it stays on top of other elements */
+  background-color: white;
+  z-index: 1000; 
   padding: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -999,7 +1010,7 @@ calcite-slider::part(tick) {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100px; /* Adjust this as needed */
+  height: 100px;
 }
 #terrano-logo {
   display: flex;
@@ -1008,8 +1019,8 @@ calcite-slider::part(tick) {
 }
 
 .content {
-  margin-top: 40px; /* Adjust this value based on the height of your header */
-  height: calc(100vh - 70px); /* Adjust this value based on the height of your header */
+  margin-top: 40px;
+  height: calc(100vh - 70px);
   overflow-y: auto;
 
 }

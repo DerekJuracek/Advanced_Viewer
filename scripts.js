@@ -1436,7 +1436,6 @@ require([
                 extent: newExtent, // Set the extent to the new adjusted extent
               });
             });
-            // You can perform any actions you want here, such as zooming to a location
           }
         });
       });
@@ -1524,12 +1523,6 @@ require([
         .addEventListener("click", function () {
           sortUniqueArray("location");
         });
-
-      // document
-      //   .getElementById("sortByStreet")
-      //   .addEventListener("click", function () {
-      //     sortUniqueArray("Street_Name");
-      //   });
 
       function buildResultsPanel(
         features,
@@ -1696,22 +1689,10 @@ require([
         $("#exportButtons").show();
         $("#exportResults").hide();
         $("#csvExportSearch").show();
-
         $(".spinner-container").hide();
         $(`li[object-id="${pointGraphic}"]`).remove();
 
-        // $(".justZoom").on("click", function (event) {
-        //   console.log(event);
-        //   // Handle button click event here
-        //   console.log("Button clicked!");
-        //   event.stopPropagation();
-        //   // You can perform any actions you want here, such as zooming to a location
-        // });
-
         listGroup.addEventListener("click", function (event) {
-          // event.stopPropagation();
-          // event.preventDefault();
-
           if (
             event.target.closest(".justZoom") ||
             event.target.closest(".justZoomBtn")
@@ -1726,7 +1707,6 @@ require([
             DetailsHandle.remove();
           }
           $("#select-button").attr("title", "Select Enabled");
-          // clickHandle.remove();
           // Check if the clicked element is an li or a descendant of an li
           let targetElement = event.target.closest("li");
 
@@ -1736,7 +1716,6 @@ require([
           // Now you can handle the click event as you would in the individual event listener
           let itemId = targetElement.getAttribute("data-id");
           let objectID = targetElement.getAttribute("object-id");
-          // buildZoomToFeature(objectID, polygonGraphics, itemId);
           zoomToFeature(objectID, polygonGraphics, itemId);
           // DetailsHandle = view.on("click", handleDetailsClick);
           // clickHandle.remove();
@@ -1772,7 +1751,6 @@ require([
         let pointGraphic;
         let pointLocation;
         let pointGisLink;
-        // console.log(firstList);
         function createList(features) {
           features.forEach(function (feature) {
             // PUT BACK TO FILTER OUT EMPTY OWNERS
@@ -1803,7 +1781,6 @@ require([
               let Functional_Obs = feature.attributes["Functional_Obs"];
               let External_Obs = feature.attributes["External_Obs"];
               let orig_date = feature.attributes["Sale_Date"];
-              // Assuming this is your timestamp
               let Sale_Date = formatDate(orig_date);
               let Sale_Price = feature.attributes["Sale_Price"];
               let Vol_Page = feature.attributes["Vol_Page"];
@@ -1812,7 +1789,6 @@ require([
               let Influence_Factor = feature.attributes["Influence_Factor"];
               let Influence_Type = feature.attributes["Influence_Type"];
               let Land_Type = feature.attributes["Land_Type"];
-
               let Prior_Assessment_Year =
                 feature.attributes["Prior_Assessment_Year"];
               let Prior_Assessed_Total =
@@ -1823,27 +1799,6 @@ require([
               let Lat = feature.attributes["LAT"];
               let Lon = feature.attributes["LON"];
 
-              // if (Map_.length != 0) {
-              //   let query = noCondosLayer.createQuery();
-              //   query.where = `OBJECTID = ${objectId}`;
-              //   query.returnGeometry = true; // Adjust based on your needs
-              //   query.outFields = ["*"];
-
-              //   let query2 = CondosLayer.createQuery();
-              //   query2.where = `OBJECTID = ${objectId}`;
-              //   query2.returnGeometry = true; // Adjust based on your needs
-              //   query2.outFields = ["*"];
-
-              //   if (sessionStorage.getItem(key) === "no") {
-              //     noCondosLayer.queryFeatures(query).then(function (result) {
-              //       console.log(result);
-              //     });
-              //   } else {
-              //     CondosLayer.queryFeatures(query2).then(function (result) {
-              //       console.log(result);
-              //     });
-              //   }
-              // }
               firstList.push(
                 new Parcel(
                   objectId,
@@ -1890,7 +1845,6 @@ require([
         }
 
         if (e) {
-          // if (features.length <= 1) {
           pointGraphic = features[0].attributes.OBJECTID;
           pointLocation = features[0].attributes.Location;
           pointGisLink = features[0].attributes.GIS_LINK;
@@ -1915,7 +1869,6 @@ require([
         } else {
           if (!features) {
             buildResultsPanel("", polygonGraphics, e, pointGraphic);
-            // removeDups(pointGraphic)
           } else if (features.length > 1) {
             if (!lasso) {
               features = features.filter(
@@ -1973,17 +1926,7 @@ require([
           },
         };
 
-        // means its been a click event
-        // triggers when details or click handle selected and used to select parcels
-        // this only runs on click handle, shouldn't be used for details?
-        // removed from details handle logic for now
-        // they run separate logic
         if (ClickEvent) {
-          // goes through and creates a graphic on clicked polygon
-          // then removes duplicate if a user clicked on an existing polygon
-          // then at the end adds it back
-          // really just concerned with click logic
-
           let array = [];
           bufferGraphicId = polygonGeometries.features[0].attributes.OBJECTID;
           pointGisLink = features[0].attributes.GIS_LINK;
@@ -1995,16 +1938,6 @@ require([
           });
 
           polygonGraphics2.push(graphic);
-
-          // somethings not write here
-          // maybe not getting removed from firstList
-          // so if you remove graphic and click again, firstList still has it
-          // so count > 1 and removes its again not adding
-
-          // getting added to list first now
-          // so its finding the same value that its trying to add as a graphic
-          // this logic wont work as is it will always keep removing graphic
-          // maybe use graphic instead of firstList here
 
           countCondos = firstList.filter(
             (g) => g.GIS_LINK === pointGisLink
@@ -2032,28 +1965,14 @@ require([
               if (clickHandle) {
                 clickHandle.remove();
               }
-              // NO HANDLE ADDED YET, USER CLICK ON SELECT BUTTON TO ADD
-              // NOT IN DETAILS PANE
-              // IN RESULTS PANE
-              //clickHandle = view.on("click", handleClick);
             }
 
             // will zoom to extent of adding and deselecting
             // view.goTo(polygonGraphics);
           } else {
-            // let id = polygonGraphics2[0].id;
             graphicsLayer.addMany(polygonGraphics2);
-            // if (polygonGraphics.length >= 1) {
-            //   polygonGraphics = [...polygonGraphics, polygonGraphics2[0]];
-            // }
           }
-          // will zoom to extent of adding and deselecting
-          // view.goTo(polygonGraphics);
         } else {
-          // no a click event
-          // search with only something in table
-          // bufferGraphicId = "addPolygons";
-
           if (tableSearch) {
             // First, filter out features without geometry
             const featuresWithGeometry = features.filter(
@@ -2103,16 +2022,6 @@ require([
             view.goTo(polygonGraphics);
           }
         }
-
-        // if (polygonGraphics2.length >= 1) {
-        //   graphicsLayer.addMany(polygonGraphics2);
-        // }
-
-        // if (!polygonGraphics && !ClickEvent) {
-        //   polygonGraphics = polygonGraphics2;
-        // } else {
-        //   polygonGraphics = polygonGraphics2;
-        // }
 
         if (!polygonGraphics) {
           polygonGraphics = polygonGraphics2;
@@ -2252,17 +2161,11 @@ require([
         clearContents(e, "no");
         sketchGL.removeAll();
 
-        // Check if the key exists in sessionStorage
         if (sessionStorage.getItem(key) === "no") {
           noCondosLayer.visible = true;
         } else {
           CondosLayer.visible = true;
         }
-        // if (lasso) {
-        //   sketch.create("polygon");
-        // } else {
-        //   sketch.cancel();
-        // }
       });
 
       // listen to create event, only respond when event's state changes to complete
@@ -2300,18 +2203,11 @@ require([
         lasso = false;
 
         if (select && !lasso) {
-          // $("#select-button").removeClass("btn-info");
-          // $("#lasso").removeClass("btn-info");
-
           $("#lasso").removeClass("btn-warning");
           $("#select-button").addClass("btn-warning");
         } else {
           $("#select-button").removeClass("btn-warning");
         }
-
-        // $("#lasso").removeClass("btn-warning");
-        // $("#select-button").addClass("btn-warning");
-        // $("#lasso").prop("disabled", true);
 
         if (sessionStorage.getItem(key) === "no") {
           noCondosLayer.visible = true;
@@ -2365,7 +2261,6 @@ require([
 
       $("#home").on("click", function (e) {
         view.goTo(configVars.homeExtent);
-        // view.goTo(webmap.portalItem.extent);
       });
 
       class Parcel {
@@ -2483,7 +2378,6 @@ require([
 
         $(".spinner-container").show();
         const tableSearch = true;
-        // console.log(firstList);
         let whereClause = `
           Street_Name LIKE '%${searchTerm}%' OR 
           MBL LIKE '%${searchTerm}%' OR 
@@ -2511,8 +2405,6 @@ require([
         if (sessionStorage.getItem(key) === "no") {
           noCondosLayer.queryFeatures(query).then(function (result) {
             triggerUrl = result.features;
-            // console.log(`no condos result: ${result.features}`);
-            // view.goTo(result.features);
             if (result.features.length >= 1) {
               triggerUrl = result.features;
               noCondosParcelGeom = result.features;
@@ -2533,8 +2425,6 @@ require([
                 });
               }
             } else if (result.features.length === 1 && firstList.length > 2) {
-              // console.log(result.features[0].attributes);
-
               const firstQuery = noCondosTable.createQuery();
               firstQuery.where = whereClause;
               firstQuery.returnGeometry = false;
@@ -2547,9 +2437,6 @@ require([
                   triggerListGroup(triggerUrl, searchTerm);
                 }
               });
-
-              // addPolygons(firstList, view.graphics);
-              // processFeatures(firstList);
             } else {
               const firstQuery = noCondosTable.createQuery();
               firstQuery.where = whereClause;
@@ -2610,7 +2497,6 @@ require([
             }
           });
         }
-        // mapHandle = view.on("click", mapDetailsClick);
         if (clickHandle) {
           clickHandle.remove();
         }
@@ -2622,20 +2508,6 @@ require([
         select = false;
       }
 
-      // var clickHandle = view.on("click", handleClick);
-      // var DetailsHandle = view.on("click", handleDetailsClick);
-      // mapHandle = view.on("click", mapDetailsClick);
-
-      // function that will by pass search and polygongraphics
-      // might need to add polygongraphics from here
-
-      // function mapDetailsClick(event) {
-      //   console.log("map Details getting clicked");
-
-      //   zoomToFeature(objectID, polygonGraphics, itemId);
-      //   buildDetailsPanel(objectID, itemId);
-
-      // }
       function handleDetailsClick(event) {
         if (clickHandle) {
           clickHandle.remove();
@@ -2657,8 +2529,6 @@ require([
         $("#results-div").css("height", "150px");
         $("#backButton-div").css("padding-top", "0px");
 
-        // isClickEvent = true;
-
         if (sessionStorage.getItem(key) === "no") {
           let query = CondosLayer.createQuery();
           query.geometry = event.mapPoint;
@@ -2673,8 +2543,6 @@ require([
             let objID = response.features[0].attributes.OBJECTID;
             let geom = response.features[0].geometry;
             let item = response.features[0];
-            // console.log(totalResults);
-
             zoomToDetail(objID, geom, item);
             clickDetailsPanel(totalResults);
           });
@@ -2692,7 +2560,6 @@ require([
             let objID = response.features[0].attributes.OBJECTID;
             let geom = response.features[0].geometry;
             let item = response.features[0];
-
             zoomToDetail(objID, geom, item);
             clickDetailsPanel(totalResults);
           });
@@ -2733,13 +2600,8 @@ require([
 
           CondosLayer.queryFeatures(query2).then(function (response) {
             totalResults = response.features;
-            // gets added to firstList in processFeatures
-            // so when you splice it, it will be right back every click
-            // logic needs to be different
             processFeatures(totalResults, "", event);
             addPolygons(response, view.graphics, isClickEvent);
-
-            // processFeatures(totalResults, "", event, removeFromList);
           });
         }
       }
@@ -2755,9 +2617,7 @@ require([
             $("#filterDiv").hide();
             $("#layerListDiv").hide();
             $("#featureWid").show();
-            // $("#result-btns").show();
             $("#total-results").show();
-
             $("#ResultDiv").show();
             $("#details-btns").hide();
             $("#detail-content").empty();
@@ -2773,9 +2633,7 @@ require([
             $("#exportSearch").show();
             $("#results-div").css("height", "200px");
             $(".center-container").show();
-
             view.graphics.removeAll();
-
             view.graphics.addMany(polygonGraphics);
           } else {
             $("#total-results").hide();
@@ -2834,20 +2692,6 @@ require([
             $("#select-button").addClass("btn-warning");
             clickHandle = view.on("click", handleClick);
           }
-
-          // if (polygonGraphics.length > 1) {
-          //   view.goTo({
-          //     target: polygonGraphics,
-          //     zoom: oldZoom,
-          //   });
-
-          //   console.log(`more than 1`);
-          // } else {
-          //   view.goTo({
-          //     target: polygonGraphics,
-          //     zoom: oldZoom,
-          //   });
-          // }
         });
       });
 
@@ -2912,7 +2756,6 @@ require([
           $("#total-results").hide();
           $("#ResultDiv").hide();
           $("#details-btns").hide();
-
           $("#filterDiv").hide();
           $("#layerListDiv").hide();
           $("#abutters-content").show();
@@ -2922,7 +2765,6 @@ require([
           $("#parcel-feature").empty();
           $("#backButton-div").css("padding-top", "78px");
           $("#abutters-title").html(`Abutting Parcels (0)`);
-
           buildAbuttersPanel(e);
           value.value = 100;
           runBuffer("100");
@@ -2951,7 +2793,6 @@ require([
           $("#total-results").hide();
           $("#ResultDiv").hide();
           $("#details-btns").hide();
-
           $("#filterDiv").hide();
           $("#layerListDiv").hide();
           $("#abutters-content").show();
@@ -2961,10 +2802,8 @@ require([
           $("#parcel-feature").empty();
           $("#backButton-div").css("padding-top", "78px");
           $("#abutters-title").html(`Abutting Parcels (0)`);
-
           buildAbuttersPanel(e);
           value.value = 100;
-
           runAttBuffer("100");
         });
       });
@@ -3065,10 +2904,8 @@ require([
             let Mailing_Zip = feature.Mailing_Zip;
             let Location = feature.location;
             let uniqueid = feature.uniqueId;
-
             const listItem = document.createElement("li");
             listItem.classList.add("export-search-list");
-
             let listItemHTML;
 
             listItemHTML = ` ${owner} ${coOwner} <br> UniqueID: ${uniqueid} <br> ${mailingAddress} <br> ${Mailing_City}, ${Mail_State} ${Mailing_Zip}`;
@@ -3129,7 +2966,6 @@ require([
           // Create anchor element to download CSV
           const link = document.createElement("a");
           if (link.download !== undefined) {
-            // Feature detection for download attribute
             const url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
             link.setAttribute("download", "export.csv");
@@ -3145,7 +2981,6 @@ require([
         $("#csvExportSearch").on("click", function (e) {
           e.stopPropagation();
 
-          // Row headers
           const headers = [
             "Owner",
             "Co-Owner",
@@ -3191,9 +3026,6 @@ require([
             link.click();
             document.body.removeChild(link);
           }
-
-          // Call ExportDetails function if needed
-          // ExportDetails("search");
         });
       });
 
@@ -3240,8 +3072,6 @@ require([
 
           ExportDetails("details");
           document.body.removeChild(printContainer);
-          // e.stopPropagation();
-          // ExportDetails("details");
         });
       });
 
@@ -3278,10 +3108,9 @@ require([
 
         // Handler for keypress event on the input field
         $("#buffer-value").on("keypress", function (e) {
-          // Replace 'yourInputFieldId' with the actual ID of your input field
           if (e.which == 13) {
             currentVal = value.value = parseInt(value.value); // 13 is the Enter key
-            e.preventDefault(); // Prevent the default form submission
+            e.preventDefault();
             bufferPush();
           }
         });
@@ -3305,70 +3134,6 @@ require([
         });
       });
 
-      // UNCOMMENT TO HIGHLIGHT PARCELS OR USE LOGIC
-      // TO HIGHLIGHT ON MOUSEOVER
-      // ALSO HIGHLIGHTS DETIAL PANE RESULTS
-
-      // view
-      //   .when()
-      //   .then(() => {
-      //     return noCondosLayer.when();
-      //   })
-      //   .then((layer) => {
-      //     return view.whenLayerView(layer);
-      //   })
-      //   .then((layerView) => {
-      //     // $(document).ready(function () {
-      //     view.on("pointer-move", function (event) {
-      //       let query = noCondosLayer.createQuery();
-      //       query.geometry = view.toMap(event); // the point location of the pointer
-      //       query.distance = 1;
-      //       query.units = "feet";
-      //       query.spatialRelationship = "intersects"; // this is the default
-      //       query.returnGeometry = true;
-      //       query.outFields = ["*"];
-
-      //       layerView.queryFeatures(query).then(function (response) {
-      //         let responseObj = response.features;
-      //         let responseVal = responseObj[0].attributes.OBJECTID;
-      //         highlightResponse = responseVal;
-      //         // console.log(responseVal);
-
-      //         layerView.highlightOptions = {
-      //           color: [222, 49, 99],
-      //           // color: [252, 216, 13], orange
-      //           haloOpacity: 1,
-      //           haloSize: 2,
-      //           fillOpacity: 0,
-      //         };
-
-      //         if (highlight) {
-      //           highlight.remove();
-      //         }
-
-      //         highlight = layerView.highlight(responseVal);
-
-      //         $("li").css("border-color", "white");
-      //         if (responseVal) {
-      //           $("li")
-      //             .filter('[object-id="' + responseVal + '"]')
-      //             .css("border-color", "red");
-      //           highlightResponse = false;
-      //         }
-
-      //         view.on("pointer-leave", function (event) {
-      //           $("li")
-      //             .filter('[object-id="' + responseVal + '"]')
-      //             .css("border-color", "white");
-      //         });
-      //       });
-      //     });
-
-      //     if (highlight) {
-      //       highlight.remove();
-      //     }
-      //   });
-
       function ExportDetails(type) {
         var listItems;
         if (type === "search") {
@@ -3383,11 +3148,6 @@ require([
           // Store the original HTML of each list item
           originalContents[index] = li.innerHTML;
         });
-
-        // document.querySelectorAll(".removable-div").forEach(function (div) {
-        //   div.parentNode.removeChild(div); // Remove the div from its parent
-        // });
-        // Extract all list items from the provided HTML structure.
 
         var transformedContent = "<ul class='label-list'>";
         listItems.forEach(function (item) {
@@ -3484,13 +3244,6 @@ require([
           noCondosTable.queryFeatures(query).then((response) => {
             buildPanel(response);
           });
-
-          // Now use this query string to query the table service
-          // const tableQuery = {
-          //   where: queryString,
-          //   outFields: ["*"],
-          //   returnGeometry: true,
-          // };
         } else {
           console.log("No buffer results to query.");
         }
@@ -3503,15 +3256,9 @@ require([
         const foundLocs = results.features;
         totalResults = foundLocs.length;
         lastResults = totalResults;
-
         exportResults = foundLocs;
-        // console.log(exportResults);
-
-        // let listItemHTML = "";
-
         exportCsv = foundLocs;
 
-        // console.log(lastResults);
         foundLocs.forEach(function (feature) {
           let locationGISLINK = feature.attributes["GIS_LINK"];
           let objectID = feature.attributes["OBJECTID"];
@@ -3664,11 +3411,7 @@ require([
             );
 
             lastResults = finalResults;
-            // console.log(lastResults);
-
             exportResults = bothResults;
-            // console.log(exportResults);
-
             let listItemHTML = "";
             exportCsv = foundLocs;
 
@@ -3775,10 +3518,8 @@ require([
 
         if (sessionStorage.getItem(key) == "no" && CondoBuffer == false) {
           bufferResults = geometryEngine.buffer(targetExtent, buffer, unit);
-          // console.log(`no condos buffer run`);
         } else {
           bufferResults = geometryEngine.buffer(detailsGeometry, buffer, unit);
-          // console.log(`condos buffer run`);
         }
 
         addOrUpdateBufferGraphic(bufferResults);
@@ -3946,13 +3687,6 @@ require([
         $(document).on("click", ".abutters-zoom", function (event) {
           event.stopPropagation();
           event.preventDefault();
-
-          // let targetElement = event.target.closest("li");
-          // let zoomToItemId = locationUniqueId;
-          // let zoomToObjectID = objectID2;
-
-          // console.log(itemId);
-          // console.log(objectID);
 
           if (sessionStorage.getItem(key) === "no") {
             // If the key doesn't exist, set it to "none"
@@ -4360,24 +4094,6 @@ require([
             target: geometry,
             zoom: oldZoom,
           });
-
-          // view.goTo(geometry);
-          // console.log(geometry);
-          // const fillSymbol = {
-          //   type: "simple-fill",
-          //   color: [0, 0, 0, 0.1],
-          //   outline: {
-          //     color: [255, 0, 0, 1],
-          //     width: 3,
-          //   },
-          // };
-
-          // const polygonGraphic = new Graphic({
-          //   geometry: targetExtent,
-          //   symbol: fillSymbol,
-          //   id: bufferGraphicId,
-          // });
-          // view.graphics.addMany([polygonGraphic]);
         });
       }
 
@@ -4643,18 +4359,12 @@ require([
         let listItemHTML;
 
         listItemHTML = ` ${locationOwner} ${locationCoOwner} <br> ${locationAddress} ${locationAddress2} <br> ${locationMailCity}, ${locationMailState} ${locationMailZip}`;
-
-        // listItemHTML = ` ${locationMaillingAddress} <br> ${locationUniqueId}  ${locationMBL} <br>  ${locationOwner}`;
-
-        // Append the new list item to the list
         listItem.innerHTML += listItemHTML;
 
         listItem.setAttribute("data-id", locationGISLINK);
         $("#abutters-spinner").hide();
         listGroup.appendChild(listItem);
         abuttersDiv.appendChild(listGroup);
-
-        // $("#selected-feature").html = "Abutters";
       };
 
       // LOGIC FOR SEARCH OF FEATURE LAYERS AND RELATED RECORDS
@@ -4680,14 +4390,7 @@ require([
           runQuerySearchTerm = e;
         }
 
-        // let searchTerm;
         let searchTerm = runQuerySearchTerm;
-
-        // if (searchTerm == undefined && runQuerySearchTerm) {
-        //   searchTerm = runQuerySearchTerm;
-        // } else {
-        //   searchTerm = e;
-        // }
 
         if (searchTerm.length < 3 || !searchTerm) {
           clearContents();
@@ -4722,8 +4425,6 @@ require([
           noCondosTable
             .queryFeatures(query)
             .then((response) => {
-              // console.log(response);
-
               if (response.features.length > 0) {
                 features = response.features;
                 features.forEach(function (feature) {
@@ -4758,7 +4459,6 @@ require([
                     let Functional_Obs = feature.attributes["Functional_Obs"];
                     let External_Obs = feature.attributes["External_Obs"];
                     let orig_date = feature.attributes["Sale_Date"];
-                    // Assuming this is your timestamp
                     let Sale_Date = formatDate(orig_date);
                     let Sale_Price = feature.attributes["Sale_Price"];
                     let Vol_Page = feature.attributes["Vol_Page"];
@@ -4821,16 +4521,6 @@ require([
                     );
                   }
                 });
-
-                // let debounceTimer;
-                // function bufferQuery() {
-                //   clearTimeout(debounceTimer);
-                //   debounceTimer = setTimeout(() => {
-                //     queryRelatedRecords(runQuerySearchTerm);
-                //   }, 300);
-                // }
-                // bufferQuery();
-                // console.log(whereClause);
                 queryRelatedRecords(runQuerySearchTerm);
               }
             })
@@ -4849,15 +4539,11 @@ require([
 
         let itemId = parcel[0].attributes.Uniqueid;
         let objectID = parcel[0].attributes.OBJECTID;
-        // buildZoomToFeature(objectID, polygonGraphics, itemId);
         zoomToFeature(objectID, polygonGraphics, itemId);
-
         $("#details-spinner").show();
         $("#WelcomeBox").hide();
         $("#featureWid").hide();
         $("#result-btns").hide();
-
-        // $("div#total-results").hide();
         $("#abutters-content").hide();
         $("#details-btns").show();
         $("#detailBox").show();
@@ -4875,28 +4561,9 @@ require([
         $("#backButton-div").css("padding-top", "0px");
         document.getElementById("total-results").style.display = "none";
         $("#ResultDiv").hide();
-
-        // let targetElement = event.target.closest("li");
-
-        // // If it's not an li, exit the handler
-        // if (!targetElement) return;
-
-        // // Now you can handle the click event as you would in the individual event listener
-        // let itemId = targetElement.getAttribute("data-id");
-        // let objectID = targetElement.getAttribute("object-id");
-        // // buildZoomToFeature(objectID, polygonGraphics, itemId);
-        // zoomToFeature(objectID, polygonGraphics, itemId);
         buildDetailsPanel(objectID, itemId);
         $("#total-results").hide();
         $("#ResultDiv").hide();
-        // totalResults = response.features;
-        // let objID = response.features[0].attributes.OBJECTID;
-        // let geom = response.features[0].geometry;
-        // let item = response.features[0];
-        // console.log(totalResults);
-
-        // zoomToDetail(objID, geom, item);
-        // clickDetailsPanel(totalResults);
       }
 
       // Helper function to parse and modify URL query parameters
@@ -4965,15 +4632,10 @@ require([
           var searchTerm = e.target.value.toUpperCase();
 
           if (searchTerm.length < 2) {
-            //CondosLayer.visible = false;
-            //noCondosLayer.visible = false;
-
             firstList = [];
             secondList = [];
             polygonGraphics = [];
             $("#select-button").removeClass("btn-warning");
-            // $("#lasso").prop("disabled", false);
-            // select = true;
             $("#searchInput ul").remove();
             $("#suggestions").hide();
             $("#featureWid").empty();
@@ -5116,9 +4778,6 @@ require([
       let debounceTimer2;
 
       function hitQuery() {
-        // console.log(`getting hit`);
-        // $("#sidebar2").css("left", "-350px");
-        // $("#results-div").css("left", "0px");
         if (sessionStorage.getItem(key) === "no") {
           noCondosLayer.visible = true;
         } else {
@@ -5139,8 +4798,6 @@ require([
         $("#detailBox").hide();
         $("#result-btns").hide();
         $("#details-btns").hide();
-        // $("#exportResults").hide();
-        // $("#exportSearch").show();
         $("#abutters-title").html(`Abutting Parcels (0)`);
         polygonGraphics = [];
         view.graphics.removeAll();
@@ -5150,7 +4807,6 @@ require([
         if (clickHandle) {
           clickHandle.remove();
         }
-
         runQuery();
       }
 
@@ -5161,7 +4817,6 @@ require([
           $("#results-div").css("left", "0px");
           $("#exportResults").hide();
           $("#csvExportResults").hide();
-          // let debounceTimer;
           function throttleQuery() {
             clearTimeout(debounceTimer2);
             debounceTimer2 = setTimeout(() => {
@@ -5172,7 +4827,6 @@ require([
         });
 
       $(document).ready(function () {
-        // let queryValues = [];
         let queryParameters = {
           streetName: null,
           owner: null,
@@ -5398,14 +5052,6 @@ require([
           queryParameters.streetName = e.target.value;
           let itemsList = $("#streetFilter");
           let selectedItems = itemsList[0].selectedItems;
-          // selectedItems = [];
-
-          // Select all close buttons within the chips and trigger the click event
-
-          // let child = Array.from(itemsList[0].children);
-
-          // child.map((item) => item.selected == false);
-          // `selectedItems` is an array of the selected item elements. You can loop through it or perform any other operations you need:
           selectedItems.forEach((item) => {
             console.log(item.value); // Assuming each item has a value attribute
           });
@@ -5418,22 +5064,6 @@ require([
         });
 
         $("#app-val-slider").on("calciteSliderChange", function (e) {
-          // Replace "id" with your specific field name
-
-          // Define the statistics options for maximum and minimum
-
-          // Execute the query
-          //   queryTask.execute(query).then(function(result){
-          //     // Process the result
-          //     var max = result.features[0].attributes.maxValue;
-          //     var min = result.features[0].attributes.minValue;
-          //     console.log("Max Value:", max);
-          //     console.log("Min Value:", min);
-          //   }).catch(function(error){
-          //     console.error(error);
-          //   });
-          // });
-
           value = e.target.value;
           minVal = value[0];
           maxVal = value[1];
@@ -5445,16 +5075,12 @@ require([
           // console.log(`appraised value is: ${value}`);
         });
 
-        // Listen for input event on the input elements
         $("#app-val-min, #app-val-max").on("input", function () {
-          // Get the values from the input elements
           var minVal = parseInt($("#app-val-min").val());
           var maxVal = parseInt($("#app-val-max").val());
 
-          // Update the slider values
           const slider1 = document.querySelector("#app-val-slider");
           slider1.value = [minVal, maxVal];
-          //$("#app-val-slider").value("update", [minVal, maxVal]);
         });
 
         $("#assess-val-slider").on("calciteSliderChange", function (e) {
@@ -5466,40 +5092,30 @@ require([
           $("#assess-val-min").val(minVal);
           queryParameters.assessedValueMax = maxVal;
           $("#assess-val-max").val(maxVal);
-
-          // console.log(`assessed value slider is: ${value}`);
         });
 
-        // Listen for input event on the input elements
         $("#assess-val-min, #assess-val-max").on("input", function () {
-          // Get the values from the input elements
           var minVal = parseInt($("#assess-val-min").val());
           var maxVal = parseInt($("#assess-val-max").val());
 
-          // Update the slider values
           const slider2 = document.querySelector("#assess-val-slider");
           slider2.value = [minVal, maxVal];
-          //$("#app-val-slider").value("update", [minVal, maxVal]);
         });
 
         $("#propertyFilter").on("calciteComboboxChange", function (e) {
           queryParameters.propertyType = e.target.value;
-          // console.log(`property filter: ${value}`);
         });
 
         $("#buildingFilter").on("calciteComboboxChange", function (e) {
           queryParameters.buildingType = e.target.value;
-          // console.log(`building filter is: ${value}`);
         });
 
         $("#buildingUseFilter").on("calciteComboboxChange", function (e) {
           queryParameters.buildingUseType = e.target.value;
-          // console.log(`building use filter is: ${value}`);
         });
 
         $("#designTypeFilter").on("calciteComboboxChange", function (e) {
           queryParameters.designType = e.target.value;
-          // console.log(`design type filter is: ${value}`);
         });
 
         $("#acres-val-slider").on("calciteSliderChange", function (e) {
@@ -5511,19 +5127,14 @@ require([
           $("#acres-val-min").val(minVal);
           queryParameters.acresValueMax = maxVal;
           $("#acres-val-max").val(maxVal);
-          // console.log(`acres slider is: ${value}`);
         });
 
-        // Listen for input event on the input elements
         $("#acres-val-min, #acres-val-max").on("input", function () {
-          // Get the values from the input elements
           var minVal = parseInt($("#acres-val-min").val());
           var maxVal = parseInt($("#acres-val-max").val());
 
-          // Update the slider values
           const slider3 = document.querySelector("#acres-val-slider");
           slider3.value = [minVal, maxVal];
-          //$("#app-val-slider").value("update", [minVal, maxVal]);
         });
 
         $("#soldon-val-slider").on("calciteSliderChange", function (e) {
@@ -5536,20 +5147,14 @@ require([
 
           queryParameters.soldOnMax = maxVal;
           $("#sold-val-max").val(maxVal);
-
-          // console.log(`sold on slider is: ${value}`);
         });
 
-        // Listen for input event on the input elements
         $("#sold-val-min, #sold-val-max").on("input", function () {
-          // Get the values from the input elements
           var minVal = parseInt($("#sold-val-min").val());
           var maxVal = parseInt($("#sold-val-max").val());
 
-          // Update the slider values
           const slider4 = document.querySelector("#soldon-val-slider");
           slider4.value = [minVal, maxVal];
-          //$("#app-val-slider").value("update", [minVal, maxVal]);
         });
 
         $("#saleP-val-slider").on("calciteSliderChange", function (e) {
@@ -5562,20 +5167,14 @@ require([
 
           queryParameters.soldPMax = maxVal;
           $("#saleP-val-max").val(maxVal);
-
-          // console.log(`sale price slider is: ${value}`);
         });
 
-        // Listen for input event on the input elements
         $("#saleP-val-min, #saleP-val-max").on("input", function () {
-          // Get the values from the input elements
           var minVal = parseInt($("#saleP-val-min").val());
           var maxVal = parseInt($("#saleP-val-max").val());
 
-          // Update the slider values
           const slider5 = document.querySelector("#saleP-val-slider");
           slider5.value = [minVal, maxVal];
-          //$("#app-val-slider").value("update", [minVal, maxVal]);
         });
         function changeSliderValues(vals) {
           const sliderVals = [
@@ -5621,7 +5220,6 @@ require([
             const sliderInputMin = document.getElementById(slider.minInput);
             const sliderInputMax = document.getElementById(slider.maxInput);
 
-            // Access nested min and max properties using index
             sliderEl.minValue = vals[slider.index][slider.fieldName].min;
             sliderEl.maxValue = vals[slider.index][slider.fieldName].max;
 
@@ -5634,7 +5232,7 @@ require([
         }
 
         async function buildQueries() {
-          let queryValues = []; // Initialize queryValues array here
+          let queryValues = [];
           let queryFields = [
             "Appraised_Total",
             "Assessed_Total",
@@ -5765,41 +5363,6 @@ require([
           const combobox5ID = document.querySelector("#buildingUseFilter");
           const combobox6ID = document.querySelector("#designTypeFilter");
 
-          // const slider1 = document.querySelector("#app-val-slider");
-          // slider1.value = [10000, 200000];
-          // const slider1Min = document.querySelector("#app-val-min");
-          // const slider1Max = document.querySelector("#app-val-max");
-          // slider1Min.value = 10000;
-          // slider1Max.value = 200000;
-
-          // const slider2 = document.querySelector("#assess-val-slider");
-          // slider2.value = [10000, 200000];
-          // const slider2Min = document.querySelector("#assess-val-min");
-          // const slider2Max = document.querySelector("#assess-val-max");
-          // slider2Min.value = 10000;
-          // slider2Max.value = 200000;
-
-          // const slider3 = document.querySelector("#acres-val-slider");
-          // slider3.value = [1, 20];
-          // const slider3Min = document.querySelector("#acres-val-min");
-          // const slider3Max = document.querySelector("#acres-val-max");
-          // slider3Min.value = 1;
-          // slider3Max.value = 20;
-
-          // const slider4 = document.querySelector("#soldon-val-slider");
-          // slider4.value = [1900, 2018];
-          // const slider4Min = document.querySelector("#sold-val-min");
-          // const slider4Max = document.querySelector("#sold-val-max");
-          // slider4Min.value = 1900;
-          // slider4Max.value = 2018;
-
-          // const slider5 = document.querySelector("#saleP-val-slider");
-          // slider5.value = [10000, 200000];
-          // const slider5Min = document.querySelector("#saleP-val-min");
-          // const slider5Max = document.querySelector("#saleP-val-max");
-          // slider5Min.value = 10000;
-          // slider5Max.value = 200000;
-
           combobox1ID.selectedItems = [];
           combobox2ID.selectedItems = [];
           combobox3ID.selectedItems = [];
@@ -5809,7 +5372,6 @@ require([
 
           buildQueries();
 
-          // $("#app-val-min").value()
           $(".wrapper .x-button").click();
 
           $("#streetFilter").value = "";
