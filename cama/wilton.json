@@ -9,7 +9,7 @@
   "cssLayerFilterTextColor": "#474747",
   "basemapTitle": "Wilton Basemap",
   "parcelRenderer": "#05FCCF",
-  "condos": "yes",
+  "condos": "no",
   "imageUrl": "https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Wilton_CT/",
   "welcomeImage": "https://publicweb-gis.s3.amazonaws.com/Images/MunicipalSeals/Wilton_CT.png",
   "accessorName": "- Hollie Rapp, CCMC | Assessor  <br>    - Tom Hefele | Deputy Assessor",
@@ -25,7 +25,7 @@
   "nocondoLayer": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Wilton_Adv_Viewer_Parcels/FeatureServer/1",
   "parcelServiceTitle": "Parcel Boundaries",
   "zoom": "13",
-  "parcelZoom": 14,
+  "parcelZoom": 13,
   "layers": [
     {
       "url": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Bethany_CAMA_Viewer/FeatureServer/8",
