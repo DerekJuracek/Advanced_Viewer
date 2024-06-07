@@ -19,7 +19,7 @@
   "pdf_demographics": "https://publicweb-gis.s3.amazonaws.com/CT_Town_Profiles/Wilton_Demographics_2023.pdf",
   "tax_bill": "https://www.mytaxbill.org/inet/bill/parcel.do?town=columbia",
   "taxMapUrl": "https://publicweb-gis.s3.amazonaws.com/PDFs/CT_Columbia/Tax_Maps/TaxMap_",
-  "parcelMapUrl": "CT_Wilton",
+  "parcelMapUrl": "CT_Columbia",
   "housingUrl": "https://publicweb-gis.s3.amazonaws.com/CT_Town_Profiles/Columbia_Housing_2022.pdf",
   "masterTable": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Columbia_Adv_Viewer_Parcels/FeatureServer/0",
   "condoLayer": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Columbia_Adv_Viewer_Parcels/FeatureServer/1",
