@@ -10,7 +10,7 @@
   "cssLayerFilterTextColor": "#474747",
   "basemapTitle": "Warren Basemap",
   "parcelRenderer": "#05FCCF",
-  "condos": "no",
+  "condos": "yes",
   "imageUrl": "https://publicweb-gis.s3.amazonaws.com/Images/Bldg_Photos/Warren_CT/",
   "welcomeImage": "https://publicweb-gis.s3.amazonaws.com/Images/MunicipalSeals/Warren_CT.png",
   "accessorName": "- Linda Bertaccini | Assessor  <br>    - Jamie Hatch | Assistant Assessor",
