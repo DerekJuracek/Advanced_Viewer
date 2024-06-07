@@ -25,8 +25,8 @@
   "condoLayer": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Roxbury_Adv_Viewer_Parcels/FeatureServer/1",
   "noCondoLayer": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Roxbury_Adv_Viewer_Parcels/FeatureServer/1",
   "parcelServiceTitle": "Parcel Boundaries",
-  "zoom": "13",
-  "parcelZoom": 13,
+  "zoom": "2",
+  "parcelZoom": 2,
   "layers": [
     {
       "url": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Bethany_CAMA_Viewer/FeatureServer/8",
