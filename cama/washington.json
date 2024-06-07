@@ -24,8 +24,8 @@
   "condoLayer": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels/FeatureServer/1",
   "nocondoLayer": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Washington_Adv_Viewer_Parcels/FeatureServer/1",
   "parcelServiceTitle": "Parcel Boundaries",
-  "zoom": "12.5",
-  "parcelZoom": 17,
+  "zoom": "13",
+  "parcelZoom": 13,
   "layers": [
     {
       "url": "https://services1.arcgis.com/j6iFLXhyiD3XTMyD/ArcGIS/rest/services/CT_Bethany_CAMA_Viewer/FeatureServer/8",
