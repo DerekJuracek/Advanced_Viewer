@@ -16,7 +16,7 @@
   "accessorName": "- Mary Hawley | Assessor  <br>    - Marcy Littlefield | Deputy Assessor",
   "propertyCard": "https://www.propertyrecordcards.com/PropertyResults.aspx?towncode=030",
   "pdf_Image": "https://publicweb-gis.s3.amazonaws.com/PDFs/CT_Columbia",
-  "pdf_demographics": "https://publicweb-gis.s3.amazonaws.com/CT_Town_Profiles/Wilton_Demographics_2023.pdf",
+  "pdf_demographics": "https://publicweb-gis.s3.amazonaws.com/CT_Town_Profiles/Columbia_Demographics_2023.pdf",
   "tax_bill": "https://www.mytaxbill.org/inet/bill/parcel.do?town=columbia",
   "taxMapUrl": "https://publicweb-gis.s3.amazonaws.com/PDFs/CT_Columbia/Tax_Maps/TaxMap_",
   "parcelMapUrl": "CT_Columbia",
